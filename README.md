@@ -34,6 +34,11 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 🧮 Simulateurs : épargne, crédit, achat immobilier, voiture, déménagement, scénarios de vie
 - 🔮 Prévision de ton solde sur 6 mois, alerte fin de mois serrée
 
+<p align="center">
+  <img src="images/objectifs.png" width="440" alt="Objectifs et coach">
+  <img src="images/analyses.png" width="440" alt="Comparaison aux moyennes françaises">
+</p>
+
 **Pour comprendre**
 - 📊 Analyses : dépenses, revenus, comparaison avec l'an dernier, jours de la semaine
 - 🇫🇷 Ton budget comparé à la moyenne des ménages français (Insee)
@@ -43,6 +48,11 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 😊 Jauge de bonheur de tes achats
 - 🎁 Ton année en récap animé, badges à débloquer, rapport PDF mensuel
 
+<p align="center">
+  <img src="images/paie.png" width="440" alt="Ma paie : prochain salaire et bulletins">
+  <img src="images/factures.png" width="440" alt="Comparateur de factures">
+</p>
+
 **Courses et maison**
 - 🛒 **Liste de courses partagée** avec budget du panier
 - 🏪 **Le magasin le moins cher** pour ta liste (tes prix et ceux de la communauté Open Prices), promos près de chez toi
@@ -50,15 +60,32 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 📦 **Stock de la maison** : un point rapide chaque semaine, et Pécule propose la liste de la semaine et celle du mois
 - 🍝 **Repas de la semaine** : les ingrédients qui manquent rejoignent la liste de courses
 
+<p align="center">
+  <img src="images/courses.png" width="440" alt="Liste de courses et magasin le moins cher">
+  <img src="images/stock.png" width="440" alt="Stock de la maison et listes proposées">
+</p>
+<p align="center">
+  <img src="images/repas.png" width="440" alt="Repas de la semaine">
+  <img src="images/agenda.png" width="440" alt="Agenda du foyer">
+</p>
+
 **Les grands moments**
 - 🎁 **Cadeaux** pour toutes les occasions : anniversaires, Noël, fête des mères et des pères, mariage, naissance… avec budget et rappel
 - 💝 **Listes d'envies** : chacun note ses envies, les autres réservent sans gâcher la surprise
 - ✈️ **Voyages et événements** : un budget à part pour un séjour, un mariage, un déménagement, des travaux ou Noël, sans fausser tes budgets du mois
 
+<p align="center">
+  <img src="images/cadeaux.png" width="440" alt="Cadeaux pour toutes les occasions">
+  <img src="images/envies.png" width="440" alt="Listes d'envies du foyer">
+</p>
+<p align="center"><img src="images/evenements.png" width="440" alt="Budgets de voyages et d'événements"></p>
+
 **Tes papiers**
 - 📁 Documents classés par mois, modifiables par lots, partagés avec ton foyer
 - 🏠 Quittances de loyer rangées toutes seules, suivi du dépôt de garantie, dossier de location complet en PDF
 - ✉️ **Courriers prêts à envoyer** : résiliations, préavis de logement, frais bancaires contestés, vol retardé, rétractation, produit en panne, délais de paiement…
+
+<p align="center"><img src="images/courriers.png" width="700" alt="Courriers prêts à envoyer"></p>
 
 **À plusieurs**
 - 💞 **Foyer** : dépenses communes, qui doit combien, budgets et objectifs communs, vue commune en direct
@@ -68,20 +95,16 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 🧾 Dépenses entre amis (week-end, coloc) sans que les autres aient l'appli
 - 👤 Plusieurs profils protégés par un code
 
+<p align="center"><img src="images/foyer.png" width="900" alt="Vue commune du foyer"></p>
+<p align="center"><img src="images/telephone.png" width="900" alt="Le foyer sur le téléphone"></p>
+
 **Confort**
 - 🛟 Sauvegarde automatique chaque jour, corbeille de 30 jours, Ctrl+Z pour annuler
 - 🔎 Ctrl+K pour tout retrouver, navigation complète au clavier
 - 🎨 Thèmes clair, sombre, Néon, Pastel, Océan, Forêt et Contraste élevé
 - 🌍 En français, anglais et portugais
 
-<p align="center">
-  <img src="images/foyer.png" width="440" alt="Vue commune du foyer">
-  <img src="images/neon.png" width="440" alt="Thème Néon">
-</p>
-<p align="center">
-  <img src="images/analyses.png" width="440" alt="Comparaison aux moyennes françaises">
-  <img src="images/objectifs.png" width="440" alt="Objectifs et coach">
-</p>
+<p align="center"><img src="images/neon.png" width="900" alt="Thème Néon"></p>
 
 ## 📥 Installer
 
