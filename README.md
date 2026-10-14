@@ -4,11 +4,11 @@
 
 <h1 align="center">Pécule</h1>
 <p align="center"><b>Tes finances, simplement.</b><br>
-Comptes, budgets, épargne et dépenses partagées — gratuit, en français, et tes données restent sur ton PC.</p>
+Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en français, et tes données restent sur ton PC.</p>
 
 <p align="center">
   <a href="https://github.com/zyg-off/pecule/releases/latest/download/Pecule-Setup.exe"><b>⬇️ Télécharger Pécule pour Windows</b></a>
-  &nbsp;·&nbsp; Windows 10 et 11 · gratuit
+  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.1.0
 </p>
 
 <p align="center"><img src="images/accueil.png" width="900" alt="Accueil de Pécule"></p>
@@ -20,25 +20,59 @@ Comptes, budgets, épargne et dépenses partagées — gratuit, en français, et
 **Au quotidien**
 - 🏦 **Connexion à ta banque** (Enable Banking) ou import de relevés CSV / OFX de n'importe quelle banque
 - 🏷️ Classement automatique des opérations, avec des règles qui apprennent de tes choix
+- 🗂️ Sous-catégories pour ranger tes virements (épargne, compte commun, loyer…)
 - 🎯 **Budgets** par catégorie, enveloppes, bilan du mois et score de la semaine
-- 🔁 Abonnements détectés tout seuls, rappels avant les gros prélèvements
+- 🔁 **Récurrent** : abonnements et prélèvements détectés tout seuls, rappels avant les gros débits
+- 🌤️ La météo du mois : ce qu'il devrait te rester, compte par compte
 - 💬 **Pose une question** : « Combien j'ai dépensé en restos cet été ? »
+- 🧩 Un Accueil à ta façon : glisse les blocs, choisis les comptes affichés
 
 **Pour épargner**
-- 🏆 Objectifs avec coach de rattrapage, défis (« mois sans achat »), liste d'envies
+- 🏆 Objectifs avec coach de rattrapage, défis (« mois sans achat »)
 - 🐷 Tous les livrets français (Livret A, LDDS, LEP, PEL…) avec plafonds et intérêts
-- 🧮 Simulateurs : épargne, crédit, « et si je gagnais plus », avant / après
+- 📈 Placements (assurance vie, PEA, cryptos) : plus-value et rendement calculés
+- 🧮 Simulateurs : épargne, crédit, achat immobilier, voiture, déménagement, scénarios de vie
 - 🔮 Prévision de ton solde sur 6 mois, alerte fin de mois serrée
 
 **Pour comprendre**
-- 📊 Analyses par compte, par jour de la semaine, par ville, inflation perso
+- 📊 Analyses : dépenses, revenus, comparaison avec l'an dernier, jours de la semaine
 - 🇫🇷 Ton budget comparé à la moyenne des ménages français (Insee)
-- 🎁 Ton année en récap animé, 16 badges à débloquer, rapport PDF mensuel
+- 🏦 Frais bancaires repérés, rapprochement bancaire, impôts
+- 💼 **Ma paie** : lecture de tes bulletins PDF, prévision de ton prochain salaire, primes, vérification du salaire reçu
+- 🔌 **Comparateur de factures** : énergie, box et forfait mobile, avec l'économie possible
+- 😊 Jauge de bonheur de tes achats
+- 🎁 Ton année en récap animé, badges à débloquer, rapport PDF mensuel
+
+**Courses et maison**
+- 🛒 **Liste de courses partagée** avec budget du panier
+- 🏪 **Le magasin le moins cher** pour ta liste (tes prix et ceux de la communauté Open Prices), promos près de chez toi
+- 📷 Lecture des tickets de caisse (photo ou PDF)
+- 📦 **Stock de la maison** : un point rapide chaque semaine, et Pécule propose la liste de la semaine et celle du mois
+- 🍝 **Repas de la semaine** : les ingrédients qui manquent rejoignent la liste de courses
+
+**Les grands moments**
+- 🎁 **Cadeaux** pour toutes les occasions : anniversaires, Noël, fête des mères et des pères, mariage, naissance… avec budget et rappel
+- 💝 **Listes d'envies** : chacun note ses envies, les autres réservent sans gâcher la surprise
+- ✈️ **Voyages et événements** : un budget à part pour un séjour, un mariage, un déménagement, des travaux ou Noël, sans fausser tes budgets du mois
+
+**Tes papiers**
+- 📁 Documents classés par mois, modifiables par lots, partagés avec ton foyer
+- 🏠 Quittances de loyer rangées toutes seules, suivi du dépôt de garantie, dossier de location complet en PDF
+- ✉️ **Courriers prêts à envoyer** : résiliations, préavis de logement, frais bancaires contestés, vol retardé, rétractation, produit en panne, délais de paiement…
 
 **À plusieurs**
 - 💞 **Foyer** : dépenses communes, qui doit combien, budgets et objectifs communs, vue commune en direct
-- 👥 Dépenses entre amis (week-end, coloc) sans que les autres aient l'appli
+- 👥 **Comptes communs vraiment partagés** : la part de chacun, le suivi des versements et un rappel pour ta part
+- 📅 **Agenda du foyer** : loyer, factures, rendez-vous, avec un rappel la veille
+- 📱 **Le foyer sur ton téléphone** : courses, stock, repas, envies, dépenses communes, agenda et soldes (QR code dans Pécule)
+- 🧾 Dépenses entre amis (week-end, coloc) sans que les autres aient l'appli
 - 👤 Plusieurs profils protégés par un code
+
+**Confort**
+- 🛟 Sauvegarde automatique chaque jour, corbeille de 30 jours, Ctrl+Z pour annuler
+- 🔎 Ctrl+K pour tout retrouver, navigation complète au clavier
+- 🎨 Thèmes clair, sombre, Néon, Pastel, Océan, Forêt et Contraste élevé
+- 🌍 En français, anglais et portugais
 
 <p align="center">
   <img src="images/foyer.png" width="440" alt="Vue commune du foyer">
@@ -62,15 +96,21 @@ Comptes, budgets, épargne et dépenses partagées — gratuit, en français, et
 
 ## 🔐 Tes données
 
-- Tout est enregistré **uniquement sur ton ordinateur** (`%APPDATA%\Pecule`). Aucun compte Pécule, aucune publicité, aucune collecte.
+- Tes comptes et tes opérations sont enregistrés **uniquement sur ton ordinateur** (`%APPDATA%\Pecule`). Aucun compte Pécule, aucune publicité, aucune collecte.
 - La connexion bancaire passe par **ton propre accès Enable Banking** (gratuit pour tes comptes personnels).
-- Le foyer partagé utilise **ton propre serveur Supabase gratuit** : seules les dépenses communes y sont envoyées, et tes chiffres personnels seulement si tu actives le partage.
+- Le foyer partagé utilise **ton propre serveur Supabase gratuit**. Seul ce que tu partages avec le foyer y est envoyé : dépenses communes, courses, stock, repas, agenda, envies et documents que tu envoies. Tes chiffres personnels n'y vont que si tu actives le partage.
+- La page téléphone ne contient aucune donnée : elle se connecte simplement à ton serveur du foyer.
 
 ## ❓ Questions fréquentes
 
 **C'est vraiment gratuit ?** Oui.
-**Ça marche sur Mac ou téléphone ?** Pas pour l'instant : Windows 10 et 11 uniquement.
+
+**Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une page web donne accès au foyer (courses, stock, repas, envies, dépenses communes, agenda) : scanne le QR code dans Pécule › Foyer › ⚙ › Sur mon téléphone. Pas de version Mac pour l'instant.
+
 **Ma banque est compatible ?** La connexion directe couvre la plupart des banques françaises et européennes. Sinon, l'import de relevés CSV / OFX marche avec toutes.
+
+**Je peux l'utiliser en anglais ou en portugais ?** Oui : Réglages › Langue.
+
 **Un problème, une idée ?** Ouvre une [discussion ou un signalement](https://github.com/zyg-off/pecule/issues).
 
 ---
