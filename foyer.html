@@ -42,6 +42,18 @@ nav button.on{color:var(--accent)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #toast{position:fixed;left:16px;right:16px;bottom:84px;background:#222b35;color:#fff;border-radius:12px;padding:12px 14px;opacity:0;transition:.25s;pointer-events:none}
 #toast.show{opacity:1}
+.seg{display:flex;gap:6px;margin:10px 0 0}.seg button{flex:1;font-size:14px;padding:9px 4px}
+.seg button.on{background:var(--accent);color:#fff;font-weight:600}
+textarea{font:inherit;color:inherit;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-height:110px}
+.pill.warn{background:#f7e2c6;color:#8a4d0f}.pill.ok{background:#d8efe2;color:#1f6b46}
+@media (prefers-color-scheme:dark){.pill.warn{background:#4a3417;color:#f2c48b}.pill.ok{background:#1d3b2c;color:#8fd8b0}}
+.qty{min-width:64px;text-align:center;font-weight:600}
+.step{width:36px;height:36px;padding:0;border-radius:10px;font-size:18px}
+.place{font-size:12px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chips button{font-size:14px;padding:8px 12px}
+details summary{cursor:pointer;color:var(--accent);font-weight:600;padding:8px 0;list-style:none}
+.day{font-weight:600;margin:12px 0 2px}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -62,14 +74,57 @@ nav button.on{color:var(--accent)}
   </section>
 
   <section id="v-list" class="view hidden">
+    <div class="seg" id="subnav"><button data-s="list">🛒 Liste</button><button data-s="stock">📦 Stock</button><button data-s="meals">🍝 Repas</button></div>
+    <div id="s-list">
     <div class="card">
       <h2>🛒 Liste de courses</h2>
       <div class="add"><input id="item" placeholder="Ajouter un article…" enterkeyhint="done"><button class="primary" id="additem">+</button></div>
       <p class="faint" id="est"></p>
+      <div id="propose"></div>
       <div id="todo"></div>
     </div>
     <div class="card" id="donecard"><h2>Dans le panier</h2><div id="done"></div>
       <button class="ghost" id="clear">Vider les articles cochés</button></div>
+    </div>
+
+    <div id="s-stock" class="hidden">
+      <div class="card hidden" id="checkdue"></div>
+      <div class="card"><h2>📦 Stock de la maison</h2><div id="stock"></div>
+        <details id="stockform"><summary>+ Ajouter un article</summary>
+          <input id="sname" placeholder="Article (ex. lait, pâtes, lessive)"><br><br>
+          <div class="grid2"><input id="sqty" inputmode="decimal" placeholder="Il y en a"><input id="starget" inputmode="decimal" placeholder="Il en faut"></div><br>
+          <div class="grid2"><input id="sunit" placeholder="Unité (L, kg, paquets…)"><select id="splace"></select></div><br>
+          <select id="speriod"><option value="week">Racheté chaque semaine</option><option value="month">Racheté chaque mois</option><option value="none">Juste suivre</option></select><br><br>
+          <button class="primary" id="addstock" style="width:100%">Ajouter au stock</button>
+        </details>
+      </div>
+      <div class="card"><h2>🗓️ Liste de la semaine</h2><div id="pweek"></div></div>
+      <div class="card"><h2>📆 Liste du mois</h2><div id="pmonth"></div></div>
+    </div>
+
+    <div id="s-meals" class="hidden">
+      <div class="card"><h2>🍝 Repas des 7 prochains jours</h2><div id="meals"></div></div>
+      <div class="card"><h2>➕ Nouveau repas</h2>
+        <div class="grid2"><select id="mday"></select><select id="mslot"><option value="midi">Midi</option><option value="soir" selected>Soir</option><option value="matin">Matin</option></select></div><br>
+        <input id="mtitle" list="mpast" placeholder="Repas (ex. pâtes carbonara)"><datalist id="mpast"></datalist><br><br>
+        <textarea id="ming" placeholder="Un ingrédient par ligne :&#10;Pâtes · 500 g&#10;200 g de lardons&#10;3 œufs"></textarea><br><br>
+        <button class="primary" id="addmeal" style="width:100%">Ajouter le repas</button>
+      </div>
+      <div class="card"><h2>🧺 Ingrédients</h2><div id="ings"></div></div>
+    </div>
+  </section>
+
+  <section id="v-wishes" class="view hidden">
+    <div class="card"><h2>💝 Ma liste d'envies</h2><div id="mywishes"></div>
+      <details><summary>+ Ajouter une envie</summary>
+        <input id="wtitle" placeholder="Envie (ex. un livre, des écouteurs)"><br><br>
+        <div class="grid2"><input id="wprice" inputmode="decimal" placeholder="Prix (facultatif)"><input id="wfor" placeholder="Pour qui ? (vide = moi)"></div><br>
+        <input id="wlink" placeholder="Lien (facultatif)" inputmode="url"><br><br>
+        <button class="primary" id="addwish" style="width:100%">Ajouter</button>
+      </details>
+      <p class="faint">Sur ta liste, tu ne vois pas ce que les autres ont réservé : la surprise est gardée 🤫</p>
+    </div>
+    <div id="otherwishes"></div>
   </section>
 
   <section id="v-money" class="view hidden">
@@ -95,6 +150,7 @@ nav button.on{color:var(--accent)}
   <button data-v="list" class="on"><b>🛒</b>Courses</button>
   <button data-v="money"><b>⚖️</b>Dépenses</button>
   <button data-v="agenda"><b>📅</b>Agenda</button>
+  <button data-v="wishes"><b>💝</b>Envies</button>
   <button data-v="accounts"><b>🏦</b>Comptes</button>
 </nav>
 <div id="toast"></div>
@@ -119,7 +175,8 @@ function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("sh
 })();
 
 const S = { url: store.get("url"), key: store.get("key"), session: JSON.parse(store.get("session") || "null"), hid: store.get("hid"),
-  me: null, members: [], list: [], exps: [], events: null, snaps: [], view: store.get("view") || "list" };
+  me: null, members: [], list: [], exps: [], events: null, snaps: [], stock: null, meals: null, wishes: null, claims: [],
+  view: store.get("view") || "list", sub: store.get("sub") || "list", prop: {} };
 
 async function auth(kind, body) {
   const r = await fetch(`${S.url}/auth/v1/token?grant_type=${kind}`, { method: "POST",
@@ -157,10 +214,98 @@ async function load() {
   S.members = members; S.list = list; S.exps = exps;
   S.events = await api("GET", `shared_events?${q}&order=date`).catch(() => null);
   S.snaps = await api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => []);
+  const since = ymd(addDays(new Date(), -120));
+  [S.stock, S.meals, S.wishes, S.claims] = await Promise.all([
+    api("GET", `shared_stock?${q}&order=label`).catch(() => null),
+    api("GET", `shared_meals?${q}&date=gte.${since}&order=date`).catch(() => null),
+    api("GET", `shared_wishes?${q}&order=created_at`).catch(() => null),
+    api("GET", `shared_wish_claims?${q}`).catch(() => []),
+  ]);
   S.me = S.session.user;
   $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   render();
 }
+
+// ---------------------------------------------------------------- stock et repas (même logique que Pécule)
+const pad = (n) => String(n).padStart(2, "0");
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const num = (x) => Number(x) || 0;
+const fold = (s) => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const STOP = new Set(["de", "du", "des", "la", "le", "les", "en", "a", "au", "aux"]);
+function itemKey(l) {
+  let f = fold(l).replace(/[^a-z0-9 ]/g, " ").replace(/\b\d+([.,]\d+)?\s*(g|kg|l|cl|ml|x)?\b/g, " ");
+  return f.split(/\s+/).filter(Boolean).map((w) => (w.length > 3 && /[sx]$/.test(w) ? w.slice(0, -1) : w))
+    .filter((w) => !STOP.has(w)).join(" ").slice(0, 60);
+}
+const fmtQty = (n, u) => `${String(Math.round(num(n) * 100) / 100).replace(".", ",")} ${u || ""}`.trim();
+const leadNum = (t) => { const m = /^\s*(\d+(?:[.,]\d+)?)/.exec(t || ""); return m ? parseFloat(m[1].replace(",", ".")) : null; };
+const UNITS = "(?:kg|g|mg|l|cl|ml|x|pcs?|paquets?|boîtes?|boites?|bouteilles?|pots?|tranches?|sachets?|rouleaux?|douzaines?)";
+function parseIng(line) {
+  const t = line.trim().replace(/^[-•*]+|[-•*]+$/g, "").trim();
+  if (!t) return null;
+  for (const sep of [" · ", " : ", ": ", " — ", " - ", "\t"]) {
+    const i = t.indexOf(sep);
+    if (i >= 0) { const a = t.slice(0, i), b = t.slice(i + sep.length);
+      return leadNum(b) !== null || !leadNum(a) ? [a.trim(), b.trim()] : [b.trim(), a.trim()]; }
+  }
+  let m = new RegExp(`^(\\d+(?:[.,]\\d+)?\\s*${UNITS}?\\.?)\\s+(?:d['e]\\s*)?(.+)$`, "i").exec(t);
+  if (m) return [m[2].trim(), m[1].trim()];
+  m = new RegExp(`^(.+?)\\s+(\\d+(?:[.,]\\d+)?\\s*${UNITS}?)$`, "i").exec(t);
+  if (m) return [m[1].trim(), m[2].trim()];
+  return [t, ""];
+}
+const ingredients = (meal) => String(meal.ingredients || "").split("\n").map(parseIng).filter(Boolean)
+  .map(([l, q]) => [l.charAt(0).toUpperCase() + l.slice(1), q]);
+function addQty(qs) {
+  const parts = [];
+  for (const q of qs) { const m = /^\s*(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(q); if (!m) return qs.join(" + ");
+    parts.push([parseFloat(m[1].replace(",", ".")), m[2].trim().toLowerCase()]); }
+  if (parts.length && new Set(parts.map((p) => p[1])).size === 1) return fmtQty(parts.reduce((s, p) => s + p[0], 0), parts[0][1]);
+  return qs.join(" + ");
+}
+function findStock(label) {
+  const k = itemKey(label); if (!k) return null;
+  return (S.stock || []).find((s) => { const sk = itemKey(s.label);
+    return sk === k || (k.length > 3 && (sk.startsWith(k + " ") || k.startsWith(sk + " "))); }) || null;
+}
+const need = (s) => Math.max(0, num(s.target) - num(s.qty));
+const onList = (label) => { const k = itemKey(label); return (S.list || []).some((i) => itemKey(i.label) === k && !i.done); };
+function weekMeals(start, days) {
+  const a = ymd(start), b = ymd(addDays(start, days));
+  return (S.meals || []).filter((m) => String(m.date).slice(0, 10) >= a && String(m.date).slice(0, 10) < b);
+}
+function mealNeeds(start = new Date(), days = 7) {
+  const out = new Map();
+  const ms = weekMeals(start, days).sort((x, y) => (String(x.date) + x.slot).localeCompare(String(y.date) + y.slot));
+  for (const m of ms) for (const [lab, q] of ingredients(m)) {
+    const k = itemKey(lab) || lab.toLowerCase();
+    if (!out.has(k)) out.set(k, { label: lab, qty: [], meals: [] });
+    const e = out.get(k); if (q) e.qty.push(q); if (!e.meals.includes(m.title)) e.meals.push(m.title);
+  }
+  return [...out.values()].map((e) => { const s = findStock(e.label);
+    return { label: e.label, qty: addQty(e.qty), meals: e.meals, home: !!s && num(s.qty) > 0 }; })
+    .sort((x, y) => (x.home - y.home) || x.label.localeCompare(y.label));
+}
+function proposal(kind) {
+  const out = [], seen = new Set();
+  const add = (l, q, why) => { const k = itemKey(l) || l.toLowerCase(); if (seen.has(k) || onList(l)) return; seen.add(k); out.push({ label: l, qty: q, why }); };
+  (S.stock || []).filter((s) => s.period === kind && need(s) > 0)
+    .sort((a, b) => (a.place || "").localeCompare(b.place || "") || a.label.localeCompare(b.label))
+    .forEach((s) => add(s.label, fmtQty(need(s), s.unit), `stock : ${fmtQty(s.qty, s.unit)} sur ${fmtQty(s.target, s.unit)}`));
+  if (kind === "week") mealNeeds().filter((n) => !n.home).forEach((n) => add(n.label, n.qty, "pour " + n.meals.slice(0, 3).join(", ")));
+  return out;
+}
+function checkDue() {
+  if (!S.stock || !S.stock.length) return null;
+  const last = S.stock.map((s) => new Date(s.updated_at)).filter((d) => !isNaN(d)).sort((a, b) => b - a)[0];
+  const days = last ? Math.floor((Date.now() - last) / 864e5) : 99;
+  return days >= 7 ? days : null;
+}
+const PLACES = ["Placard", "Frigo", "Congélateur", "Fruits et légumes", "Salle de bain", "Entretien", "Animaux", "Autre"];
+const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const dayName = (d) => `${DAYS[d.getDay()]} ${d.getDate()}/${pad(d.getMonth() + 1)}`;
+const SLOTS = { matin: "Matin", midi: "Midi", soir: "Soir" };
 
 const name = (uid) => (S.members.find((m) => m.user_id === uid) || {}).display_name || "?";
 
@@ -220,7 +365,15 @@ function render() {
     $("donecard").classList.toggle("hidden", !done.length);
     const est = S.list.reduce((s, i) => s + (Number(i.price) || 0), 0);
     $("est").textContent = est ? `Panier estimé : ${euro(est)}` : "";
+    const w = S.stock || S.meals ? proposal("week") : [], mo = S.stock ? proposal("month") : [];
+    S.prop.week = w; S.prop.month = mo;
+    $("propose").innerHTML = w.length || mo.length ? `<div class="faint">📋 Proposé d'après le stock et les repas :</div><div class="chips">${
+      w.length ? `<button data-act="padd" data-kind="week">+ Liste de la semaine (${w.length})</button>` : ""}${
+      mo.length ? `<button data-act="padd" data-kind="month">+ Liste du mois (${mo.length})</button>` : ""}</div>` : "";
   }
+  document.querySelectorAll("#subnav button").forEach((b) => b.classList.toggle("on", b.dataset.s === S.sub));
+  ["list", "stock", "meals"].forEach((k) => $("s-" + k).classList.toggle("hidden", k !== S.sub));
+  renderStock(); renderMeals(); renderWishes();
   // dépenses
   const net = balances(), pl = plan(net);
   $("bal").innerHTML = S.members.map((m) => { const v = net[m.user_id] || 0;
@@ -244,6 +397,89 @@ function render() {
   }
   $("joint").innerHTML = joint.map((j) => `<div class="row"><div class="grow">${esc(j.name)}<div class="faint">partagé par ${esc(j.owner || "")} · dépensé ce mois ${euro(j.spent)}</div></div><span class="big">${euro(j.balance)}</span></div>`).join("") || '<p class="muted">Aucun compte commun partagé depuis Pécule.</p>';
   $("people").innerHTML = people.map(([uid, d]) => `<div class="row"><div class="grow">${esc(name(uid))}${d.msg ? `<div class="faint">« ${esc(d.msg)} »</div>` : ""}</div><div style="text-align:right">dépensé ${euro(d.spent)}${d.budget_total ? `<div class="faint">reste des budgets ${euro(d.budget_left)}</div>` : ""}</div></div>`).join("") || '<p class="muted">Personne ne partage ses chiffres pour l\'instant.</p>';
+}
+
+const NOT_READY = '<p class="muted">Pas encore activé sur le serveur du foyer : dans Pécule, Foyer › ⚙ › Mettre à jour le serveur.</p>';
+
+function propRows(kind, empty) {
+  const items = S.prop[kind] || [];
+  if (!items.length) return `<p class="muted">${empty}</p>`;
+  return items.map((p, i) => `<div class="row"><div class="grow">${esc(p.label)}${p.qty ? ` <span class="faint">· ${esc(p.qty)}</span>` : ""}<div class="faint">${esc(p.why)}</div></div>
+    <button class="ghost" data-act="padd" data-kind="${kind}" data-i="${i}">+</button></div>`).join("")
+    + `<br><button class="primary" data-act="padd" data-kind="${kind}" style="width:100%">Tout ajouter à la liste (${items.length})</button>`;
+}
+
+function renderStock() {
+  if (S.stock === null) { $("stock").innerHTML = NOT_READY; $("stockform").classList.add("hidden"); $("pweek").innerHTML = $("pmonth").innerHTML = ""; $("checkdue").classList.add("hidden"); return; }
+  $("stockform").classList.remove("hidden");
+  if (!$("splace").options.length) $("splace").innerHTML = PLACES.map((p) => `<option>${p}</option>`).join("");
+  const due = checkDue();
+  $("checkdue").classList.toggle("hidden", !due);
+  $("checkdue").innerHTML = due ? `<h2>📦 Le point de la semaine</h2><p class="muted">Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.</p>
+    <button class="primary" data-act="checked" style="width:100%">✓ Le point est fait</button>` : "";
+  let place = null, html = "";
+  for (const s of [...S.stock].sort((a, b) => (a.place || "").localeCompare(b.place || "") || a.label.localeCompare(b.label))) {
+    if ((s.place || "") !== place) { place = s.place || ""; html += `<div class="place">${esc(place || "Sans rangement")}</div>`; }
+    const n = need(s);
+    html += `<div class="row"><div class="grow">${esc(s.label)}<div class="faint">${n > 0 && s.period !== "none" ? `<span class="pill warn">manque ${esc(fmtQty(n, s.unit))}</span> ` : ""}il en faut ${esc(fmtQty(s.target, s.unit))}</div></div>
+      <button class="step" data-act="sminus" data-id="${s.id}">−</button><span class="qty">${esc(fmtQty(s.qty, s.unit))}</span><button class="step" data-act="splus" data-id="${s.id}">+</button></div>`;
+  }
+  $("stock").innerHTML = html || '<p class="muted">Note ce que tu as à la maison et combien il en faut : Pécule propose la liste de la semaine (le frais) et celle du mois (les réserves).</p>';
+  S.prop.week = proposal("week"); S.prop.month = proposal("month");
+  $("pweek").innerHTML = propRows("week", "Rien à racheter cette semaine ✓");
+  $("pmonth").innerHTML = propRows("month", "Les réserves sont pleines ✓");
+}
+
+function renderMeals() {
+  if (S.meals === null) { $("meals").innerHTML = NOT_READY; $("ings").innerHTML = ""; return; }
+  const t0 = new Date(); t0.setHours(12, 0, 0, 0);
+  if (!$("mday").options.length) $("mday").innerHTML = Array.from({ length: 14 }, (_, i) => addDays(t0, i))
+    .map((d, i) => `<option value="${ymd(d)}">${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : dayName(d)}</option>`).join("");
+  const past = []; [...S.meals].sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach((m) => { if (!past.includes(m.title)) past.push(m.title); });
+  $("mpast").innerHTML = past.slice(0, 40).map((t) => `<option value="${esc(t)}">`).join("");
+  let html = "";
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(t0, i), ms = S.meals.filter((m) => String(m.date).slice(0, 10) === ymd(d)).sort((a, b) => ["matin", "midi", "soir"].indexOf(a.slot) - ["matin", "midi", "soir"].indexOf(b.slot));
+    html += `<div class="day">${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : dayName(d)}</div>` + (ms.map((m) => `<div class="row"><span class="pill">${SLOTS[m.slot] || ""}</span>
+      <div class="grow">${esc(m.title)}${m.ingredients ? `<div class="faint">${esc(m.ingredients.split("\n").join(" · "))}</div>` : ""}</div>
+      <button class="ghost" data-act="mdel" data-id="${m.id}">✕</button></div>`).join("") || '<div class="faint">—</div>');
+  }
+  $("meals").innerHTML = html;
+  const needs = mealNeeds(), missing = needs.filter((n) => !n.home && !onList(n.label));
+  S.prop.ings = missing.map((n) => ({ label: n.label, qty: n.qty, why: "" }));
+  $("ings").innerHTML = needs.map((n) => `<div class="row"><div class="grow">${esc(n.label)}${n.qty ? ` <span class="faint">· ${esc(n.qty)}</span>` : ""}<div class="faint">pour ${esc(n.meals.slice(0, 3).join(", "))}</div></div>
+      ${n.home ? '<span class="pill ok">✓ à la maison</span>' : onList(n.label) ? '<span class="pill">sur la liste</span>' : '<span class="pill warn">à acheter</span>'}</div>`).join("")
+    + (missing.length ? `<br><button class="primary" data-act="padd" data-kind="ings" style="width:100%">Ajouter les ${missing.length} manquant(s) à la liste</button>` : "")
+    || '<p class="muted">Ajoute des repas avec leurs ingrédients : ce qui manque à la maison rejoint la liste de courses.</p>';
+}
+
+function wishRow(w, mine, editable) {
+  const claimed = (S.claims || []).find((c) => c.wish_id === w.id);
+  let right = "";
+  if (!mine) {
+    if (claimed && claimed.claimed_by === S.me) right = `<span class="pill ok">C'est moi ✓</span><button class="ghost" data-act="wunclaim" data-id="${w.id}">Annuler</button>`;
+    else if (claimed) right = `<span class="pill">Pris par ${esc(name(claimed.claimed_by))}</span>`;
+    else right = `<button class="primary" data-act="wclaim" data-id="${w.id}">Je m'en occupe</button>`;
+  }
+  if (mine || editable) right += `<button class="ghost" data-act="wdel" data-id="${w.id}">✕</button>`;
+  return `<div class="row"><div class="grow">${esc(w.title)}<div class="faint">${[w.price != null ? euro(w.price) : "", w.occasion || "", w.note || ""].filter(Boolean).map(esc).join(" · ")}${
+    w.link && /^https?:\/\//.test(w.link) ? ` <a href="${esc(w.link)}" target="_blank" rel="noopener">voir 🔗</a>` : ""}</div></div>${right}</div>`;
+}
+
+function renderWishes() {
+  if (S.wishes === null) { $("mywishes").innerHTML = NOT_READY; $("otherwishes").innerHTML = ""; return; }
+  const mine = S.wishes.filter((w) => w.owner === S.me && !w.for_name);
+  $("mywishes").innerHTML = mine.map((w) => wishRow(w, true)).join("") || '<p class="muted">Note ce qui te ferait plaisir : les autres pourront le réserver.</p>';
+  let html = "";
+  for (const m of S.members.filter((m) => m.user_id !== S.me)) {
+    const ws = S.wishes.filter((w) => w.owner === m.user_id && !w.for_name);
+    html += `<div class="card"><h2>🎁 Envies de ${esc(m.display_name)}</h2>${ws.map((w) => wishRow(w, false)).join("") || `<p class="faint">${esc(m.display_name)} n'a encore rien noté.</p>`}</div>`;
+  }
+  const groups = {};
+  S.wishes.filter((w) => w.for_name).forEach((w) => { (groups[fold(w.for_name)] = groups[fold(w.for_name)] || { name: w.for_name, items: [] }).items.push(w); });
+  for (const g of Object.values(groups))
+    html += `<div class="card"><h2>🧸 Envies de ${esc(g.name)}</h2>${g.items.map((w) => wishRow(w, false, w.owner === S.me)).join("")}</div>`;
+  $("otherwishes").innerHTML = html;
 }
 
 async function act(fn, ok) {
@@ -271,14 +507,75 @@ async function addItem() {
 }
 $("additem").onclick = addItem;
 $("item").onkeydown = (e) => { if (e.key === "Enter") addItem(); };
+$("subnav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.sub = b.dataset.s; store.set("sub", S.sub); render(); };
+function addToList(items) {
+  const rows = items.filter((p) => !onList(p.label)).map((p) => ({ household_id: S.hid, label: p.label.slice(0, 80), qty: (p.qty || "").slice(0, 20) }));
+  if (!rows.length) return toast("Tout est déjà sur la liste ✓");
+  rows.forEach((r) => S.list.push({ id: "tmp", label: r.label, qty: r.qty, done: false, created_by: S.me })); render();
+  act(() => api("POST", "shared_list", rows), `${rows.length} article(s) ajouté(s) à la liste 🛒`);
+}
+const now = () => new Date().toISOString();
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
-  const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
-  if (b.dataset.act === "tick") { it.done = !it.done; render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: new Date().toISOString() })); }
-  if (b.dataset.act === "del") { S.list = S.list.filter((x) => x.id !== id); render(); act(() => api("DELETE", `shared_list?id=eq.${id}`)); }
+  const a = b.dataset.act;
+  if (a === "tick" || a === "del") {
+    const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
+    if (a === "tick") { it.done = !it.done; render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: now() })); }
+    else { S.list = S.list.filter((x) => x.id !== id); render(); act(() => api("DELETE", `shared_list?id=eq.${id}`)); }
+    return;
+  }
+  const id = b.dataset.id;
+  if (a === "padd") { const items = S.prop[b.dataset.kind] || []; addToList(b.dataset.i != null ? [items[+b.dataset.i]] : items); return; }
+  if (a === "splus" || a === "sminus") {
+    const s = S.stock.find((x) => x.id === id); if (!s) return;
+    s.qty = Math.max(0, num(s.qty) + (a === "splus" ? 1 : -1)); s.updated_at = now(); render();
+    act(() => api("PATCH", `shared_stock?id=eq.${id}`, { qty: s.qty, updated_at: s.updated_at }));
+    return;
+  }
+  if (a === "checked") { S.stock.forEach((s) => (s.updated_at = now())); render();
+    act(() => api("PATCH", `shared_stock?household_id=eq.${S.hid}`, { updated_at: now() }), "Point du stock enregistré ✓"); return; }
+  if (a === "mdel") { if (!confirm("Retirer ce repas ?")) return; S.meals = S.meals.filter((m) => m.id !== id); render(); act(() => api("DELETE", `shared_meals?id=eq.${id}`)); return; }
+  if (a === "wclaim") { S.claims.push({ wish_id: id, claimed_by: S.me }); render();
+    act(() => api("POST", "shared_wish_claims", { household_id: S.hid, wish_id: id }), "Réservé : les autres le verront 🎁"); return; }
+  if (a === "wunclaim") { S.claims = S.claims.filter((c) => c.wish_id !== id); render(); act(() => api("DELETE", `shared_wish_claims?wish_id=eq.${id}`), "Réservation annulée"); return; }
+  if (a === "wdel") { if (!confirm("Retirer cette envie ?")) return; S.wishes = S.wishes.filter((w) => w.id !== id); render(); act(() => api("DELETE", `shared_wishes?id=eq.${id}`)); }
 });
-$("clear").onclick = () => { const ids = S.list.filter((i) => i.done).map((i) => i.id); if (!ids.length) return;
-  S.list = S.list.filter((i) => !i.done); render(); act(() => api("DELETE", `shared_list?id=in.(${ids.join(",")})`), "Liste nettoyée"); };
+$("addstock").onclick = () => {
+  const l = $("sname").value.trim(); if (!l) return toast("Indique l'article");
+  const row = { household_id: S.hid, label: l.slice(0, 80), qty: Math.max(0, parseFloat($("sqty").value.replace(",", ".")) || 0),
+    target: Math.max(0, parseFloat($("starget").value.replace(",", ".")) || 1), unit: $("sunit").value.trim().slice(0, 20),
+    place: $("splace").value, period: $("speriod").value };
+  ["sname", "sqty", "starget", "sunit"].forEach((k) => ($(k).value = ""));
+  act(() => api("POST", "shared_stock", row), "Ajouté au stock 📦");
+};
+$("mtitle").addEventListener("change", () => {
+  const m = [...(S.meals || [])].sort((a, b) => String(b.date).localeCompare(String(a.date))).find((x) => x.title === $("mtitle").value.trim());
+  if (m && !$("ming").value.trim()) $("ming").value = m.ingredients || "";
+});
+$("addmeal").onclick = () => {
+  const t = $("mtitle").value.trim(); if (!t) return toast("Indique le repas");
+  const ing = $("ming").value.split("\n").map((x) => x.trim()).filter(Boolean).join("\n").slice(0, 2000);
+  const row = { household_id: S.hid, date: $("mday").value, slot: $("mslot").value, title: t.slice(0, 80), ingredients: ing, people: 2 };
+  $("mtitle").value = ""; $("ming").value = "";
+  act(() => api("POST", "shared_meals", row), "Repas ajouté 🍝");
+};
+$("addwish").onclick = () => {
+  const t = $("wtitle").value.trim(); if (!t) return toast("Indique l'envie");
+  let link = $("wlink").value.trim(); if (link && !/^https?:\/\//.test(link)) link = "https://" + link;
+  const p = parseFloat($("wprice").value.replace(",", "."));
+  const row = { household_id: S.hid, title: t.slice(0, 120), price: p > 0 ? Math.round(p * 100) / 100 : null, link: link.slice(0, 500),
+    for_name: $("wfor").value.trim().slice(0, 40) };
+  ["wtitle", "wprice", "wlink", "wfor"].forEach((k) => ($(k).value = ""));
+  act(() => api("POST", "shared_wishes", row), "Envie ajoutée 💝");
+};
+$("clear").onclick = () => { const bought = S.list.filter((i) => i.done && i.id !== "tmp"), ids = bought.map((i) => i.id); if (!ids.length) return;
+  const back = new Map();
+  for (const it of bought) { const s = findStock(it.label); if (!s) continue;
+    const n = leadNum(it.qty || ""); back.set(s.id, Math.round(((back.has(s.id) ? back.get(s.id) : num(s.qty)) + (n !== null ? n : 1)) * 100) / 100); }
+  S.list = S.list.filter((i) => !i.done); render();
+  act(async () => { await api("DELETE", `shared_list?id=in.(${ids.join(",")})`);
+    for (const [sid, q] of back) await api("PATCH", `shared_stock?id=eq.${sid}`, { qty: q, updated_at: now() }); },
+    back.size ? `Liste nettoyée · ${back.size} article(s) remis dans le stock 📦` : "Liste nettoyée"); };
 $("addexp").onclick = () => {
   const a = parseFloat($("eamt").value.replace(",", ".")), l = $("elab").value.trim();
   if (!(a > 0)) return toast("Indique un montant");
