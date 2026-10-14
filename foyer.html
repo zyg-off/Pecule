@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e8701a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Foyer Pécule">
+<title>Foyer Pécule</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='22' fill='%23e8a33d'/%3E%3Cpath d='M32 14c2-8 10-10 14-8-2 6-8 9-14 8z' fill='%234f9d69'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2733;--muted:#66717f;--faint:#9aa3ad;--line:#e6e2da;--accent:#e8701a;--gain:#1f8a5b;--loss:#c4462f;--chip:#f6efe6}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b222b;--ink:#e9edf2;--muted:#a3adb9;--faint:#6f7a87;--line:#2a333e;--accent:#f08a3a;--gain:#41b883;--loss:#e5735b;--chip:#26303b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,"Segoe UI",Roboto,Inter,sans-serif;padding:env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom))}
+header{padding:16px 16px 6px;display:flex;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0;flex:1}
+header small{color:var(--faint);font-size:12px}
+main{padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.card h2{font-size:16px;margin:0 0 10px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}.faint{color:var(--faint);font-size:13px}.gain{color:var(--gain)}.loss{color:var(--loss)}
+.big{font-size:24px;font-weight:700}
+input,select,button{font:inherit;color:inherit}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+button{border:0;border-radius:12px;padding:11px 14px;background:var(--chip);cursor:pointer}
+button.primary{background:var(--accent);color:#fff;font-weight:600}
+button.ghost{background:none;color:var(--accent);padding:6px 8px}
+.add{display:flex;gap:8px}.add input{flex:1}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid var(--faint);display:grid;place-items:center;flex:none}
+.check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.done .grow{text-decoration:line-through;color:var(--faint)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;font-size:12px;padding:6px 2px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button b{font-size:20px;font-weight:400}
+nav button.on{color:var(--accent)}
+.pill{background:var(--chip);border-radius:999px;padding:3px 10px;font-size:13px;white-space:nowrap}
+.hidden{display:none!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#toast{position:fixed;left:16px;right:16px;bottom:84px;background:#222b35;color:#fff;border-radius:12px;padding:12px 14px;opacity:0;transition:.25s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><h1 id="title">Foyer</h1><small id="sync"></small><button class="ghost" id="logout" title="Se déconnecter">⎋</button></header>
+<main>
+  <section id="login" class="card hidden">
+    <h2>🔐 Connexion au foyer</h2>
+    <p class="muted">Utilise le même e-mail et le même mot de passe que dans Pécule (Foyer).</p>
+    <div id="server" class="hidden">
+      <p class="faint">Adresse du serveur et clé publique : dans Pécule › Foyer › ⚙ › Sur mon téléphone (QR code).</p>
+      <input id="u" placeholder="https://xxxx.supabase.co" autocomplete="off"><br><br>
+      <input id="k" placeholder="Clé publique (anon)" autocomplete="off"><br><br>
+    </div>
+    <input id="email" type="email" placeholder="E-mail" autocomplete="username"><br><br>
+    <input id="pwd" type="password" placeholder="Mot de passe" autocomplete="current-password"><br><br>
+    <button class="primary" id="go" style="width:100%">Se connecter</button>
+    <p class="loss" id="err"></p>
+  </section>
+
+  <section id="v-list" class="view hidden">
+    <div class="card">
+      <h2>🛒 Liste de courses</h2>
+      <div class="add"><input id="item" placeholder="Ajouter un article…" enterkeyhint="done"><button class="primary" id="additem">+</button></div>
+      <p class="faint" id="est"></p>
+      <div id="todo"></div>
+    </div>
+    <div class="card" id="donecard"><h2>Dans le panier</h2><div id="done"></div>
+      <button class="ghost" id="clear">Vider les articles cochés</button></div>
+  </section>
+
+  <section id="v-money" class="view hidden">
+    <div class="card"><h2>⚖️ Qui doit combien</h2><div id="bal"></div></div>
+    <div class="card">
+      <h2>➕ Dépense commune</h2>
+      <div class="grid2"><input id="eamt" inputmode="decimal" placeholder="Montant €"><input id="elab" placeholder="Quoi ?"></div><br>
+      <button class="primary" id="addexp" style="width:100%">Ajouter (payé par moi, partagé entre tous)</button>
+    </div>
+    <div class="card"><h2>🧾 Dernières dépenses</h2><div id="exps"></div></div>
+  </section>
+
+  <section id="v-agenda" class="view hidden">
+    <div class="card"><h2>📅 Agenda du foyer</h2><div id="agenda"></div></div>
+  </section>
+
+  <section id="v-accounts" class="view hidden">
+    <div class="card"><h2>🏦 Comptes communs</h2><div id="joint"></div></div>
+    <div class="card"><h2>💞 Ce mois-ci</h2><div id="people"></div></div>
+  </section>
+</main>
+<nav id="nav" class="hidden">
+  <button data-v="list" class="on"><b>🛒</b>Courses</button>
+  <button data-v="money"><b>⚖️</b>Dépenses</button>
+  <button data-v="agenda"><b>📅</b>Agenda</button>
+  <button data-v="accounts"><b>🏦</b>Comptes</button>
+</nav>
+<div id="toast"></div>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem("pecule_" + k); } catch (e) { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem("pecule_" + k) : localStorage.setItem("pecule_" + k, v); } catch (e) {} },
+};
+const euro = (v) => (Number(v) || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const today = () => new Date().toISOString().slice(0, 10);
+function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), 2600); }
+
+// réglages transmis par Pécule dans l'adresse (#u=…&k=…)
+(function () {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("u")) store.set("url", h.get("u").replace(/\/$/, ""));
+  if (h.get("k")) store.set("key", h.get("k"));
+  if (h.get("u") || h.get("k")) history.replaceState(null, "", location.pathname);
+})();
+
+const S = { url: store.get("url"), key: store.get("key"), session: JSON.parse(store.get("session") || "null"), hid: store.get("hid"),
+  me: null, members: [], list: [], exps: [], events: null, snaps: [], view: store.get("view") || "list" };
+
+async function auth(kind, body) {
+  const r = await fetch(`${S.url}/auth/v1/token?grant_type=${kind}`, { method: "POST",
+    headers: { apikey: S.key, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error_description || d.msg || d.message || "Connexion refusée");
+  S.session = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() / 1000 + (d.expires_in || 3600) - 60, user: d.user && d.user.id };
+  store.set("session", JSON.stringify(S.session));
+}
+
+async function api(method, path, body) {
+  if (!S.session) throw new Error("Connecte-toi");
+  if (Date.now() / 1000 > S.session.expires_at) await auth("refresh_token", { refresh_token: S.session.refresh_token });
+  const go = () => fetch(`${S.url}/rest/v1/${path}`, { method, body: body ? JSON.stringify(body) : undefined,
+    headers: { apikey: S.key, Authorization: `Bearer ${S.session.access_token}`, "Content-Type": "application/json", Prefer: "return=minimal" } });
+  let r = await go();
+  if (r.status === 401) { await auth("refresh_token", { refresh_token: S.session.refresh_token }); r = await go(); }
+  if (!r.ok) { const d = await r.json().catch(() => ({})); const e = new Error(d.message || `Erreur ${r.status}`); e.status = r.status; throw e; }
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+
+async function load() {
+  const hs = await api("GET", "households?select=id,name&order=created_at");
+  if (!hs.length) throw new Error("Tu ne fais partie d'aucun foyer.");
+  const h = hs.find((x) => x.id === S.hid) || hs[0];
+  S.hid = h.id; store.set("hid", h.id);
+  $("title").textContent = h.name;
+  const q = `household_id=eq.${S.hid}`;
+  const [members, list, exps] = await Promise.all([
+    api("GET", `members?${q}&select=user_id,display_name,color`),
+    api("GET", `shared_list?${q}&order=created_at`).catch(() => null),
+    api("GET", `shared_tx?${q}&deleted=eq.false&order=date.desc,created_at.desc&limit=300`),
+  ]);
+  S.members = members; S.list = list; S.exps = exps;
+  S.events = await api("GET", `shared_events?${q}&order=date`).catch(() => null);
+  S.snaps = await api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => []);
+  S.me = S.session.user;
+  $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  render();
+}
+
+const name = (uid) => (S.members.find((m) => m.user_id === uid) || {}).display_name || "?";
+
+function balances() {
+  const ids = S.members.map((m) => m.user_id), net = {};
+  ids.forEach((i) => (net[i] = 0));
+  for (const e of S.exps) {
+    const a = Number(e.amount);
+    if (e.kind === "settle") { net[e.paid_by] = (net[e.paid_by] || 0) + a; net[e.paid_to] = (net[e.paid_to] || 0) - a; continue; }
+    net[e.paid_by] = (net[e.paid_by] || 0) + a;
+    let split = Object.entries(e.split || {}).filter(([, w]) => Number(w) > 0);
+    if (!split.length) split = ids.map((i) => [i, 1]);
+    const tot = split.reduce((s, [, w]) => s + Number(w), 0) || 1;
+    for (const [m, w] of split) net[m] = (net[m] || 0) - (a * Number(w)) / tot;
+  }
+  return net;
+}
+
+function plan(net) {
+  const debt = Object.entries(net).filter(([, v]) => v < -0.005).map(([k, v]) => [k, -v]).sort((a, b) => b[1] - a[1]);
+  const cred = Object.entries(net).filter(([, v]) => v > 0.005).sort((a, b) => b[1] - a[1]);
+  const out = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const x = Math.min(debt[i][1], cred[j][1]);
+    if (x > 0.005) out.push([debt[i][0], cred[j][0], x]);
+    debt[i][1] -= x; cred[j][1] -= x;
+    if (debt[i][1] <= 0.005) i++; if (cred[j][1] <= 0.005) j++;
+  }
+  return out;
+}
+
+function occurrences(ev, first, last) {
+  const out = []; let d = new Date(ev.date + "T12:00:00"); let k = 0;
+  while (d <= last && k < 400) {
+    if (d >= first) out.push(new Date(d));
+    if (!ev.repeat || ev.repeat === "none") break;
+    k++;
+    if (ev.repeat === "weekly") d.setDate(d.getDate() + 7);
+    else d.setMonth(d.getMonth() + (ev.repeat === "monthly" ? 1 : 12));
+  }
+  return out;
+}
+
+function render() {
+  document.querySelectorAll(".view").forEach((v) => v.classList.toggle("hidden", v.id !== "v-" + S.view));
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.v === S.view));
+  // courses
+  if (S.list === null) {
+    $("todo").innerHTML = '<p class="muted">La liste de courses n\'est pas encore activée sur le serveur du foyer (Pécule › Foyer › mettre à jour le serveur).</p>';
+  } else {
+    const todo = S.list.filter((i) => !i.done), done = S.list.filter((i) => i.done);
+    const row = (i) => `<div class="row ${i.done ? "done" : ""}" data-id="${i.id}"><div class="check ${i.done ? "on" : ""}" data-act="tick">${i.done ? "✓" : ""}</div>
+      <div class="grow">${esc(i.label)}${i.qty ? ` <span class="faint">· ${esc(i.qty)}</span>` : ""}<div class="faint">${esc(name(i.created_by))}</div></div>
+      ${i.price ? `<span class="faint">${euro(i.price)}</span>` : ""}<button class="ghost" data-act="del">✕</button></div>`;
+    $("todo").innerHTML = todo.map(row).join("") || '<p class="muted">La liste est vide.</p>';
+    $("done").innerHTML = done.map(row).join("");
+    $("donecard").classList.toggle("hidden", !done.length);
+    const est = S.list.reduce((s, i) => s + (Number(i.price) || 0), 0);
+    $("est").textContent = est ? `Panier estimé : ${euro(est)}` : "";
+  }
+  // dépenses
+  const net = balances(), pl = plan(net);
+  $("bal").innerHTML = S.members.map((m) => { const v = net[m.user_id] || 0;
+      return `<div class="row"><div class="grow">${esc(m.display_name)}${m.user_id === S.me ? " (toi)" : ""}</div><b class="${v > 0.005 ? "gain" : v < -0.005 ? "loss" : "faint"}">${v > 0.005 ? "on lui doit " + euro(v) : v < -0.005 ? "doit " + euro(-v) : "à jour"}</b></div>`; }).join("")
+    + (pl.length ? `<p class="muted">Pour équilibrer : ${pl.map(([a, b, x]) => `${esc(name(a))} → ${esc(name(b))} ${euro(x)}`).join(" · ")}</p>` : '<p class="muted">Tout le monde est à jour ✓</p>');
+  $("exps").innerHTML = S.exps.slice(0, 25).map((e) => `<div class="row"><div class="grow">${esc(e.kind === "settle" ? "Remboursement" : e.label || "Dépense")}<div class="faint">${e.date.split("-").reverse().join("/")} · payé par ${esc(name(e.paid_by))}</div></div><b>${euro(e.amount)}</b></div>`).join("") || '<p class="muted">Aucune dépense commune.</p>';
+  // agenda
+  if (S.events === null) $("agenda").innerHTML = '<p class="muted">L\'agenda n\'est pas encore activé sur le serveur du foyer.</p>';
+  else {
+    const first = new Date(); first.setHours(0, 0, 0, 0); const last = new Date(first); last.setDate(last.getDate() + 60);
+    const up = S.events.flatMap((ev) => occurrences(ev, first, last).map((d) => [d, ev])).sort((a, b) => a[0] - b[0]);
+    $("agenda").innerHTML = up.slice(0, 40).map(([d, ev]) => `<div class="row"><span class="pill">${d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}</span>
+      <div class="grow">${esc(ev.title)}<div class="faint">${ev.who ? "pour " + esc(name(ev.who)) : "tout le foyer"}${ev.note ? " · " + esc(ev.note) : ""}</div></div>${ev.amount ? `<b>${euro(ev.amount)}</b>` : ""}</div>`).join("") || '<p class="muted">Rien de prévu ces deux prochains mois.</p>';
+  }
+  // comptes communs et chiffres partagés
+  const joint = [], people = [];
+  for (const sn of S.snaps || []) {
+    const d = sn.data || {};
+    (d.joint || []).forEach((j) => joint.push({ ...j, owner: j.owner || name(sn.user_id) }));
+    if (!d.only_joint && d.spent != null) people.push([sn.user_id, d]);
+  }
+  $("joint").innerHTML = joint.map((j) => `<div class="row"><div class="grow">${esc(j.name)}<div class="faint">partagé par ${esc(j.owner || "")} · dépensé ce mois ${euro(j.spent)}</div></div><span class="big">${euro(j.balance)}</span></div>`).join("") || '<p class="muted">Aucun compte commun partagé depuis Pécule.</p>';
+  $("people").innerHTML = people.map(([uid, d]) => `<div class="row"><div class="grow">${esc(name(uid))}${d.msg ? `<div class="faint">« ${esc(d.msg)} »</div>` : ""}</div><div style="text-align:right">dépensé ${euro(d.spent)}${d.budget_total ? `<div class="faint">reste des budgets ${euro(d.budget_left)}</div>` : ""}</div></div>`).join("") || '<p class="muted">Personne ne partage ses chiffres pour l\'instant.</p>';
+}
+
+async function act(fn, ok) {
+  try { await fn(); if (ok) toast(ok); await load(); } catch (e) { toast(e.message); }
+}
+
+function showApp(on) {
+  $("login").classList.toggle("hidden", on); $("nav").classList.toggle("hidden", !on); $("logout").classList.toggle("hidden", !on);
+  if (!on) document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
+}
+
+$("go").onclick = async () => {
+  $("err").textContent = "";
+  if (!S.url || !S.key) { S.url = $("u").value.trim().replace(/\/$/, ""); S.key = $("k").value.trim(); store.set("url", S.url); store.set("key", S.key); }
+  try { await auth("password", { email: $("email").value.trim(), password: $("pwd").value }); showApp(true); await load(); }
+  catch (e) { $("err").textContent = e.message; }
+};
+$("pwd").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go").click(); });
+$("logout").onclick = () => { S.session = null; store.set("session", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
+$("nav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.view = b.dataset.v; store.set("view", S.view); render(); };
+async function addItem() {
+  const t = $("item").value.trim(); if (!t) return; $("item").value = "";
+  S.list.push({ id: "tmp", label: t, done: false, created_by: S.me }); render();
+  await act(() => api("POST", "shared_list", { household_id: S.hid, label: t.slice(0, 80) }));
+}
+$("additem").onclick = addItem;
+$("item").onkeydown = (e) => { if (e.key === "Enter") addItem(); };
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
+  if (b.dataset.act === "tick") { it.done = !it.done; render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: new Date().toISOString() })); }
+  if (b.dataset.act === "del") { S.list = S.list.filter((x) => x.id !== id); render(); act(() => api("DELETE", `shared_list?id=eq.${id}`)); }
+});
+$("clear").onclick = () => { const ids = S.list.filter((i) => i.done).map((i) => i.id); if (!ids.length) return;
+  S.list = S.list.filter((i) => !i.done); render(); act(() => api("DELETE", `shared_list?id=in.(${ids.join(",")})`), "Liste nettoyée"); };
+$("addexp").onclick = () => {
+  const a = parseFloat($("eamt").value.replace(",", ".")), l = $("elab").value.trim();
+  if (!(a > 0)) return toast("Indique un montant");
+  const split = {}; S.members.forEach((m) => (split[m.user_id] = 1));
+  $("eamt").value = ""; $("elab").value = "";
+  act(() => api("POST", "shared_tx", { household_id: S.hid, kind: "expense", amount: Math.round(a * 100) / 100, label: l || "Dépense",
+    category: "", date: today(), paid_by: S.me, split }), "Dépense ajoutée 🧾");
+};
+
+(async function start() {
+  $("server").classList.toggle("hidden", !!(S.url && S.key));
+  if (!S.session || !S.url) { showApp(false); $("login").classList.remove("hidden"); return; }
+  showApp(true);
+  try { await load(); } catch (e) { toast(e.message); if (e.status === 401 || /refus|token/i.test(e.message)) { showApp(false); } }
+  setInterval(() => { if (!document.hidden && S.session) load().catch(() => {}); }, 20000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && S.session) load().catch(() => {}); });
+})();
+</script>
+</body>
+</html>
