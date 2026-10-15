@@ -89,7 +89,9 @@ a{color:var(--accent)}
 
     <div id="s-stock" class="hidden">
       <div class="card hidden" id="checkdue"></div>
-      <div class="card"><h2>📦 Stock de la maison</h2><div id="stock"></div>
+      <div class="card"><h2>📦 Stock de la maison</h2>
+        <label class="faint" style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input type="checkbox" id="autoadd" style="width:auto"> Ajouter tout de suite à la liste ce qui passe sous la quantité nécessaire</label>
+        <div id="stock"></div>
         <details id="stockform"><summary>+ Ajouter un article</summary>
           <input id="sname" placeholder="Article (ex. lait, pâtes, lessive)"><br><br>
           <div class="grid2"><input id="sqty" inputmode="decimal" placeholder="Il y en a"><input id="starget" inputmode="decimal" placeholder="Il en faut"></div><br>
@@ -512,9 +514,26 @@ function addToList(items) {
   const rows = items.filter((p) => !onList(p.label)).map((p) => ({ household_id: S.hid, label: p.label.slice(0, 80), qty: (p.qty || "").slice(0, 20) }));
   if (!rows.length) return toast("Tout est déjà sur la liste ✓");
   rows.forEach((r) => S.list.push({ id: "tmp", label: r.label, qty: r.qty, done: false, created_by: S.me })); render();
-  act(() => api("POST", "shared_list", rows), `${rows.length} article(s) ajouté(s) à la liste 🛒`);
+  act(() => api("POST", "shared_list", rows), `🛒 Ajouté à la liste : ${rows.slice(0, 3).map((r) => r.label).join(", ")}${rows.length > 3 ? "…" : ""}`);
 }
 const now = () => new Date().toISOString();
+$("autoadd").checked = store.get("autoadd") !== "0";
+$("autoadd").onchange = () => store.set("autoadd", $("autoadd").checked ? "1" : "0");
+// ce qui passe sous la quantité nécessaire rejoint la liste ; ce qui revient au niveau (ajouté par moi) en sort
+function autoList(items) {
+  if (!$("autoadd").checked) return;
+  const add = [], drop = [];
+  for (const st of items) {
+    if (st.period === "none") continue;
+    const n = need(st);
+    if (n > 0 && !onList(st.label)) add.push({ label: st.label, qty: fmtQty(n, st.unit) });
+    if (n === 0) { const k = itemKey(st.label);
+      (S.list || []).filter((i) => itemKey(i.label) === k && !i.done && i.created_by === S.me && i.id !== "tmp").forEach((i) => drop.push(i.id)); }
+  }
+  if (add.length) addToList(add);
+  if (drop.length) { S.list = S.list.filter((i) => !drop.includes(i.id)); render();
+    act(() => api("DELETE", `shared_list?id=in.(${drop.join(",")})`)); }
+}
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act;
@@ -530,10 +549,12 @@ document.addEventListener("click", (e) => {
     const s = S.stock.find((x) => x.id === id); if (!s) return;
     s.qty = Math.max(0, num(s.qty) + (a === "splus" ? 1 : -1)); s.updated_at = now(); render();
     act(() => api("PATCH", `shared_stock?id=eq.${id}`, { qty: s.qty, updated_at: s.updated_at }));
+    autoList([s]);
     return;
   }
   if (a === "checked") { S.stock.forEach((s) => (s.updated_at = now())); render();
-    act(() => api("PATCH", `shared_stock?household_id=eq.${S.hid}`, { updated_at: now() }), "Point du stock enregistré ✓"); return; }
+    act(() => api("PATCH", `shared_stock?household_id=eq.${S.hid}`, { updated_at: now() }), "Point du stock enregistré ✓");
+    autoList(S.stock); return; }
   if (a === "mdel") { if (!confirm("Retirer ce repas ?")) return; S.meals = S.meals.filter((m) => m.id !== id); render(); act(() => api("DELETE", `shared_meals?id=eq.${id}`)); return; }
   if (a === "wclaim") { S.claims.push({ wish_id: id, claimed_by: S.me }); render();
     act(() => api("POST", "shared_wish_claims", { household_id: S.hid, wish_id: id }), "Réservé : les autres le verront 🎁"); return; }
