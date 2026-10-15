@@ -42,6 +42,10 @@ nav button.on{color:var(--accent)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #toast{position:fixed;left:16px;right:16px;bottom:84px;background:#222b35;color:#fff;border-radius:12px;padding:12px 14px;opacity:0;transition:.25s;pointer-events:none}
 #toast.show{opacity:1}
+#scan{position:fixed;inset:0;background:#0d1117;overflow:auto;z-index:50;display:flex;flex-direction:column;padding:16px;gap:10px;color:#fff}
+#scan video{width:100%;max-height:55vh;object-fit:cover;border-radius:16px;background:#000}
+#scan .frame{position:relative}#scan .frame:after{content:"";position:absolute;left:12%;right:12%;top:45%;height:2px;background:#f08a3a;box-shadow:0 0 12px #f08a3a}
+#scanres .card{color:var(--ink)}#scan input{color:var(--ink);background:var(--card)}
 .seg{display:flex;gap:6px;margin:10px 0 0}.seg button{flex:1;font-size:14px;padding:9px 4px}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
 textarea{font:inherit;color:inherit;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-height:110px}
@@ -78,7 +82,7 @@ a{color:var(--accent)}
     <div id="s-list">
     <div class="card">
       <h2>🛒 Liste de courses</h2>
-      <div class="add"><input id="item" placeholder="Ajouter un article…" enterkeyhint="done"><button class="primary" id="additem">+</button></div>
+      <div class="add"><input id="item" placeholder="Ajouter un article…" enterkeyhint="done"><button id="scanlist" title="Scanner un code-barres">📷</button><button class="primary" id="additem">+</button></div>
       <p class="faint" id="est"></p>
       <div id="propose"></div>
       <div id="todo"></div>
@@ -93,10 +97,11 @@ a{color:var(--accent)}
         <label class="faint" style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input type="checkbox" id="autoadd" style="width:auto"> Ajouter tout de suite à la liste ce qui passe sous la quantité nécessaire</label>
         <div id="stock"></div>
         <details id="stockform"><summary>+ Ajouter un article</summary>
-          <input id="sname" placeholder="Article (ex. lait, pâtes, lessive)"><br><br>
+          <div class="add"><input id="sname" placeholder="Article (ex. lait, pâtes, lessive)"><button id="scanstock" title="Scanner un code-barres">📷</button></div><br>
           <div class="grid2"><input id="sqty" inputmode="decimal" placeholder="Il y en a"><input id="starget" inputmode="decimal" placeholder="Il en faut"></div><br>
           <div class="grid2"><input id="sunit" placeholder="Unité (L, kg, paquets…)"><select id="splace"></select></div><br>
           <select id="speriod"><option value="week">Racheté chaque semaine</option><option value="month">Racheté chaque mois</option><option value="none">Juste suivre</option></select><br><br>
+          <label class="faint">À consommer avant le (facultatif)</label><input id="sexp" type="date"><br><br>
           <button class="primary" id="addstock" style="width:100%">Ajouter au stock</button>
         </details>
       </div>
@@ -140,6 +145,7 @@ a{color:var(--accent)}
   </section>
 
   <section id="v-agenda" class="view hidden">
+    <div class="card"><h2>🧹 Tâches du foyer</h2><div id="chores"></div></div>
     <div class="card"><h2>📅 Agenda du foyer</h2><div id="agenda"></div></div>
   </section>
 
@@ -156,6 +162,13 @@ a{color:var(--accent)}
   <button data-v="accounts"><b>🏦</b>Comptes</button>
 </nav>
 <div id="toast"></div>
+<div id="scan" class="hidden">
+  <div style="display:flex;align-items:center"><b style="flex:1">📷 Scanner un produit</b><button class="ghost" id="scanclose" style="color:#fff">✕ Fermer</button></div>
+  <div class="frame"><video id="cam" playsinline muted></video></div>
+  <p id="scanmsg" class="faint" style="color:#ccc">Vise le code-barres du produit.</p>
+  <div class="add"><input id="scancode" inputmode="numeric" placeholder="ou tape le code-barres"><button class="primary" id="scango">OK</button></div>
+  <div id="scanres"></div>
+</div>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
@@ -184,24 +197,39 @@ async function auth(kind, body) {
   const r = await fetch(`${S.url}/auth/v1/token?grant_type=${kind}`, { method: "POST",
     headers: { apikey: S.key, "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.error_description || d.msg || d.message || "Connexion refusée");
+  if (!r.ok) { const e = new Error(d.error_description || d.msg || d.message || "Connexion refusée"); e.auth = true; e.status = r.status; throw e; }
   S.session = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() / 1000 + (d.expires_in || 3600) - 60, user: d.user && d.user.id };
   store.set("session", JSON.stringify(S.session));
 }
 
+// Un seul renouvellement de session à la fois : plusieurs requêtes en parallèle qui renouvelaient chacune la session
+// réutilisaient le même jeton, que le serveur révoquait (d'où la reconnexion demandée à chaque visite).
+let refreshing = null;
+function refreshSession() {
+  if (!refreshing) refreshing = auth("refresh_token", { refresh_token: S.session.refresh_token }).finally(() => { refreshing = null; });
+  return refreshing;
+}
+
 async function api(method, path, body) {
   if (!S.session) throw new Error("Connecte-toi");
-  if (Date.now() / 1000 > S.session.expires_at) await auth("refresh_token", { refresh_token: S.session.refresh_token });
+  if (Date.now() / 1000 > S.session.expires_at) await refreshSession();
   const go = () => fetch(`${S.url}/rest/v1/${path}`, { method, body: body ? JSON.stringify(body) : undefined,
     headers: { apikey: S.key, Authorization: `Bearer ${S.session.access_token}`, "Content-Type": "application/json", Prefer: "return=minimal" } });
   let r = await go();
-  if (r.status === 401) { await auth("refresh_token", { refresh_token: S.session.refresh_token }); r = await go(); }
+  if (r.status === 401) { await refreshSession(); r = await go(); }
   if (!r.ok) { const d = await r.json().catch(() => ({})); const e = new Error(d.message || `Erreur ${r.status}`); e.status = r.status; throw e; }
   const t = await r.text();
   return t ? JSON.parse(t) : null;
 }
 
-async function load() {
+let loading = null;
+function load() {  // jamais deux chargements en même temps (minuteur + retour sur la page)
+  if (!loading) loading = doLoad().finally(() => { loading = null; });
+  return loading;
+}
+
+async function doLoad() {
+  if (S.session && Date.now() / 1000 > S.session.expires_at) await refreshSession();  // avant les requêtes en parallèle
   const hs = await api("GET", "households?select=id,name&order=created_at");
   if (!hs.length) throw new Error("Tu ne fais partie d'aucun foyer.");
   const h = hs.find((x) => x.id === S.hid) || hs[0];
@@ -217,6 +245,7 @@ async function load() {
   S.events = await api("GET", `shared_events?${q}&order=date`).catch(() => null);
   S.snaps = await api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => []);
   const since = ymd(addDays(new Date(), -120));
+  S.chores = await api("GET", `shared_chores?${q}&order=next_date`).catch(() => null);
   [S.stock, S.meals, S.wishes, S.claims] = await Promise.all([
     api("GET", `shared_stock?${q}&order=label`).catch(() => null),
     api("GET", `shared_meals?${q}&date=gte.${since}&order=date`).catch(() => null),
@@ -225,6 +254,10 @@ async function load() {
   ]);
   S.me = S.session.user;
   $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  // dernier affichage gardé sur le téléphone : la page s'ouvre tout de suite, même sans réseau
+  try { store.set("cache", JSON.stringify({ t: Date.now(), title: $("title").textContent, me: S.me,
+    d: { members: S.members, list: S.list, exps: S.exps.slice(0, 60), events: S.events, snaps: S.snaps, stock: S.stock,
+         meals: S.meals, wishes: S.wishes, claims: S.claims, chores: S.chores } })); } catch (e) {}
   render();
 }
 
@@ -298,6 +331,12 @@ function proposal(kind) {
   if (kind === "week") mealNeeds().filter((n) => !n.home).forEach((n) => add(n.label, n.qty, "pour " + n.meals.slice(0, 3).join(", ")));
   return out;
 }
+function expLeft(s) {
+  if (!s.expires || num(s.qty) <= 0) return null;
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((new Date(String(s.expires).slice(0, 10) + "T00:00:00") - t) / 864e5);
+}
+
 function checkDue() {
   if (!S.stock || !S.stock.length) return null;
   const last = S.stock.map((s) => new Date(s.updated_at)).filter((d) => !isNaN(d)).sort((a, b) => b - a)[0];
@@ -375,7 +414,7 @@ function render() {
   }
   document.querySelectorAll("#subnav button").forEach((b) => b.classList.toggle("on", b.dataset.s === S.sub));
   ["list", "stock", "meals"].forEach((k) => $("s-" + k).classList.toggle("hidden", k !== S.sub));
-  renderStock(); renderMeals(); renderWishes();
+  renderStock(); renderMeals(); renderWishes(); renderChores();
   // dépenses
   const net = balances(), pl = plan(net);
   $("bal").innerHTML = S.members.map((m) => { const v = net[m.user_id] || 0;
@@ -416,14 +455,16 @@ function renderStock() {
   $("stockform").classList.remove("hidden");
   if (!$("splace").options.length) $("splace").innerHTML = PLACES.map((p) => `<option>${p}</option>`).join("");
   const due = checkDue();
-  $("checkdue").classList.toggle("hidden", !due);
-  $("checkdue").innerHTML = due ? `<h2>📦 Le point de la semaine</h2><p class="muted">Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.</p>
-    <button class="primary" data-act="checked" style="width:100%">✓ Le point est fait</button>` : "";
+  const soon = S.stock.map((x) => [x, expLeft(x)]).filter(([, l]) => l !== null && l <= 2).sort((a, b) => a[1] - b[1]);
+  $("checkdue").classList.toggle("hidden", !due && !soon.length);
+  $("checkdue").innerHTML = (soon.length ? `<h2>⏰ À consommer vite</h2><p class="muted">${soon.slice(0, 6).map(([x, l]) => `${esc(x.label)} (${l < 0 ? "dépassé" : l === 0 ? "aujourd'hui" : l === 1 ? "demain" : "dans " + l + " j"})`).join(", ")}</p>` : "") + (due ? `<h2>📦 Le point de la semaine</h2><p class="muted">Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.</p>
+    <button class="primary" data-act="checked" style="width:100%">✓ Le point est fait</button>` : "");
   let place = null, html = "";
   for (const s of [...S.stock].sort((a, b) => (a.place || "").localeCompare(b.place || "") || a.label.localeCompare(b.label))) {
     if ((s.place || "") !== place) { place = s.place || ""; html += `<div class="place">${esc(place || "Sans rangement")}</div>`; }
-    const n = need(s);
-    html += `<div class="row"><div class="grow">${esc(s.label)}<div class="faint">${n > 0 && s.period !== "none" ? `<span class="pill warn">manque ${esc(fmtQty(n, s.unit))}</span> ` : ""}il en faut ${esc(fmtQty(s.target, s.unit))}</div></div>
+    const n = need(s), left = expLeft(s);
+    const exp = left === null ? "" : `<span class="pill ${left <= 2 ? "warn" : ""}">${left <= 2 ? "⏰ " : ""}${left < 0 ? "périmé" : left === 0 ? "périme aujourd'hui" : left === 1 ? "périme demain" : "jusqu'au " + String(s.expires).slice(8, 10) + "/" + String(s.expires).slice(5, 7)}</span> `;
+    html += `<div class="row"><div class="grow">${esc(s.label)}<div class="faint">${exp}${n > 0 && s.period !== "none" ? `<span class="pill warn">manque ${esc(fmtQty(n, s.unit))}</span> ` : ""}il en faut ${esc(fmtQty(s.target, s.unit))}</div></div>
       <button class="step" data-act="sminus" data-id="${s.id}">−</button><span class="qty">${esc(fmtQty(s.qty, s.unit))}</span><button class="step" data-act="splus" data-id="${s.id}">+</button></div>`;
   }
   $("stock").innerHTML = html || '<p class="muted">Note ce que tu as à la maison et combien il en faut : Pécule propose la liste de la semaine (le frais) et celle du mois (les réserves).</p>';
@@ -453,6 +494,21 @@ function renderMeals() {
       ${n.home ? '<span class="pill ok">✓ à la maison</span>' : onList(n.label) ? '<span class="pill">sur la liste</span>' : '<span class="pill warn">à acheter</span>'}</div>`).join("")
     + (missing.length ? `<br><button class="primary" data-act="padd" data-kind="ings" style="width:100%">Ajouter les ${missing.length} manquant(s) à la liste</button>` : "")
     || '<p class="muted">Ajoute des repas avec leurs ingrédients : ce qui manque à la maison rejoint la liste de courses.</p>';
+}
+
+// ---------------------------------------------------------------- 171 · tâches ménagères
+const choreTurn = (c) => { const p = c.people || []; if (c.mode === "anyone" || !p.length) return null;
+  return c.mode === "one" ? p[0] : p[(c.turn || 0) % p.length]; };
+const choreLeft = (c) => { const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((new Date(String(c.next_date).slice(0, 10) + "T00:00:00") - t) / 864e5); };
+function renderChores() {
+  if (S.chores == null) { $("chores").innerHTML = NOT_READY; return; }
+  const list = [...S.chores].sort((a, b) => String(a.next_date).localeCompare(String(b.next_date)));
+  $("chores").innerHTML = list.map((c) => { const l = choreLeft(c), who = choreTurn(c);
+    const whoT = who === null ? "n'importe qui" : who === S.me ? "toi" : name(who);
+    const pill = l < 0 ? `<span class="pill warn">en retard de ${-l} j</span>` : l === 0 ? `<span class="pill ok">aujourd'hui</span>` : `<span class="pill">${l === 1 ? "demain" : "dans " + l + " j"}</span>`;
+    return `<div class="row"><b style="font-size:20px">${esc(c.emoji || "🧹")}</b><div class="grow">${esc(c.title)}<div class="faint">${c.mode === "rotate" ? "au tour de " : ""}${esc(whoT)}</div></div>${pill}
+      ${l <= 1 ? `<button class="${who === null || who === S.me ? "primary" : ""}" data-act="cdone" data-id="${c.id}">✓</button>` : ""}</div>`; }).join("")
+    || '<p class="muted">Aucune tâche : ajoutez-les depuis Pécule (Foyer › Agenda).</p>';
 }
 
 function wishRow(w, mine, editable) {
@@ -496,11 +552,12 @@ function showApp(on) {
 $("go").onclick = async () => {
   $("err").textContent = "";
   if (!S.url || !S.key) { S.url = $("u").value.trim().replace(/\/$/, ""); S.key = $("k").value.trim(); store.set("url", S.url); store.set("key", S.key); }
-  try { await auth("password", { email: $("email").value.trim(), password: $("pwd").value }); showApp(true); await load(); }
+  try { await auth("password", { email: $("email").value.trim(), password: $("pwd").value }); store.set("email", $("email").value.trim());
+    $("pwd").value = ""; showApp(true); await load(); }
   catch (e) { $("err").textContent = e.message; }
 };
 $("pwd").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go").click(); });
-$("logout").onclick = () => { S.session = null; store.set("session", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
+$("logout").onclick = () => { S.session = null; store.set("session", null); store.set("cache", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
 $("nav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.view = b.dataset.v; store.set("view", S.view); render(); };
 async function addItem() {
   const t = $("item").value.trim(); if (!t) return; $("item").value = "";
@@ -509,6 +566,77 @@ async function addItem() {
 }
 $("additem").onclick = addItem;
 $("item").onkeydown = (e) => { if (e.key === "Enter") addItem(); };
+// ---------------------------------------------------------------- 169 · scanner un code-barres
+let scanStream = null, scanTimer = null, scanReader = null, scanMode = "list", scanBusy = false;
+function stopScan() {
+  clearTimeout(scanTimer);
+  if (scanReader) { try { scanReader.reset(); } catch (e) {} scanReader = null; }
+  if (scanStream) { scanStream.getTracks().forEach((t) => t.stop()); scanStream = null; }
+}
+function loadZXing() {
+  return new Promise((ok, ko) => {
+    if (window.ZXing) return ok();
+    const sc = document.createElement("script");
+    sc.src = "https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js";
+    sc.onload = ok; sc.onerror = () => ko(new Error("lecteur indisponible"));
+    document.head.appendChild(sc);
+  });
+}
+async function openScan(mode) {
+  scanMode = mode; scanBusy = false;
+  $("scan").classList.remove("hidden"); $("scanres").innerHTML = ""; $("scancode").value = "";
+  $("scanmsg").textContent = "Vise le code-barres du produit.";
+  try {
+    if ("BarcodeDetector" in window) {
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      $("cam").srcObject = scanStream; await $("cam").play();
+      const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+      const tick = async () => {
+        if (!scanStream) return;
+        try { const r = await det.detect($("cam")); if (r.length) return found(r[0].rawValue); } catch (e) {}
+        scanTimer = setTimeout(tick, 250);
+      };
+      tick();
+    } else {
+      await loadZXing();
+      scanReader = new ZXing.BrowserMultiFormatReader();
+      scanReader.decodeFromConstraints({ video: { facingMode: "environment" } }, $("cam"), (res) => { if (res) found(res.getText()); });
+    }
+  } catch (e) { $("scanmsg").textContent = "Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous."; }
+}
+async function found(code) {
+  if (scanBusy) return; scanBusy = true; stopScan();
+  if (navigator.vibrate) navigator.vibrate(60);
+  $("scanmsg").textContent = `Code ${code} · recherche du produit…`;
+  let name = "", brand = "", qty = "", price = null;
+  try {
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_fr,brands,quantity`);
+    const d = await r.json(); const p = d.product || {};
+    name = p.product_name_fr || p.product_name || ""; brand = (p.brands || "").split(",")[0].trim(); qty = p.quantity || "";
+  } catch (e) {}
+  try {
+    const r = await fetch(`https://prices.openfoodfacts.org/api/v1/prices?product_code=${encodeURIComponent(code)}&order_by=-date&size=20`);
+    const v = ((await r.json()).items || []).map((x) => Number(x.price)).filter((x) => x > 0).sort((a, b) => a - b);
+    if (v.length) price = v[Math.floor(v.length / 2)];
+  } catch (e) {}
+  if (!name) { $("scanmsg").textContent = `Produit inconnu (code ${code}) : tape son nom dans la liste.`; scanBusy = false; return; }
+  const label = (name + (brand && !name.toLowerCase().includes(brand.toLowerCase()) ? " " + brand : "")).slice(0, 80);
+  $("scanmsg").textContent = "Produit trouvé ✓";
+  $("scanres").innerHTML = `<div class="card"><h2>${esc(label)}</h2><p class="muted">${esc(qty)}${price ? ` · environ ${euro(price)} (prix relevés)` : ""}</p>
+    <div class="grid2"><button class="${scanMode === "list" ? "primary" : ""}" id="sc_list">+ Liste de courses</button><button class="${scanMode === "stock" ? "primary" : ""}" id="sc_stock">+ Stock</button></div>
+    <br><button class="ghost" id="sc_again">Scanner un autre produit</button></div>`;
+  $("sc_list").onclick = () => { closeScan(); S.list.push({ id: "tmp", label, qty: "", price, done: false, created_by: S.me }); render();
+    act(() => api("POST", "shared_list", { household_id: S.hid, label, price }), `🛒 ${label} ajouté à la liste`); };
+  $("sc_stock").onclick = () => { closeScan(); S.view = "list"; S.sub = "stock"; render();
+    $("stockform").open = true; $("sname").value = label; $("sqty").value = "1"; $("starget").value = "1"; $("sqty").focus(); };
+  $("sc_again").onclick = () => openScan(scanMode);
+}
+function closeScan() { stopScan(); $("scan").classList.add("hidden"); }
+$("scanlist").onclick = () => openScan("list");
+$("scanstock").onclick = () => openScan("stock");
+$("scanclose").onclick = closeScan;
+$("scango").onclick = () => { const c = $("scancode").value.replace(/\s/g, ""); if (/^\d{8,14}$/.test(c)) found(c); else toast("Un code-barres a 8 à 14 chiffres"); };
+
 $("subnav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.sub = b.dataset.s; store.set("sub", S.sub); render(); };
 function addToList(items) {
   const rows = items.filter((p) => !onList(p.label)).map((p) => ({ household_id: S.hid, label: p.label.slice(0, 80), qty: (p.qty || "").slice(0, 20) }));
@@ -555,6 +683,13 @@ document.addEventListener("click", (e) => {
   if (a === "checked") { S.stock.forEach((s) => (s.updated_at = now())); render();
     act(() => api("PATCH", `shared_stock?household_id=eq.${S.hid}`, { updated_at: now() }), "Point du stock enregistré ✓");
     autoList(S.stock); return; }
+  if (a === "cdone") {
+    const c = S.chores.find((x) => x.id === id); if (!c) return;
+    const t = new Date(); const nx = new Date(t); nx.setDate(nx.getDate() + (c.every_days || 7));
+    const row = { last_done: ymd(t), last_by: S.me, next_date: ymd(nx), turn: (c.turn || 0) + (c.mode === "rotate" ? 1 : 0) };
+    Object.assign(c, row); render();
+    act(() => api("PATCH", `shared_chores?id=eq.${id}`, row), `✓ ${c.title} : bravo !`); return;
+  }
   if (a === "mdel") { if (!confirm("Retirer ce repas ?")) return; S.meals = S.meals.filter((m) => m.id !== id); render(); act(() => api("DELETE", `shared_meals?id=eq.${id}`)); return; }
   if (a === "wclaim") { S.claims.push({ wish_id: id, claimed_by: S.me }); render();
     act(() => api("POST", "shared_wish_claims", { household_id: S.hid, wish_id: id }), "Réservé : les autres le verront 🎁"); return; }
@@ -566,7 +701,8 @@ $("addstock").onclick = () => {
   const row = { household_id: S.hid, label: l.slice(0, 80), qty: Math.max(0, parseFloat($("sqty").value.replace(",", ".")) || 0),
     target: Math.max(0, parseFloat($("starget").value.replace(",", ".")) || 1), unit: $("sunit").value.trim().slice(0, 20),
     place: $("splace").value, period: $("speriod").value };
-  ["sname", "sqty", "starget", "sunit"].forEach((k) => ($(k).value = ""));
+  if ($("sexp").value) row.expires = $("sexp").value;
+  ["sname", "sqty", "starget", "sunit", "sexp"].forEach((k) => ($(k).value = ""));
   act(() => api("POST", "shared_stock", row), "Ajouté au stock 📦");
 };
 $("mtitle").addEventListener("change", () => {
@@ -608,9 +744,19 @@ $("addexp").onclick = () => {
 
 (async function start() {
   $("server").classList.toggle("hidden", !!(S.url && S.key));
-  if (!S.session || !S.url) { showApp(false); $("login").classList.remove("hidden"); return; }
+  if (store.get("email")) $("email").value = store.get("email");
+  if (!S.session || !S.url) { showApp(false); $("login").classList.remove("hidden"); if (store.get("email")) $("pwd").focus(); return; }
   showApp(true);
-  try { await load(); } catch (e) { toast(e.message); if (e.status === 401 || /refus|token/i.test(e.message)) { showApp(false); } }
+  try {
+    const c = JSON.parse(store.get("cache") || "null");
+    if (c && c.d) { Object.assign(S, c.d); S.me = c.me || S.session.user; $("title").textContent = c.title || "Foyer";
+      $("sync").textContent = "hors ligne"; render(); }
+  } catch (e) {}
+  // Sans réseau, on garde la session (et le dernier affichage) : on ne redemande la connexion que si le serveur la refuse.
+  try { await load(); } catch (e) {
+    toast(e.auth ? "Ta session a expiré : reconnecte-toi." : "Pas de connexion pour l'instant, nouvel essai dans un moment.");
+    if (e.auth) { S.session = null; store.set("session", null); showApp(false); $("login").classList.remove("hidden"); $("pwd").focus(); }
+  }
   setInterval(() => { if (!document.hidden && S.session) load().catch(() => {}); }, 20000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && S.session) load().catch(() => {}); });
 })();
