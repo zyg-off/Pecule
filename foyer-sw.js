@@ -2,7 +2,7 @@
 // congélateur) s'affichent en notification, y compris appli fermée quand le téléphone le permet (Chrome Android,
 // appli installée). Aucune donnée n'est envoyée : le rappel se calcule à partir du planning que la page a laissé
 // sur le téléphone.
-const CACHE = "foyer-v2";
+const CACHE = "foyer-v3";
 const SHELL = ["foyer.html", "foyer.webmanifest", "foyer-icon-192.png", "foyer-zxing.min.js"];
 
 // chaque fichier séparément : un fichier absent ne doit pas empêcher de garder les autres
@@ -13,7 +13,9 @@ self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) =
 self.addEventListener("fetch", (e) => {
   const u = new URL(e.request.url);
   if (e.request.method !== "GET" || u.origin !== location.origin) return;
-  e.respondWith(fetch(e.request).then((r) => { if (r.ok) { const c = r.clone(); caches.open(CACHE).then((k) => k.put(e.request, c)); } return r; })
+  // « no-cache » : on redemande toujours au serveur si la page a changé (sinon le navigateur peut garder
+  // l'ancienne version jusqu'à 10 minutes) ; si rien n'a changé, la réponse est quasi instantanée.
+  e.respondWith(fetch(e.request, { cache: "no-cache" }).then((r) => { if (r.ok) { const c = r.clone(); caches.open(CACHE).then((k) => k.put(e.request, c)); } return r; })
     .catch(() => caches.match(e.request, { ignoreSearch: true }).then((r) => r || caches.match("foyer.html"))));
 });
 
