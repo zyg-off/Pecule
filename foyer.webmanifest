@@ -1,0 +1,15 @@
+{
+  "name": "Foyer Pécule",
+  "short_name": "Foyer",
+  "description": "Courses, stock, repas, tâches et dépenses communes du foyer, avec Pécule.",
+  "lang": "fr",
+  "start_url": "foyer.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f1ec",
+  "theme_color": "#e8701a",
+  "icons": [
+    { "src": "foyer-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "foyer-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

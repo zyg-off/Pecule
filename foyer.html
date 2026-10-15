@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#e8701a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Foyer Pécule">
+<link rel="manifest" href="foyer.webmanifest">
+<link rel="apple-touch-icon" href="foyer-icon-192.png">
 <title>Foyer Pécule</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='22' fill='%23e8a33d'/%3E%3Cpath d='M32 14c2-8 10-10 14-8-2 6-8 9-14 8z' fill='%234f9d69'/%3E%3C/svg%3E">
 <style>
@@ -58,6 +60,23 @@ textarea{font:inherit;color:inherit;width:100%;padding:11px 12px;border:1px soli
 details summary{cursor:pointer;color:var(--accent);font-weight:600;padding:8px 0;list-style:none}
 .day{font-weight:600;margin:12px 0 2px}
 a{color:var(--accent)}
+.lbar{display:flex;gap:6px;margin:10px 0 2px;align-items:center}.lbar select{padding:7px 8px;font-size:14px;width:auto;flex:1;min-width:0}
+.lbar button{font-size:14px;padding:8px 10px;white-space:nowrap}
+.aisle{font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 0;display:flex;gap:6px;align-items:center}
+.tag{background:none;padding:4px 6px;font-size:15px;opacity:.7}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:flex-end}
+#sheet>div{background:var(--card);width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+#sheet h2{font-size:17px;margin:0 0 10px}
+.ord{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.ord span{flex:1}.ord button{padding:6px 12px}
+#shop{position:fixed;inset:0;background:var(--bg);z-index:55;overflow:auto;padding:calc(10px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))}
+#shop .top{position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:2}
+#shop .tot{display:flex;align-items:baseline;gap:8px}#shop .tot b{font-size:28px}
+.meter{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 2px}.meter i{display:block;height:100%;background:var(--gain);border-radius:99px}
+.meter.over i{background:var(--loss)}
+.srow{display:flex;align-items:center;gap:14px;min-height:62px;padding:8px 4px;border-top:1px solid var(--line);font-size:19px}
+.srow .check{width:36px;height:36px;border-radius:10px;font-size:20px}
+.srow.done{opacity:.55}.srow.done .grow{text-decoration:line-through}
+.srow .pr{font-size:15px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -80,11 +99,14 @@ a{color:var(--accent)}
   <section id="v-list" class="view hidden">
     <div class="seg" id="subnav"><button data-s="list">🛒 Liste</button><button data-s="stock">📦 Stock</button><button data-s="meals">🍝 Repas</button></div>
     <div id="s-list">
+    <div id="rc1"></div>
     <div class="card">
       <h2>🛒 Liste de courses</h2>
       <div class="add"><input id="item" placeholder="Ajouter un article…" enterkeyhint="done"><button id="scanlist" title="Scanner un code-barres">📷</button><button class="primary" id="additem">+</button></div>
       <p class="faint" id="est"></p>
       <div id="propose"></div>
+      <div class="lbar" id="lbar"><select id="lmode"><option value="aisle">🧭 Par rayon</option><option value="">📝 Liste simple</option></select><select id="lshop"></select><button id="lorder" title="Ordre des rayons">↕️</button></div>
+      <button class="primary" id="shopgo" style="width:100%;margin-top:8px">🛍️ Mode magasin</button>
       <div id="todo"></div>
     </div>
     <div class="card" id="donecard"><h2>Dans le panier</h2><div id="done"></div>
@@ -92,6 +114,7 @@ a{color:var(--accent)}
     </div>
 
     <div id="s-stock" class="hidden">
+      <div id="rc2"></div>
       <div class="card hidden" id="checkdue"></div>
       <div class="card"><h2>📦 Stock de la maison</h2>
         <label class="faint" style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input type="checkbox" id="autoadd" style="width:auto"> Ajouter tout de suite à la liste ce qui passe sous la quantité nécessaire</label>
@@ -102,6 +125,7 @@ a{color:var(--accent)}
           <div class="grid2"><input id="sunit" placeholder="Unité (L, kg, paquets…)"><select id="splace"></select></div><br>
           <select id="speriod"><option value="week">Racheté chaque semaine</option><option value="month">Racheté chaque mois</option><option value="none">Juste suivre</option></select><br><br>
           <label class="faint">À consommer avant le (facultatif)</label><input id="sexp" type="date"><br><br>
+          <div id="sfrzbox" class="hidden"><label class="faint" id="sfrzlab">Congelé le</label><input id="sfrz" type="date"><br><br></div>
           <button class="primary" id="addstock" style="width:100%">Ajouter au stock</button>
         </details>
       </div>
@@ -146,6 +170,10 @@ a{color:var(--accent)}
 
   <section id="v-agenda" class="view hidden">
     <div class="card"><h2>🧹 Tâches du foyer</h2><div id="chores"></div></div>
+    <div class="card" id="notifcard"><h2>🔔 Rappels sur ce téléphone</h2><p class="muted" id="notiftxt"></p>
+      <button class="primary" id="notifon" style="width:100%">Activer les rappels</button>
+      <button id="installgo" class="hidden" style="width:100%;margin-top:8px">📲 Installer l'appli sur ce téléphone</button>
+      <p class="faint" id="installtxt"></p></div>
     <div class="card"><h2>📅 Agenda du foyer</h2><div id="agenda"></div></div>
   </section>
 
@@ -162,6 +190,17 @@ a{color:var(--accent)}
   <button data-v="accounts"><b>🏦</b>Comptes</button>
 </nav>
 <div id="toast"></div>
+<div id="sheet" class="hidden"><div id="sheetbox"></div></div>
+<div id="shop" class="hidden">
+  <div class="top">
+    <div style="display:flex;align-items:center"><b style="flex:1;font-size:18px">🛍️ En magasin</b><button class="ghost" id="shopclose">Terminer</button></div>
+    <div class="tot"><b id="shoptot">0 €</b><span class="muted" id="shopbud"></span></div>
+    <div class="meter" id="shopmeter"><i style="width:0"></i></div>
+    <p class="faint" id="shopinfo"></p>
+    <div class="add"><input id="shopadd" placeholder="Un oubli ? Ajoute-le ici" enterkeyhint="done"><button class="primary" id="shopaddgo">+</button></div>
+  </div>
+  <div id="shoplist"></div>
+</div>
 <div id="scan" class="hidden">
   <div style="display:flex;align-items:center"><b style="flex:1">📷 Scanner un produit</b><button class="ghost" id="scanclose" style="color:#fff">✕ Fermer</button></div>
   <div class="frame"><video id="cam" playsinline muted></video></div>
@@ -210,11 +249,11 @@ function refreshSession() {
   return refreshing;
 }
 
-async function api(method, path, body) {
+async function api(method, path, body, prefer) {
   if (!S.session) throw new Error("Connecte-toi");
   if (Date.now() / 1000 > S.session.expires_at) await refreshSession();
   const go = () => fetch(`${S.url}/rest/v1/${path}`, { method, body: body ? JSON.stringify(body) : undefined,
-    headers: { apikey: S.key, Authorization: `Bearer ${S.session.access_token}`, "Content-Type": "application/json", Prefer: "return=minimal" } });
+    headers: { apikey: S.key, Authorization: `Bearer ${S.session.access_token}`, "Content-Type": "application/json", Prefer: prefer || "return=minimal" } });
   let r = await go();
   if (r.status === 401) { await refreshSession(); r = await go(); }
   if (!r.ok) { const d = await r.json().catch(() => ({})); const e = new Error(d.message || `Erreur ${r.status}`); e.status = r.status; throw e; }
@@ -246,19 +285,51 @@ async function doLoad() {
   S.snaps = await api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => []);
   const since = ymd(addDays(new Date(), -120));
   S.chores = await api("GET", `shared_chores?${q}&order=next_date`).catch(() => null);
+  S.choreLog = await api("GET", `shared_chore_log?${q}&done_on=gte.${ymd(addDays(new Date(), -62))}&order=done_on.desc`).catch(() => null);
   [S.stock, S.meals, S.wishes, S.claims] = await Promise.all([
     api("GET", `shared_stock?${q}&order=label`).catch(() => null),
     api("GET", `shared_meals?${q}&date=gte.${since}&order=date`).catch(() => null),
     api("GET", `shared_wishes?${q}&order=created_at`).catch(() => null),
     api("GET", `shared_wish_claims?${q}`).catch(() => []),
   ]);
+  S.prefs = await api("GET", `shared_prefs?${q}&select=key,value`).then((rows) => Object.fromEntries(rows.map((r) => [r.key, r.value]))).catch(() => (S.prefs && S.prefs.local ? S.prefs : null));
+  S.cartBudget = await api("GET", `shared_budgets?${q}&category=eq.__panier__&select=amount`).then((r) => (r[0] ? Number(r[0].amount) : 0)).catch(() => 0);
   S.me = S.session.user;
   $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   // dernier affichage gardé sur le téléphone : la page s'ouvre tout de suite, même sans réseau
   try { store.set("cache", JSON.stringify({ t: Date.now(), title: $("title").textContent, me: S.me,
     d: { members: S.members, list: S.list, exps: S.exps.slice(0, 60), events: S.events, snaps: S.snaps, stock: S.stock,
-         meals: S.meals, wishes: S.wishes, claims: S.claims, chores: S.chores } })); } catch (e) {}
+         meals: S.meals, wishes: S.wishes, claims: S.claims, chores: S.chores, choreLog: S.choreLog, prefs: S.prefs, cartBudget: S.cartBudget } })); } catch (e) {}
   render();
+  if (S.stock && S.list) autoList(S.stock, true);  // déjà sous le nécessaire (modifié ailleurs ou avant l'option)
+  recallCheck().catch(() => {});
+  dailyNotify();
+}
+
+// 176 · rayons (mêmes règles que Pécule, app/aisles.py : copie générée)
+/*AISLES*/const AISLE = {"aisles":["Fruits et légumes","Boulangerie","Crèmerie et fromages","Boucherie et poisson","Traiteur","Épicerie salée","Épicerie sucrée","Petit-déjeuner","Boissons","Surgelés","Bébé","Hygiène et beauté","Entretien","Animaux","Maison","Autres"],"emoji":{"Fruits et légumes":"🥕","Boulangerie":"🥖","Crèmerie et fromages":"🧀","Boucherie et poisson":"🥩","Traiteur":"🥗","Épicerie salée":"🥫","Épicerie sucrée":"🍫","Petit-déjeuner":"☕","Boissons":"🧃","Surgelés":"🧊","Bébé":"🍼","Hygiène et beauté":"🧴","Entretien":"🧽","Animaux":"🐾","Maison":"🏠","Autres":"🛒"},"phrases":{"pomme de terre":"Fruits et légumes","petit pois":"Fruits et légumes","chou fleur":"Fruits et légumes","haricot vert":"Fruits et légumes","pain de mie":"Boulangerie","pain au chocolat":"Boulangerie","creme fraiche":"Crèmerie et fromages","fromage blanc":"Crèmerie et fromages","petit suisse":"Crèmerie et fromages","lait vegetal":"Boissons","lait d amande":"Boissons","jambon blanc":"Boucherie et poisson","jambon cru":"Traiteur","pate fraiche":"Traiteur","pate a tartiner":"Épicerie sucrée","sauce tomate":"Épicerie salée","pois chiche":"Épicerie salée","haricot rouge":"Épicerie salée","chocolat en poudre":"Petit-déjeuner","flocon d avoine":"Petit-déjeuner","ice tea":"Boissons","poisson pane":"Surgelés","lingette bebe":"Bébé","lait infantile":"Bébé","petit pot":"Bébé","brosse a dent":"Hygiène et beauté","gel douche":"Hygiène et beauté","papier toilette":"Hygiène et beauté","coton tige":"Hygiène et beauté","liquide vaisselle":"Entretien","lave vaisselle":"Entretien","sac poubelle":"Entretien","essuie tout":"Entretien","vinaigre blanc":"Entretien","film alimentaire":"Entretien","papier alu":"Entretien","steak hache":"Boucherie et poisson","thon en boite":"Épicerie salée","barre cereale":"Épicerie sucrée","pizza surgelee":"Surgelés","legume surgele":"Surgelés","creme dessert":"Épicerie sucrée","dessert lacte":"Crèmerie et fromages"},"single":{"fruit":"Fruits et légumes","legume":"Fruits et légumes","pomme":"Fruits et légumes","poire":"Fruits et légumes","banane":"Fruits et légumes","orange":"Fruits et légumes","citron":"Fruits et légumes","clementine":"Fruits et légumes","mandarine":"Fruits et légumes","kiwi":"Fruits et légumes","raisin":"Fruits et légumes","fraise":"Fruits et légumes","framboise":"Fruits et légumes","myrtille":"Fruits et légumes","cerise":"Fruits et légumes","peche":"Fruits et légumes","abricot":"Fruits et légumes","prune":"Fruits et légumes","melon":"Fruits et légumes","pasteque":"Fruits et légumes","ananas":"Fruits et légumes","mangue":"Fruits et légumes","avocat":"Fruits et légumes","tomate":"Fruits et légumes","salade":"Fruits et légumes","laitue":"Fruits et légumes","mache":"Fruits et légumes","roquette":"Fruits et légumes","epinard":"Fruits et légumes","carotte":"Fruits et légumes","courgette":"Fruits et légumes","aubergine":"Fruits et légumes","poivron":"Fruits et légumes","concombre":"Fruits et légumes","oignon":"Fruits et légumes","echalote":"Fruits et légumes","ail":"Fruits et légumes","de":"Fruits et légumes","terre":"Fruits et légumes","patate":"Fruits et légumes","poireau":"Fruits et légumes","chou":"Fruits et légumes","brocoli":"Fruits et légumes","fleur":"Fruits et légumes","haricot":"Fruits et légumes","vert":"Fruits et légumes","champignon":"Fruits et légumes","radis":"Fruits et légumes","betterave":"Fruits et légumes","celeri":"Fruits et légumes","fenouil":"Fruits et légumes","navet":"Fruits et légumes","potiron":"Fruits et légumes","courge":"Fruits et légumes","citrouille":"Fruits et légumes","herbe":"Fruits et légumes","persil":"Fruits et légumes","coriandre":"Fruits et légumes","basilic":"Fruits et légumes","menthe":"Fruits et légumes","ciboulette":"Fruits et légumes","gingembre":"Fruits et légumes","endive":"Fruits et légumes","artichaut":"Fruits et légumes","asperge":"Fruits et légumes","petit":"Fruits et légumes","pois":"Fruits et légumes","mais":"Fruits et légumes","doux":"Fruits et légumes","pain":"Boulangerie","baguette":"Boulangerie","brioche":"Boulangerie","croissant":"Boulangerie","au":"Boulangerie","chocolat":"Épicerie sucrée","chocolatine":"Boulangerie","viennoiserie":"Boulangerie","mie":"Boulangerie","biscotte":"Boulangerie","complet":"Boulangerie","tortilla":"Boulangerie","wrap":"Boulangerie","pita":"Boulangerie","lait":"Crèmerie et fromages","beurre":"Crèmerie et fromages","yaourt":"Crèmerie et fromages","yogourt":"Crèmerie et fromages","creme":"Crèmerie et fromages","fraiche":"Crèmerie et fromages","oeuf":"Crèmerie et fromages","fromage":"Crèmerie et fromages","emmental":"Crèmerie et fromages","comte":"Crèmerie et fromages","gruyere":"Crèmerie et fromages","mozzarella":"Crèmerie et fromages","parmesan":"Crèmerie et fromages","chevre":"Crèmerie et fromages","camembert":"Crèmerie et fromages","brie":"Crèmerie et fromages","roquefort":"Crèmerie et fromages","feta":"Crèmerie et fromages","raclette":"Crèmerie et fromages","reblochon":"Crèmerie et fromages","blanc":"Crèmerie et fromages","suisse":"Crèmerie et fromages","skyr":"Crèmerie et fromages","margarine":"Crèmerie et fromages","dessert":"Crèmerie et fromages","lacte":"Crèmerie et fromages","compote":"Crèmerie et fromages","vegetal":"Crèmerie et fromages","viande":"Boucherie et poisson","boeuf":"Boucherie et poisson","steak":"Boucherie et poisson","hache":"Boucherie et poisson","poulet":"Boucherie et poisson","dinde":"Boucherie et poisson","porc":"Boucherie et poisson","veau":"Boucherie et poisson","agneau":"Boucherie et poisson","escalope":"Boucherie et poisson","cote":"Boucherie et poisson","saucisse":"Boucherie et poisson","merguez":"Boucherie et poisson","lardon":"Boucherie et poisson","jambon":"Boucherie et poisson","poisson":"Boucherie et poisson","saumon":"Boucherie et poisson","cabillaud":"Boucherie et poisson","thon":"Épicerie salée","frais":"Boucherie et poisson","crevette":"Boucherie et poisson","moule":"Boucherie et poisson","filet":"Boucherie et poisson","roti":"Boucherie et poisson","cuisse":"Boucherie et poisson","aiguillette":"Boucherie et poisson","chipolata":"Boucherie et poisson","cru":"Traiteur","saucisson":"Traiteur","chorizo":"Traiteur","pate":"Épicerie salée","rillette":"Traiteur","surimi":"Traiteur","quiche":"Traiteur","pizza":"Traiteur","composee":"Traiteur","taboule":"Traiteur","houmous":"Traiteur","tarama":"Traiteur","gnocchi":"Traiteur","ravioli":"Traiteur","riz":"Épicerie salée","semoule":"Épicerie salée","quinoa":"Épicerie salée","lentille":"Épicerie salée","chiche":"Épicerie salée","rouge":"Épicerie salée","conserve":"Épicerie salée","sauce":"Épicerie salée","concentre":"Épicerie salée","ketchup":"Épicerie salée","mayonnaise":"Épicerie salée","moutarde":"Épicerie salée","vinaigre":"Épicerie salée","huile":"Épicerie salée","sel":"Épicerie salée","poivre":"Épicerie salée","epice":"Épicerie salée","bouillon":"Épicerie salée","cube":"Épicerie salée","soupe":"Épicerie salée","chips":"Épicerie salée","chip":"Épicerie salée","cacahuete":"Épicerie salée","apero":"Épicerie salée","olive":"Épicerie salée","cornichon":"Épicerie salée","en":"Épicerie salée","boite":"Épicerie salée","sardine":"Épicerie salée","farine":"Épicerie salée","levure":"Épicerie salée","chapelure":"Épicerie salée","puree":"Épicerie salée","nouille":"Épicerie salée","couscous":"Épicerie salée","sucre":"Épicerie sucrée","biscuit":"Épicerie sucrée","gateau":"Épicerie sucrée","bonbon":"Épicerie sucrée","confiture":"Épicerie sucrée","miel":"Épicerie sucrée","a":"Épicerie sucrée","tartiner":"Épicerie sucrée","nutella":"Épicerie sucrée","chimique":"Épicerie sucrée","vanille":"Épicerie sucrée","ble":"Épicerie sucrée","madeleine":"Épicerie sucrée","cookie":"Épicerie sucrée","barre":"Épicerie sucrée","cereale":"Épicerie sucrée","cafe":"Petit-déjeuner","the":"Petit-déjeuner","tisane":"Petit-déjeuner","poudre":"Petit-déjeuner","muesli":"Petit-déjeuner","flocon":"Petit-déjeuner","avoine":"Petit-déjeuner","capsule":"Petit-déjeuner","dosette":"Petit-déjeuner","filtre":"Petit-déjeuner","eau":"Boissons","jus":"Boissons","soda":"Boissons","coca":"Boissons","limonade":"Boissons","sirop":"Boissons","biere":"Boissons","vin":"Boissons","champagne":"Boissons","cidre":"Boissons","boisson":"Boissons","ice":"Boissons","tea":"Boissons","d":"Boissons","amande":"Boissons","surgele":"Surgelés","glace":"Surgelés","frite":"Surgelés","congele":"Surgelés","pane":"Surgelés","nugget":"Surgelés","surgelee":"Surgelés","couche":"Bébé","lingette":"Bébé","bebe":"Bébé","infantile":"Bébé","pot":"Bébé","liniment":"Bébé","dentifrice":"Hygiène et beauté","brosse":"Hygiène et beauté","dent":"Hygiène et beauté","gel":"Hygiène et beauté","douche":"Hygiène et beauté","shampoing":"Hygiène et beauté","apres":"Hygiène et beauté","savon":"Hygiène et beauté","deodorant":"Hygiène et beauté","rasoir":"Hygiène et beauté","coton":"Hygiène et beauté","tige":"Hygiène et beauté","demaquillant":"Hygiène et beauté","hydratante":"Hygiène et beauté","serviette":"Hygiène et beauté","hygienique":"Hygiène et beauté","tampon":"Hygiène et beauté","protege":"Hygiène et beauté","slip":"Hygiène et beauté","mouchoir":"Hygiène et beauté","papier":"Hygiène et beauté","toilette":"Hygiène et beauté","maquillage":"Hygiène et beauté","parfum":"Hygiène et beauté","lessive":"Entretien","adoucissant":"Entretien","liquide":"Entretien","vaisselle":"Entretien","pastille":"Entretien","lave":"Entretien","eponge":"Entretien","javel":"Entretien","nettoyant":"Entretien","sac":"Entretien","poubelle":"Entretien","essuie":"Entretien","tout":"Entretien","sopalin":"Entretien","desinfectant":"Entretien","film":"Entretien","alimentaire":"Entretien","alu":"Entretien","aluminium":"Entretien","produit":"Entretien","menager":"Entretien","croquette":"Animaux","patee":"Animaux","litiere":"Animaux","chat":"Animaux","chien":"Animaux","friandise":"Animaux","animal":"Animaux","ampoule":"Maison","pile":"Maison","bougie":"Maison","allumette":"Maison","piles":"Maison"}};/*/AISLES*/
+function aisleWords(l) {
+  const f = String(l || "").toLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae").normalize("NFKD").replace(/[̀-ͯ]/g, "")
+    .replace(/['’-]/g, " ").split(/\s+/).filter(Boolean);
+  return f.map((w) => (w.length > 3 && /[sx]$/.test(w) ? w.slice(0, -1) : w));
+}
+function guessAisle(l) {
+  const ws = aisleWords(l), text = " " + ws.join(" ") + " ";
+  if (ws.some((w) => w === "surgele" || w === "surgelee" || w === "congele")) return "Surgelés";
+  for (const ph of Object.keys(AISLE.phrases).sort((a, b) => b.length - a.length)) if (text.includes(" " + ph + " ")) return AISLE.phrases[ph];
+  for (const w of ws) if (AISLE.single[w]) return AISLE.single[w];
+  return "Autres";
+}
+const aislePrefs = () => { const p = (S.prefs || {}).aisles || {}; return { order: p.order || {}, items: p.items || {} }; };
+function aisleOf(l) { const a = aislePrefs().items[itemKey(l)]; return AISLE.aisles.includes(a) ? a : guessAisle(l); }
+function aisleOrder(shop) {
+  const o = aislePrefs().order, lst = (o[shop || ""] || o[""] || AISLE.aisles).filter((a) => AISLE.aisles.includes(a));
+  return lst.concat(AISLE.aisles.filter((a) => !lst.includes(a)));
+}
+function byAisle(items, shop) {
+  const by = {};
+  items.forEach((i) => { const a = aisleOf(i.label); (by[a] = by[a] || []).push(i); });
+  return aisleOrder(shop).filter((a) => by[a]).map((a) => [a, by[a]]);
 }
 
 // ---------------------------------------------------------------- stock et repas (même logique que Pécule)
@@ -331,6 +402,18 @@ function proposal(kind) {
   if (kind === "week") mealNeeds().filter((n) => !n.home).forEach((n) => add(n.label, n.qty, "pour " + n.meals.slice(0, 3).join(", ")));
   return out;
 }
+// 179 · congélateur (mêmes durées que Pécule, app/pantry.py)
+const FREEZE = [[["hache", "saucisse", "merguez", "chipolata", "lardon", "jambon"], 3], [["saumon", "maquereau", "sardine", "truite", "thon"], 3], [["plat", "lasagne", "soupe", "sauce", "gratin", "reste", "cuisine", "quiche", "pizza"], 3], [["pain", "baguette", "brioche", "croissant", "viennoiserie", "gateau"], 3], [["glace", "sorbet"], 2], [["poulet", "dinde", "volaille", "canard"], 9], [["boeuf", "steak", "roti", "veau", "agneau", "porc", "viande", "cote"], 9], [["poisson", "cabillaud", "colin", "merlu", "crevette", "moule"], 6], [["legume", "haricot", "petit pois", "epinard", "brocoli", "fruit", "framboise", "fraise", "myrtille"], 10], [["beurre", "fromage"], 6]];
+const isFreezer = (pl) => fold(pl).includes("congel");
+function freezeMonths(l) { const f = " " + fold(l).replace(/-/g, " ").split(/\s+/).join(" ") + " ";
+  for (const [ws, m] of FREEZE) if (ws.some((w) => f.includes(" " + w))) return m; return 6; }
+function freezerInfo(s) {
+  if (!isFreezer(s.place) || !s.frozen_on || num(s.qty) <= 0) return null;
+  const d = new Date(String(s.frozen_on).slice(0, 10) + "T00:00:00"), t = new Date(); t.setHours(0, 0, 0, 0);
+  const lim = new Date(d); lim.setMonth(lim.getMonth() + freezeMonths(s.label));
+  return [Math.round((t - d) / 864e5), Math.round((lim - t) / 864e5)];
+}
+const ageText = (d) => d < 14 ? (d > 1 ? `depuis ${d} j` : d === 1 ? "depuis hier" : "d'aujourd'hui") : d < 60 ? `depuis ${Math.floor(d / 7)} semaines` : `depuis ${Math.floor(d / 30)} mois`;
 function expLeft(s) {
   if (!s.expires || num(s.qty) <= 0) return null;
   const t = new Date(); t.setHours(0, 0, 0, 0);
@@ -401,7 +484,17 @@ function render() {
     const row = (i) => `<div class="row ${i.done ? "done" : ""}" data-id="${i.id}"><div class="check ${i.done ? "on" : ""}" data-act="tick">${i.done ? "✓" : ""}</div>
       <div class="grow">${esc(i.label)}${i.qty ? ` <span class="faint">· ${esc(i.qty)}</span>` : ""}<div class="faint">${esc(name(i.created_by))}</div></div>
       ${i.price ? `<span class="faint">${euro(i.price)}</span>` : ""}<button class="ghost" data-act="del">✕</button></div>`;
-    $("todo").innerHTML = todo.map(row).join("") || '<p class="muted">La liste est vide.</p>';
+    const mode = store.get("lmode") ?? "aisle", shop = store.get("lshop") || "";
+    $("lmode").value = mode;
+    const shops = Object.keys(aislePrefs().order).filter(Boolean).sort();
+    $("lshop").innerHTML = `<option value="">Ordre habituel</option>` + shops.map((k) => `<option value="${esc(k)}">🏬 ${esc(k)}</option>`).join("") + `<option value="+">+ Autre magasin…</option>`;
+    $("lshop").value = shops.includes(shop) ? shop : "";
+    $("lshop").classList.toggle("hidden", mode !== "aisle"); $("lorder").classList.toggle("hidden", mode !== "aisle");
+    $("lbar").classList.toggle("hidden", !todo.length); $("shopgo").classList.toggle("hidden", !S.list.length);
+    const rowA = (i, a) => row(i).replace('<button class="ghost" data-act="del">', `<button class="tag" data-act="aisle" title="Rayon : ${esc(a)}">🏷</button><button class="ghost" data-act="del">`);
+    $("todo").innerHTML = (mode === "aisle"
+      ? byAisle(todo, shop).map(([a, its]) => `<div class="aisle">${AISLE.emoji[a] || ""} ${esc(a)}</div>` + its.map((i) => rowA(i, a)).join("")).join("")
+      : todo.map(row).join("")) || '<p class="muted">La liste est vide.</p>';
     $("done").innerHTML = done.map(row).join("");
     $("donecard").classList.toggle("hidden", !done.length);
     const est = S.list.reduce((s, i) => s + (Number(i.price) || 0), 0);
@@ -414,7 +507,8 @@ function render() {
   }
   document.querySelectorAll("#subnav button").forEach((b) => b.classList.toggle("on", b.dataset.s === S.sub));
   ["list", "stock", "meals"].forEach((k) => $("s-" + k).classList.toggle("hidden", k !== S.sub));
-  renderStock(); renderMeals(); renderWishes(); renderChores();
+  const rcHtml = recallCards(); $("rc1").innerHTML = rcHtml; $("rc2").innerHTML = rcHtml;
+  renderStock(); renderMeals(); renderWishes(); renderChores(); renderShop();
   // dépenses
   const net = balances(), pl = plan(net);
   $("bal").innerHTML = S.members.map((m) => { const v = net[m.user_id] || 0;
@@ -456,15 +550,19 @@ function renderStock() {
   if (!$("splace").options.length) $("splace").innerHTML = PLACES.map((p) => `<option>${p}</option>`).join("");
   const due = checkDue();
   const soon = S.stock.map((x) => [x, expLeft(x)]).filter(([, l]) => l !== null && l <= 2).sort((a, b) => a[1] - b[1]);
-  $("checkdue").classList.toggle("hidden", !due && !soon.length);
-  $("checkdue").innerHTML = (soon.length ? `<h2>⏰ À consommer vite</h2><p class="muted">${soon.slice(0, 6).map(([x, l]) => `${esc(x.label)} (${l < 0 ? "dépassé" : l === 0 ? "aujourd'hui" : l === 1 ? "demain" : "dans " + l + " j"})`).join(", ")}</p>` : "") + (due ? `<h2>📦 Le point de la semaine</h2><p class="muted">Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.</p>
+  const frzDue = S.stock.map((x) => [x, freezerInfo(x)]).filter(([, f]) => f && f[1] <= 14).sort((a, b) => a[1][1] - b[1][1]);
+  $("checkdue").classList.toggle("hidden", !due && !soon.length && !frzDue.length);
+  $("checkdue").innerHTML = (frzDue.length ? `<h2>❄️ À sortir du congélateur</h2><p class="muted">${frzDue.slice(0, 6).map(([x, f]) => `${esc(x.label)} (${ageText(f[0])})`).join(", ")}</p>` : "") + (soon.length ? `<h2>⏰ À consommer vite</h2><p class="muted">${soon.slice(0, 6).map(([x, l]) => `${esc(x.label)} (${l < 0 ? "dépassé" : l === 0 ? "aujourd'hui" : l === 1 ? "demain" : "dans " + l + " j"})`).join(", ")}</p>` : "") + (due ? `<h2>📦 Le point de la semaine</h2><p class="muted">Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.</p>
     <button class="primary" data-act="checked" style="width:100%">✓ Le point est fait</button>` : "");
   let place = null, html = "";
   for (const s of [...S.stock].sort((a, b) => (a.place || "").localeCompare(b.place || "") || a.label.localeCompare(b.label))) {
     if ((s.place || "") !== place) { place = s.place || ""; html += `<div class="place">${esc(place || "Sans rangement")}</div>`; }
     const n = need(s), left = expLeft(s);
     const exp = left === null ? "" : `<span class="pill ${left <= 2 ? "warn" : ""}">${left <= 2 ? "⏰ " : ""}${left < 0 ? "périmé" : left === 0 ? "périme aujourd'hui" : left === 1 ? "périme demain" : "jusqu'au " + String(s.expires).slice(8, 10) + "/" + String(s.expires).slice(5, 7)}</span> `;
-    html += `<div class="row"><div class="grow">${esc(s.label)}<div class="faint">${exp}${n > 0 && s.period !== "none" ? `<span class="pill warn">manque ${esc(fmtQty(n, s.unit))}</span> ` : ""}il en faut ${esc(fmtQty(s.target, s.unit))}</div></div>
+    const fi = freezerInfo(s);
+    const frz = fi ? `<span class="pill ${fi[1] <= 14 ? "warn" : ""}">❄️ ${fi[1] <= 14 ? "à manger bientôt · " : ""}${ageText(fi[0])}</span> ` : "";
+    const rc = (S.recalls || {})[s.id] ? `<span class="pill" style="background:var(--loss);color:#fff">🚨 rappel produit</span> ` : "";
+    html += `<div class="row"><div class="grow">${esc(s.label)}<div class="faint">${rc}${frz}${exp}${n > 0 && s.period !== "none" ? `<span class="pill warn">manque ${esc(fmtQty(n, s.unit))}</span> ` : ""}il en faut ${esc(fmtQty(s.target, s.unit))}</div></div>
       <button class="step" data-act="sminus" data-id="${s.id}">−</button><span class="qty">${esc(fmtQty(s.qty, s.unit))}</span><button class="step" data-act="splus" data-id="${s.id}">+</button></div>`;
   }
   $("stock").innerHTML = html || '<p class="muted">Note ce que tu as à la maison et combien il en faut : Pécule propose la liste de la semaine (le frais) et celle du mois (les réserves).</p>';
@@ -497,18 +595,36 @@ function renderMeals() {
 }
 
 // ---------------------------------------------------------------- 171 · tâches ménagères
-const choreTurn = (c) => { const p = c.people || []; if (c.mode === "anyone" || !p.length) return null;
+const choreTurn = (c) => { if (c.assignee) return c.assignee; const p = c.people || []; if (c.mode === "anyone" || !p.length) return null;
   return c.mode === "one" ? p[0] : p[(c.turn || 0) % p.length]; };
 const choreLeft = (c) => { const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((new Date(String(c.next_date).slice(0, 10) + "T00:00:00") - t) / 864e5); };
 function renderChores() {
   if (S.chores == null) { $("chores").innerHTML = NOT_READY; return; }
   const list = [...S.chores].sort((a, b) => String(a.next_date).localeCompare(String(b.next_date)));
-  $("chores").innerHTML = list.map((c) => { const l = choreLeft(c), who = choreTurn(c);
+  const others = S.members.filter((m) => m.user_id !== S.me);
+  const asks = list.filter((c) => c.swap_to === S.me).map((c) => `<div class="row" style="background:var(--chip);border-radius:12px;padding:10px">
+    <div class="grow">🔁 <b>${esc(name(c.swap_from))}</b> te demande de prendre son tour : ${esc(c.emoji || "")} ${esc(c.title)}</div>
+    <button class="primary" data-act="swapyes" data-id="${c.id}">Accepter</button><button class="ghost" data-act="swapno" data-id="${c.id}">Non</button></div>`).join("");
+  $("chores").innerHTML = asks + (list.map((c) => { const l = choreLeft(c), who = choreTurn(c);
     const whoT = who === null ? "n'importe qui" : who === S.me ? "toi" : name(who);
     const pill = l < 0 ? `<span class="pill warn">en retard de ${-l} j</span>` : l === 0 ? `<span class="pill ok">aujourd'hui</span>` : `<span class="pill">${l === 1 ? "demain" : "dans " + l + " j"}</span>`;
-    return `<div class="row"><b style="font-size:20px">${esc(c.emoji || "🧹")}</b><div class="grow">${esc(c.title)}<div class="faint">${c.mode === "rotate" ? "au tour de " : ""}${esc(whoT)}</div></div>${pill}
+    const swap = "swap_to" in c && who === S.me && others.length && !c.swap_to ? `<button class="ghost" data-act="swapask" data-id="${c.id}" title="Demander à quelqu'un d'autre">🔁</button>`
+      : c.swap_from === S.me && c.swap_to ? `<button class="ghost" data-act="swapno" data-id="${c.id}">Annuler</button>` : "";
+    return `<div class="row"><b style="font-size:20px">${esc(c.emoji || "🧹")}</b><div class="grow">${esc(c.title)}<div class="faint">${c.mode === "rotate" && !c.assignee ? "au tour de " : ""}${esc(whoT)}${c.swap_from === S.me && c.swap_to ? ` · demandé à ${esc(name(c.swap_to))}` : ""}</div></div>${pill}${swap}
       ${l <= 1 ? `<button class="${who === null || who === S.me ? "primary" : ""}" data-act="cdone" data-id="${c.id}">✓</button>` : ""}</div>`; }).join("")
-    || '<p class="muted">Aucune tâche : ajoutez-les depuis Pécule (Foyer › Agenda).</p>';
+    || '<p class="muted">Aucune tâche : ajoutez-les depuis Pécule (Foyer › Agenda).</p>');
+  // 183 · tableau du mois
+  if (S.choreLog && list.length && S.members.length > 1) {
+    const m0 = today().slice(0, 7), n = {}; S.members.forEach((m) => (n[m.user_id] = 0));
+    S.choreLog.forEach((e) => { if (String(e.done_on).slice(0, 7) === m0 && e.done_by in n) n[e.done_by]++; });
+    const board = S.members.map((m) => [m, n[m.user_id]]).sort((a, b) => b[1] - a[1]), mx = Math.max(1, ...board.map((x) => x[1]));
+    const top = board[0], low = board[board.length - 1], who = (m) => (m.user_id === S.me ? "toi" : m.display_name);
+    const txt = !top[1] ? "Rien de noté ce mois-ci pour l'instant." : top[1] - low[1] <= 1 ? "Partage équilibré ce mois-ci 👏"
+      : top[0].user_id === S.me ? `Tu en as fait ${top[1] - low[1]} de plus que ${who(low[0])}.` : `${top[0].display_name} en a fait ${top[1] - low[1]} de plus que ${who(low[0])}.`;
+    $("chores").innerHTML += `<div class="place">🏆 Ce mois-ci</div>` + board.map(([m, k]) => `<div class="row"><div style="width:90px">${esc(m.user_id === S.me ? "Toi" : m.display_name)}</div>
+      <div class="grow"><div class="meter" style="margin:0"><i style="width:${(k / mx) * 100}%;background:${esc(m.color || "var(--accent)")}"></i></div></div><span class="faint">${k}</span></div>`).join("")
+      + `<p class="faint">${esc(txt)}</p>`;
+  }
 }
 
 function wishRow(w, mine, editable) {
@@ -604,14 +720,93 @@ async function openScan(mode) {
     }
   } catch (e) { $("scanmsg").textContent = "Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous."; }
 }
+// 180 · rappels officiels (RappelConso) · 181 · Nutri-Score, prix au kilo, équivalent moins cher
+const RC_API = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/";
+const RC_DS = ["rappelconso-v2-gtin-trie", "rappelconso-v2-gtin-espaces"];
+const pick = (r, ...ks) => { for (const k of ks) { const v = r[k]; if (v) return Array.isArray(v) ? v[0] : v; } return ""; };
+function rcParse(rec, code) {
+  if (!JSON.stringify(rec).replace(/ /g, "").includes(code)) return null;
+  return { title: String(pick(rec, "libelle", "modeles_ou_references", "noms_des_modeles_ou_references")).slice(0, 160),
+    brand: String(pick(rec, "marque_produit")).slice(0, 80), motif: String(pick(rec, "motif_rappel")).slice(0, 300),
+    risks: String(pick(rec, "risques_encourus")).slice(0, 200), link: String(pick(rec, "lien_vers_la_fiche_rappel")) || "https://rappel.conso.gouv.fr",
+    date: String(pick(rec, "date_publication")).slice(0, 10) };
+}
+async function rcFetch(codes) {
+  const found = {};
+  for (let i = 0; i < codes.length; i += 20) {
+    const chunk = codes.slice(i, i + 20), where = chunk.map((c) => `"${c}"`).join(" OR ");
+    for (const ds of RC_DS) {
+      try {
+        const r = await fetch(`${RC_API}${ds}/records?limit=100&where=${encodeURIComponent(where)}`); if (!r.ok) continue;
+        for (const rec of (await r.json()).results || []) for (const c of chunk) if (!found[c]) { const f = rcParse(rec, c); if (f) found[c] = f; }
+        break;
+      } catch (e) {}
+    }
+  }
+  return found;
+}
+function trackedCodes() {
+  const out = {};
+  (S.stock || []).forEach((s) => { if (/^\d{8,14}$/.test(s.code || "") && num(s.qty) > 0) out[s.code] = { id: s.id, label: s.label }; });
+  (S.list || []).forEach((i) => { if (/^\d{8,14}$/.test(i.code || "") && !out[i.code]) out[i.code] = { id: null, label: i.label }; });
+  return out;
+}
+function recallState() {
+  let rec = {}, dis = [];
+  try { rec = JSON.parse(store.get("recalls") || "{}"); dis = JSON.parse(store.get("recalls_off") || "[]"); } catch (e) {}
+  const t = trackedCodes(), act = Object.keys(t).filter((c) => rec[c] && !dis.includes(c)).map((c) => [c, t[c], rec[c]]);
+  S.recalls = {}; act.forEach(([, a, f]) => { if (a.id) S.recalls[a.id] = f; });
+  return act;
+}
+async function recallCheck() {
+  if (store.get("recall_day") === today()) return;
+  const t = trackedCodes(), codes = Object.keys(t);
+  store.set("recall_day", today()); if (!codes.length) return;
+  const f = await rcFetch(codes); let rec = {};
+  try { rec = JSON.parse(store.get("recalls") || "{}"); } catch (e) {}
+  const fresh = Object.keys(f).filter((c) => !rec[c]);
+  store.set("recalls", JSON.stringify({ ...rec, ...f }));
+  if (fresh.length) { toast(`🚨 Rappel officiel : ${fresh.map((c) => t[c].label).join(", ")}`); notify("🚨 Rappel de produit", fresh.map((c) => t[c].label).join(", ") + " : ne le consomme pas."); render(); }
+}
+function recallCards() {
+  return recallState().slice(0, 3).map(([c, a, f]) => `<div class="card" style="border-color:var(--loss)"><h2>🚨 Rappel de produit : ${esc(a.label)}</h2>
+    <p class="muted">${esc([f.title, f.brand].filter(Boolean).join(" · "))}</p>${f.motif ? `<p class="faint">${esc(f.motif)}${f.risks ? " · Risque : " + esc(f.risks) : ""}</p>` : ""}
+    <p class="faint">Ne le consomme pas et rapporte-le au magasin. Vérifie le lot sur la fiche.</p>
+    <div class="grid2"><a class="primary" style="text-align:center;padding:11px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none" href="${esc(f.link)}" target="_blank" rel="noopener">Voir la fiche ↗</a><button data-act="rcoff" data-code="${c}">Pas mon lot</button></div></div>`).join("");
+}
+const NUTRI = { a: "#038141", b: "#85bb2f", c: "#fecb02", d: "#ee8100", e: "#e63e11" };
+const gramsOf = (q, u) => { const f = { g: 1, kg: 1000, mg: 0.001, ml: 1, cl: 10, dl: 100, l: 1000 }[String(u || "g").toLowerCase()]; const n = Number(q); return f && n > 0 ? n * f : null; };
+async function scanExtra(code, p, price) {
+  const g = gramsOf(p.product_quantity, p.product_quantity_unit), unit = /m?l$|cl$/i.test(String(p.quantity || "").trim()) ? "L" : "kg";
+  const perKg = price && g >= 20 ? price / g * 1000 : null;
+  let alt = null;
+  const cats = (p.categories_tags || []).filter((c) => (c.match(/:/g) || []).length === 1 && !/^en:(plant-based|foods|beverages-and)/.test(c));
+  if (perKg && cats.length) {
+    try {
+      const since = ymd(addDays(new Date(), -365));
+      const r = await fetch(`https://prices.openfoodfacts.org/api/v1/prices?product__categories_tags__contains=${encodeURIComponent(cats[cats.length - 1])}&currency=EUR&date__gte=${since}&order_by=-date&size=100`);
+      const per = {};
+      for (const it of (await r.json()).items || []) {
+        const pr = it.product || {}, c = pr.code || it.product_code, pg = gramsOf(pr.product_quantity, pr.product_quantity_unit), v = Number(it.price);
+        if (!c || c === code || !(pg >= 20) || !(v > 0)) continue;
+        (per[c] = per[c] || { pr, v: [], p: [] }).v.push(v / pg * 1000); per[c].p.push(v);
+      }
+      const med = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
+      for (const [c, d] of Object.entries(per)) { const v = med(d.v); if (!alt || v < alt.perKg) alt = { code: c, name: d.pr.product_name || c, brand: (d.pr.brands || "").split(",")[0].trim(), perKg: v, price: med(d.p) }; }
+      if (alt && alt.perKg >= perKg * 0.9) alt = null;
+      if (alt) alt.saving = Math.round((1 - alt.perKg / perKg) * 100);
+    } catch (e) { alt = null; }
+  }
+  return { nutri: NUTRI[(p.nutriscore_grade || "").toLowerCase()] ? p.nutriscore_grade.toLowerCase() : "", perKg, unit, alt };
+}
 async function found(code) {
   if (scanBusy) return; scanBusy = true; stopScan();
   if (navigator.vibrate) navigator.vibrate(60);
   $("scanmsg").textContent = `Code ${code} · recherche du produit…`;
-  let name = "", brand = "", qty = "", price = null;
+  let name = "", brand = "", qty = "", price = null, p = {};
   try {
-    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_fr,brands,quantity`);
-    const d = await r.json(); const p = d.product || {};
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_fr,brands,quantity,product_quantity,product_quantity_unit,nutriscore_grade,categories_tags`);
+    const d = await r.json(); p = d.product || {};
     name = p.product_name_fr || p.product_name || ""; brand = (p.brands || "").split(",")[0].trim(); qty = p.quantity || "";
   } catch (e) {}
   try {
@@ -622,14 +817,28 @@ async function found(code) {
   if (!name) { $("scanmsg").textContent = `Produit inconnu (code ${code}) : tape son nom dans la liste.`; scanBusy = false; return; }
   const label = (name + (brand && !name.toLowerCase().includes(brand.toLowerCase()) ? " " + brand : "")).slice(0, 80);
   $("scanmsg").textContent = "Produit trouvé ✓";
-  $("scanres").innerHTML = `<div class="card"><h2>${esc(label)}</h2><p class="muted">${esc(qty)}${price ? ` · environ ${euro(price)} (prix relevés)` : ""}</p>
+  const [x, rc] = await Promise.all([scanExtra(code, p, price), rcFetch([code]).catch(() => ({}))]);
+  const recall = rc[code];
+  S.scanCode = { code, label };
+  $("scanres").innerHTML = `<div class="card">${recall ? `<div style="background:var(--loss);color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px"><b>🚨 Produit rappelé</b><br>${esc(recall.motif || recall.title || "Rappel officiel en cours")}<br><a style="color:#fff" href="${esc(recall.link)}" target="_blank" rel="noopener">Voir la fiche RappelConso ↗</a></div>` : ""}
+    <h2>${esc(label)}</h2><p class="muted">${x.nutri ? `<span class="pill" style="background:${NUTRI[x.nutri]};color:#fff;font-weight:700">Nutri-Score ${x.nutri.toUpperCase()}</span> ` : ""}${esc(qty)}${price ? ` · environ ${euro(price)}` : ""}${x.perKg ? ` · ${euro(x.perKg)}/${x.unit}` : ""}</p>
+    ${x.alt ? `<p class="faint">💡 Moins cher au ${x.unit} : <b>${esc(x.alt.name)}${x.alt.brand ? " " + esc(x.alt.brand) : ""}</b> à ${euro(x.alt.perKg)}/${x.unit} (−${x.alt.saving} %, ≈ ${euro(x.alt.price)})</p>` : ""}
     <div class="grid2"><button class="${scanMode === "list" ? "primary" : ""}" id="sc_list">+ Liste de courses</button><button class="${scanMode === "stock" ? "primary" : ""}" id="sc_stock">+ Stock</button></div>
+    ${x.alt ? `<br><button id="sc_alt" style="width:100%">+ Liste : l'équivalent moins cher</button>` : ""}
     <br><button class="ghost" id="sc_again">Scanner un autre produit</button></div>`;
-  $("sc_list").onclick = () => { closeScan(); S.list.push({ id: "tmp", label, qty: "", price, done: false, created_by: S.me }); render();
-    act(() => api("POST", "shared_list", { household_id: S.hid, label, price }), `🛒 ${label} ajouté à la liste`); };
+  const toList = (l, pv, c) => { closeScan(); S.list.push({ id: "tmp", label: l, qty: "", price: pv, done: false, created_by: S.me, code: c }); render();
+    act(() => postCompat("shared_list", { household_id: S.hid, label: l, price: pv ? Math.round(pv * 100) / 100 : null, code: c }, ["code"]), `🛒 ${l} ajouté à la liste`); };
+  $("sc_list").onclick = () => toList(label, price, code);
+  if (x.alt) $("sc_alt").onclick = () => toList((x.alt.name + (x.alt.brand && !x.alt.name.toLowerCase().includes(x.alt.brand.toLowerCase()) ? " " + x.alt.brand : "")).slice(0, 80), x.alt.price, x.alt.code);
   $("sc_stock").onclick = () => { closeScan(); S.view = "list"; S.sub = "stock"; render();
-    $("stockform").open = true; $("sname").value = label; $("sqty").value = "1"; $("starget").value = "1"; $("sqty").focus(); };
+    $("stockform").open = true; $("sname").value = label; $("sqty").value = "1"; $("starget").value = "1"; frzForm(); $("sqty").focus(); };
   $("sc_again").onclick = () => openScan(scanMode);
+}
+// colonnes récentes : si le serveur du foyer n'est pas encore à jour, on renvoie sans elles
+async function postCompat(table, row, recent) {
+  try { return await api("POST", table, row); }
+  catch (e) { if (!recent.some((k) => row[k] !== undefined && String(e.message).includes(k))) throw e;
+    const r = { ...row }; recent.forEach((k) => delete r[k]); return api("POST", table, r); }
 }
 function closeScan() { stopScan(); $("scan").classList.add("hidden"); }
 $("scanlist").onclick = () => openScan("list");
@@ -646,22 +855,112 @@ function addToList(items) {
 }
 const now = () => new Date().toISOString();
 $("autoadd").checked = store.get("autoadd") !== "0";
-$("autoadd").onchange = () => store.set("autoadd", $("autoadd").checked ? "1" : "0");
-// ce qui passe sous la quantité nécessaire rejoint la liste ; ce qui revient au niveau (ajouté par moi) en sort
-function autoList(items) {
-  if (!$("autoadd").checked) return;
+$("autoadd").onchange = () => { store.set("autoadd", $("autoadd").checked ? "1" : "0"); if (S.stock) autoList(S.stock, true); };
+// ce qui passe sous la quantité nécessaire rejoint la liste ; ce qui revient au niveau (ajouté par moi) en sort.
+// « autoseen » : {article: quantité} déjà mis (ou trouvé) sur la liste ; un article retiré à la main n'y revient que
+// si sa quantité change. sweep : vérification de tout le stock au chargement.
+function autoList(items, sweep) {
+  if (!$("autoadd").checked || !S.list) return;
+  let seen = {}; try { seen = JSON.parse(store.get("autoseen") || "{}"); } catch (e) {}
   const add = [], drop = [];
+  const inList = (l) => { const k = itemKey(l); return (S.list || []).some((i) => itemKey(i.label) === k) || add.some((a) => itemKey(a.label) === k); };
   for (const st of items) {
-    if (st.period === "none") continue;
-    const n = need(st);
-    if (n > 0 && !onList(st.label)) add.push({ label: st.label, qty: fmtQty(n, st.unit) });
-    if (n === 0) { const k = itemKey(st.label);
-      (S.list || []).filter((i) => itemKey(i.label) === k && !i.done && i.created_by === S.me && i.id !== "tmp").forEach((i) => drop.push(i.id)); }
+    if (st.period === "none" || !st.id) continue;
+    const n = need(st), q = num(st.qty);
+    if (n > 0) {
+      if (inList(st.label)) seen[st.id] = q;
+      else if (!(sweep && seen[st.id] === q)) { add.push({ label: st.label, qty: fmtQty(n, st.unit) }); seen[st.id] = q; }
+    } else {
+      delete seen[st.id];
+      if (!sweep) { const k = itemKey(st.label);
+        (S.list || []).filter((i) => itemKey(i.label) === k && !i.done && i.created_by === S.me && i.id !== "tmp").forEach((i) => drop.push(i.id)); }
+    }
   }
+  store.set("autoseen", JSON.stringify(seen));
   if (add.length) addToList(add);
   if (drop.length) { S.list = S.list.filter((i) => !drop.includes(i.id)); render();
     act(() => api("DELETE", `shared_list?id=in.(${drop.join(",")})`)); }
 }
+
+// ---------------------------------------------------------------- 176 · rayons · 177 · mode magasin
+function sheet(html) { $("sheetbox").innerHTML = html; $("sheet").classList.remove("hidden"); }
+function closeSheet() { $("sheet").classList.add("hidden"); }
+$("sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") closeSheet(); });
+function savePref(key, value, msg) {
+  const onServer = S.prefs !== null && S.prefs !== undefined;
+  S.prefs = { ...(S.prefs || {}), [key]: value }; render();
+  if (!onServer) { S.prefs.local = true; return toast((msg ? msg + " · " : "") + "gardé sur ce téléphone (serveur du foyer à mettre à jour)"); }
+  if (S.prefs.local) return toast(msg || "Enregistré sur ce téléphone");
+  if (S.hid) act(() => api("POST", "shared_prefs?on_conflict=household_id,key", { household_id: S.hid, key, value },
+    "resolution=merge-duplicates,return=minimal"), msg);
+}
+$("lmode").onchange = () => { store.set("lmode", $("lmode").value); render(); };
+$("lshop").onchange = () => {
+  let v = $("lshop").value;
+  if (v === "+") { v = (prompt("Nom du magasin (ex. Leclerc, Carrefour Market) :") || "").trim().slice(0, 40);
+    if (v) { const p = aislePrefs(); p.order[v] = aisleOrder(store.get("lshop") || ""); savePref("aisles", p); } }
+  store.set("lshop", v || ""); render();
+};
+let ordDraft = null;
+function orderSheet() {
+  const shop = store.get("lshop") || "";
+  ordDraft = ordDraft || aisleOrder(shop);
+  sheet(`<h2>↕️ Ordre des rayons${shop ? " · " + esc(shop) : ""}</h2><p class="faint">Dans l'ordre où tu traverses le magasin : la liste suivra le même chemin.</p>`
+    + ordDraft.map((a, i) => `<div class="ord"><span>${AISLE.emoji[a] || ""} ${esc(a)}</span><button data-ord="${i}" data-d="-1" ${i ? "" : "disabled"}>↑</button><button data-ord="${i}" data-d="1" ${i < ordDraft.length - 1 ? "" : "disabled"}>↓</button></div>`).join("")
+    + `<br><div class="grid2"><button id="ordreset">Par défaut</button><button class="primary" id="ordsave">Enregistrer</button></div>`);
+}
+$("lorder").onclick = () => { ordDraft = null; orderSheet(); };
+$("sheetbox").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ord != null) { const i = +b.dataset.ord, j = i + +b.dataset.d; [ordDraft[i], ordDraft[j]] = [ordDraft[j], ordDraft[i]]; orderSheet(); return; }
+  if (b.id === "ordreset") { ordDraft = [...AISLE.aisles]; orderSheet(); return; }
+  if (b.id === "ordsave") { const p = aislePrefs(); p.order[store.get("lshop") || ""] = ordDraft; closeSheet(); savePref("aisles", p, "Ordre des rayons enregistré ✓"); return; }
+  if (b.dataset.swapto) { const c = S.chores.find((x) => x.id === b.dataset.chore); closeSheet(); if (!c) return;
+    const row = { swap_from: S.me, swap_to: b.dataset.swapto }; Object.assign(c, row); render();
+    act(() => api("PATCH", `shared_chores?id=eq.${c.id}`, row), `Demande envoyée à ${name(b.dataset.swapto)} 🔁`); return; }
+  if (b.dataset.pick) { const it = S.list.find((x) => x.id === b.dataset.item); if (!it) return closeSheet();
+    const p = aislePrefs(); p.items[itemKey(it.label)] = b.dataset.pick; closeSheet(); savePref("aisles", p, `${it.label} → ${b.dataset.pick}`); }
+});
+function aisleSheet(id) {
+  const it = S.list.find((x) => x.id === id); if (!it) return;
+  const cur = aisleOf(it.label);
+  sheet(`<h2>🏷 Rayon de « ${esc(it.label)} »</h2><div class="chips">` + AISLE.aisles.map((a) => `<button data-pick="${esc(a)}" data-item="${esc(id)}" ${a === cur ? 'class="primary"' : ""}>${AISLE.emoji[a] || ""} ${esc(a)}</button>`).join("") + "</div>");
+}
+
+// mode magasin : écran allumé, grosses cases, total du panier en direct face au budget
+let wake = null;
+async function keepAwake() { try { if ("wakeLock" in navigator && !wake && !$("shop").classList.contains("hidden")) { wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release", () => (wake = null)); } } catch (e) {} }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) keepAwake(); });
+$("shopgo").onclick = () => { $("shop").classList.remove("hidden"); document.body.style.overflow = "hidden"; renderShop(); keepAwake(); };
+$("shopclose").onclick = () => { $("shop").classList.add("hidden"); document.body.style.overflow = ""; if (wake) { wake.release().catch(() => {}); wake = null; }
+  const n = (S.list || []).filter((i) => i.done).length;
+  if (n) toast(`${n} article(s) dans le panier · « J'ai fait les courses » dans Pécule les remet dans le stock`); };
+function renderShop() {
+  if ($("shop").classList.contains("hidden") || !S.list) return;
+  const shop = store.get("lshop") || "", todo = S.list.filter((i) => !i.done), done = S.list.filter((i) => i.done);
+  const cart = done.reduce((t, i) => t + (Number(i.price) || 0), 0), left = todo.reduce((t, i) => t + (Number(i.price) || 0), 0);
+  const bud = S.cartBudget || 0;
+  $("shoptot").textContent = euro(cart);
+  $("shopbud").textContent = bud ? `sur ${euro(bud)} de budget` : "dans le panier";
+  $("shopmeter").classList.toggle("hidden", !bud); $("shopmeter").classList.toggle("over", bud && cart > bud);
+  $("shopmeter").firstElementChild.style.width = bud ? Math.min(100, (cart / bud) * 100) + "%" : "0";
+  const unknown = done.filter((i) => !Number(i.price)).length;
+  $("shopinfo").innerHTML = [todo.length ? `${todo.length} article(s) à prendre${left ? ` · encore ≈ ${euro(left)}` : ""}` : "Tout est dans le panier ✓",
+    bud && cart + left > bud ? `<span class="loss">⚠️ dépasse le budget de ${euro(cart + left - bud)}</span>` : "",
+    unknown ? `${unknown} prix à noter (touche le prix)` : ""].filter(Boolean).join(" · ");
+  const r = (i) => `<div class="srow ${i.done ? "done" : ""}" data-id="${i.id}"><div class="check ${i.done ? "on" : ""}" data-act="tick">${i.done ? "✓" : ""}</div>
+    <div class="grow" data-act="tick">${esc(i.label)}${i.qty ? ` <span class="faint">· ${esc(i.qty)}</span>` : ""}</div>
+    <button class="pr" data-act="sprice">${Number(i.price) ? euro(i.price) : "prix ?"}</button></div>`;
+  $("shoplist").innerHTML = byAisle(todo, shop).map(([a, its]) => `<div class="aisle">${AISLE.emoji[a] || ""} ${esc(a)}</div>` + its.map(r).join("")).join("")
+    + (done.length ? `<div class="aisle">🛒 Dans le panier (${done.length})</div>` + done.map(r).join("") : "");
+}
+function addQuick(inp) {
+  const l = $(inp).value.trim(); if (!l) return;
+  $(inp).value = ""; addToList([{ label: l, qty: "" }]);
+}
+$("shopaddgo").onclick = () => addQuick("shopadd");
+$("shopadd").addEventListener("keydown", (e) => { if (e.key === "Enter") addQuick("shopadd"); });
+
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act;
@@ -669,6 +968,18 @@ document.addEventListener("click", (e) => {
     const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
     if (a === "tick") { it.done = !it.done; render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: now() })); }
     else { S.list = S.list.filter((x) => x.id !== id); render(); act(() => api("DELETE", `shared_list?id=eq.${id}`)); }
+    return;
+  }
+  if (a === "rcoff") { let d = []; try { d = JSON.parse(store.get("recalls_off") || "[]"); } catch (e2) {}
+    d.push(b.dataset.code); store.set("recalls_off", JSON.stringify(d)); render(); return; }
+  if (a === "aisle") { aisleSheet(b.closest("[data-id]").dataset.id); return; }
+  if (a === "sprice") {
+    const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
+    const v = prompt(`Prix de « ${it.label} » (€)`, it.price ? String(it.price).replace(".", ",") : "");
+    if (v === null) return;
+    const pv = parseFloat(v.replace(",", ".").replace(/[^\d.]/g, ""));
+    it.price = pv > 0 ? Math.round(pv * 100) / 100 : null; render();
+    act(() => api("PATCH", `shared_list?id=eq.${id}`, { price: it.price, updated_at: now() }));
     return;
   }
   const id = b.dataset.id;
@@ -687,8 +998,25 @@ document.addEventListener("click", (e) => {
     const c = S.chores.find((x) => x.id === id); if (!c) return;
     const t = new Date(); const nx = new Date(t); nx.setDate(nx.getDate() + (c.every_days || 7));
     const row = { last_done: ymd(t), last_by: S.me, next_date: ymd(nx), turn: (c.turn || 0) + (c.mode === "rotate" ? 1 : 0) };
+    if ("assignee" in c) { Object.assign(row, { assignee: null, swap_from: null, swap_to: null });
+      const pp = c.people || [];  // échange : celui qui a pris le tour de l'autre lui laisse le sien la prochaine fois
+      if (c.assignee && c.mode === "rotate" && pp.length) { const orig = pp[(c.turn || 0) % pp.length], nxt = pp[row.turn % pp.length];
+        if (nxt === c.assignee && orig !== c.assignee) row.assignee = orig; } }
+    Object.assign(c, row); if (S.choreLog) S.choreLog.unshift({ chore_id: c.id, title: c.title, done_by: S.me, done_on: ymd(t) }); render();
+    act(async () => { await api("PATCH", `shared_chores?id=eq.${id}`, row);
+      await api("POST", "shared_chore_log", { household_id: S.hid, chore_id: c.id, title: c.title, emoji: c.emoji || "🧹" }).catch(() => {}); }, `✓ ${c.title} : bravo !`); return;
+  }
+  if (a === "swapask") {
+    const c = S.chores.find((x) => x.id === id); if (!c) return;
+    sheet(`<h2>🔁 Qui peut prendre ce tour ?</h2><p class="faint">${esc(c.emoji || "")} ${esc(c.title)} · la personne reçoit la demande et accepte d'un clic.</p><div class="chips">`
+      + S.members.filter((m) => m.user_id !== S.me).map((m) => `<button data-swapto="${m.user_id}" data-chore="${c.id}">${esc(m.display_name)}</button>`).join("") + "</div>");
+    return;
+  }
+  if (a === "swapyes" || a === "swapno") {
+    const c = S.chores.find((x) => x.id === id); if (!c) return;
+    const row = { swap_from: null, swap_to: null }; if (a === "swapyes") row.assignee = S.me;
     Object.assign(c, row); render();
-    act(() => api("PATCH", `shared_chores?id=eq.${id}`, row), `✓ ${c.title} : bravo !`); return;
+    act(() => api("PATCH", `shared_chores?id=eq.${id}`, row), a === "swapyes" ? `C'est noté : ${c.title} est pour toi cette fois 🙌` : null); return;
   }
   if (a === "mdel") { if (!confirm("Retirer ce repas ?")) return; S.meals = S.meals.filter((m) => m.id !== id); render(); act(() => api("DELETE", `shared_meals?id=eq.${id}`)); return; }
   if (a === "wclaim") { S.claims.push({ wish_id: id, claimed_by: S.me }); render();
@@ -696,14 +1024,19 @@ document.addEventListener("click", (e) => {
   if (a === "wunclaim") { S.claims = S.claims.filter((c) => c.wish_id !== id); render(); act(() => api("DELETE", `shared_wish_claims?wish_id=eq.${id}`), "Réservation annulée"); return; }
   if (a === "wdel") { if (!confirm("Retirer cette envie ?")) return; S.wishes = S.wishes.filter((w) => w.id !== id); render(); act(() => api("DELETE", `shared_wishes?id=eq.${id}`)); }
 });
+function frzForm() { const on = isFreezer($("splace").value); $("sfrzbox").classList.toggle("hidden", !on);
+  if (on) { if (!$("sfrz").value) $("sfrz").value = ymd(new Date()); $("sfrzlab").textContent = `Congelé le (à manger dans les ${freezeMonths($("sname").value)} mois)`; } }
+$("splace").addEventListener("change", frzForm); $("sname").addEventListener("input", frzForm);
 $("addstock").onclick = () => {
   const l = $("sname").value.trim(); if (!l) return toast("Indique l'article");
   const row = { household_id: S.hid, label: l.slice(0, 80), qty: Math.max(0, parseFloat($("sqty").value.replace(",", ".")) || 0),
     target: Math.max(0, parseFloat($("starget").value.replace(",", ".")) || 1), unit: $("sunit").value.trim().slice(0, 20),
     place: $("splace").value, period: $("speriod").value };
   if ($("sexp").value) row.expires = $("sexp").value;
-  ["sname", "sqty", "starget", "sunit", "sexp"].forEach((k) => ($(k).value = ""));
-  act(() => api("POST", "shared_stock", row), "Ajouté au stock 📦");
+  if (isFreezer(row.place)) row.frozen_on = $("sfrz").value || ymd(new Date());
+  if (S.scanCode && S.scanCode.label === row.label) row.code = S.scanCode.code;
+  ["sname", "sqty", "starget", "sunit", "sexp", "sfrz"].forEach((k) => ($(k).value = ""));
+  act(() => postCompat("shared_stock", row, ["code", "frozen_on"]), "Ajouté au stock 📦");
 };
 $("mtitle").addEventListener("change", () => {
   const m = [...(S.meals || [])].sort((a, b) => String(b.date).localeCompare(String(a.date))).find((x) => x.title === $("mtitle").value.trim());
@@ -742,7 +1075,76 @@ $("addexp").onclick = () => {
     category: "", date: today(), paid_by: S.me, split }), "Dépense ajoutée 🧾");
 };
 
+
+// ---------------------------------------------------------------- 187 · appli installable et rappels
+let swReg = null, installEvt = null;
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("foyer-sw.js").then((r) => { swReg = r; notifUi(); }).catch(() => {});
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; notifUi(); });
+window.addEventListener("appinstalled", () => { installEvt = null; toast("Appli installée 📲"); notifUi(); });
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+function notifUi() {
+  const ok = "Notification" in window, perm = ok ? Notification.permission : "denied";
+  $("notiftxt").textContent = !ok ? (isIOS() && !standalone() ? "Sur iPhone, installe d'abord l'appli (ci-dessous) : les rappels s'activent ensuite depuis l'icône." : "Ce navigateur ne permet pas les notifications.")
+    : perm === "granted" ? "Rappels activés ✓ Tâches du jour, produits à consommer, congélateur, rappels de produits et demandes d'échange." + (swReg && "periodicSync" in swReg ? " Ils arrivent même appli fermée (vérification environ 2 fois par jour)." : " Ils s'affichent à l'ouverture de la page.")
+    : perm === "denied" ? "Les notifications sont bloquées pour cette page : autorise-les dans les réglages du navigateur."
+    : "Reçois une notification pour tes tâches du jour, ce qui périme, le congélateur et les rappels de produits.";
+  $("notifon").classList.toggle("hidden", !ok || perm !== "default");
+  $("installgo").classList.toggle("hidden", !installEvt);
+  $("installtxt").textContent = standalone() ? "Appli installée sur ce téléphone ✓" : installEvt ? "" : isIOS() ? "Pour l'installer : bouton Partager ⬆️ › « Sur l'écran d'accueil »." : "Pour l'installer : menu du navigateur › « Installer l'application » ou « Ajouter à l'écran d'accueil ».";
+}
+$("notifon").onclick = async () => {
+  try { await Notification.requestPermission(); } catch (e) {}
+  if (Notification.permission === "granted") {
+    try { if (swReg && "periodicSync" in swReg) await swReg.periodicSync.register("pecule-daily", { minInterval: 12 * 3600 * 1000 }); } catch (e) {}
+    toast("Rappels activés 🔔"); dailyNotify(true);
+  }
+  notifUi();
+};
+$("installgo").onclick = async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; notifUi(); };
+function notify(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const o = { body, icon: "foyer-icon-192.png", tag: title };
+  try { if (swReg) swReg.showNotification(title, o); else new Notification(title, o); } catch (e) {}
+}
+function idbPut(key, value) {
+  return new Promise((ok) => { try { const r = indexedDB.open("pecule", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onsuccess = () => { const t = r.result.transaction("kv", "readwrite"); t.objectStore("kv").put(value, key); t.oncomplete = ok; t.onerror = ok; }; r.onerror = ok; } catch (e) { ok(); } });
+}
+// planning des rappels des 14 prochains jours, laissé sur le téléphone pour le service worker
+function remindPlan() {
+  const plan = [], d0 = new Date(), t = ymd(d0), dd = (s, n) => ymd(addDays(new Date(String(s).slice(0, 10) + "T00:00:00"), n));
+  for (const c of S.chores || []) {
+    if (c.swap_to === S.me) plan.push({ key: `swap:${c.id}:${c.swap_from}:${c.next_date}`, day: t, until: dd(t, 3), group: "🔁 Échange de tour", text: `${name(c.swap_from)} te demande : ${c.title}` });
+    const who = choreTurn(c); if (who !== null && who !== S.me) continue;
+    const day = String(c.next_date).slice(0, 10) < t ? t : String(c.next_date).slice(0, 10);
+    plan.push({ key: `chore:${c.id}:${c.next_date}`, day, until: dd(day, 2), group: "🧹 Tâches du jour", text: `${c.emoji || "🧹"} ${c.title}` });
+  }
+  for (const x of S.stock || []) {
+    if (x.expires && num(x.qty) > 0) plan.push({ key: `exp:${x.id}:${x.expires}`, day: dd(x.expires, -1), until: String(x.expires).slice(0, 10), group: "⏰ À consommer vite", text: `${x.label} (périme le ${String(x.expires).slice(8, 10)}/${String(x.expires).slice(5, 7)})` });
+    const fi = freezerInfo(x);
+    if (fi) plan.push({ key: `frz:${x.id}:${x.frozen_on}`, day: ymd(addDays(d0, fi[1] - 7)), until: ymd(addDays(d0, fi[1] + 30)), group: "❄️ Congélateur", text: `${x.label} (${ageText(fi[0])})` });
+  }
+  return plan;
+}
+async function dailyNotify(force) {
+  if (!S.chores && !S.stock) return;
+  const plan = remindPlan();
+  await idbPut("plan", plan);
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (swReg && swReg.active) { swReg.active.postMessage("remind"); return; }
+  // sans service worker (page ouverte en local) : rappels montrés à l'ouverture, une fois par jour
+  let shown = {}; try { shown = JSON.parse(store.get("shown") || "{}"); } catch (e) {}
+  const t = today(), due = plan.filter((x) => x.day <= t && x.until >= t && !shown[x.key]);
+  const g = {}; due.forEach((x) => { (g[x.group] = g[x.group] || []).push(x.text); shown[x.key] = t; });
+  Object.entries(g).forEach(([k, v]) => notify(k, v.slice(0, 5).join("\n")));
+  store.set("shown", JSON.stringify(shown));
+}
+
 (async function start() {
+  notifUi();
   $("server").classList.toggle("hidden", !!(S.url && S.key));
   if (store.get("email")) $("email").value = store.get("email");
   if (!S.session || !S.url) { showApp(false); $("login").classList.remove("hidden"); if (store.get("email")) $("pwd").focus(); return; }

@@ -8,7 +8,7 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 
 <p align="center">
   <a href="https://github.com/zyg-off/pecule/releases/latest/download/Pecule-Setup.exe"><b>⬇️ Télécharger Pécule pour Windows</b></a>
-  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.1.1
+  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.1.0
 </p>
 
 <p align="center"><img src="images/accueil.png" width="900" alt="Accueil de Pécule"></p>
@@ -59,8 +59,10 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 🛒 **Liste de courses partagée** avec budget du panier
 - 🏪 **Le magasin le moins cher** pour ta liste (tes prix et ceux de la communauté Open Prices), promos près de chez toi
 - 📷 Lecture des tickets de caisse (photo ou PDF)
-- 📦 **Stock de la maison** : ce qui passe sous le nécessaire rejoint la liste, dates de péremption avec un rappel la veille et des recettes pour finir les produits
-- 📷 **Scan des codes-barres** : le produit s'ajoute à la liste ou au stock avec son nom et son prix (Open Food Facts)
+- 📦 **Stock de la maison** : ce qui passe sous le nécessaire rejoint la liste, dates de péremption avec un rappel la veille et des recettes pour finir les produits, suivi du congélateur
+- 🧭 **Liste rangée par rayon**, dans l'ordre de ton magasin
+- 📷 **Scan des codes-barres** : nom, prix, Nutri-Score, prix au kilo et un équivalent moins cher (Open Food Facts, Open Prices)
+- 🚨 **Rappels de produits** : alerte si un produit de ton stock fait l'objet d'un rappel officiel (RappelConso)
 - 🍝 **Repas de la semaine** : des idées selon vos goûts, votre régime et vos allergies, et les ingrédients qui manquent rejoignent la liste de courses
 
 <p align="center">
@@ -94,8 +96,8 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 💞 **Foyer** : dépenses communes, qui doit combien, budgets et objectifs communs, vue commune en direct
 - 👥 **Comptes communs vraiment partagés** : la part de chacun, le suivi des versements et un rappel pour ta part
 - 📅 **Agenda du foyer** : loyer, factures, rendez-vous, avec un rappel la veille
-- 🧹 **Tâches ménagères** : à tour de rôle ou par n'importe qui, avec un rappel le jour J
-- 📱 **Le foyer sur ton téléphone** : courses (avec scan des codes-barres), stock, repas, tâches, envies, dépenses communes, agenda et soldes. La page reste connectée (QR code dans Pécule)
+- 🧹 **Tâches ménagères** : à tour de rôle ou par n'importe qui, rappel le jour J, tableau du mois et échange de tour en un clic
+- 📱 **L'appli du foyer sur ton téléphone** : à installer sur l'écran d'accueil, avec les rappels. Courses (mode magasin, scan des codes-barres), stock, repas, tâches, envies, dépenses communes, agenda et soldes (QR code dans Pécule)
 - 🧾 Dépenses entre amis (week-end, coloc) sans que les autres aient l'appli
 - 👤 Plusieurs profils protégés par un code
 
