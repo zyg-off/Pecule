@@ -2,10 +2,11 @@
 // congélateur) s'affichent en notification, y compris appli fermée quand le téléphone le permet (Chrome Android,
 // appli installée). Aucune donnée n'est envoyée : le rappel se calcule à partir du planning que la page a laissé
 // sur le téléphone.
-const CACHE = "foyer-v1";
-const SHELL = ["foyer.html", "foyer.webmanifest", "foyer-icon-192.png"];
+const CACHE = "foyer-v2";
+const SHELL = ["foyer.html", "foyer.webmanifest", "foyer-icon-192.png", "foyer-zxing.min.js"];
 
-self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {})); self.skipWaiting(); });
+// chaque fichier séparément : un fichier absent ne doit pas empêcher de garder les autres
+self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((f) => c.add(f).catch(() => {}))))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 
 // page : réseau d'abord (toujours la dernière version), copie gardée pour le hors-ligne

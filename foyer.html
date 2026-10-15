@@ -46,7 +46,10 @@ nav button.on{color:var(--accent)}
 #toast.show{opacity:1}
 #scan{position:fixed;inset:0;background:#0d1117;overflow:auto;z-index:50;display:flex;flex-direction:column;padding:16px;gap:10px;color:#fff}
 #scan video{width:100%;max-height:55vh;object-fit:cover;border-radius:16px;background:#000}
-#scan .frame{position:relative}#scan .frame:after{content:"";position:absolute;left:12%;right:12%;top:45%;height:2px;background:#f08a3a;box-shadow:0 0 12px #f08a3a}
+#scan .frame{position:relative}#scan .frame:after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2px;background:#f08a3a;box-shadow:0 0 12px #f08a3a}
+#scan .box{position:absolute;left:5%;right:5%;top:30%;bottom:30%;border:2px solid rgba(255,255,255,.75);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.35);pointer-events:none;transition:.2s}
+#scan .frame{overflow:hidden;border-radius:16px}#scan .frame.ok .box{border-color:#41b883;box-shadow:0 0 0 999px rgba(31,138,91,.35)}
+#scan .tools button{background:#26303b;color:#fff}
 #scanres .card{color:var(--ink)}#scan input{color:var(--ink);background:var(--card)}
 .seg{display:flex;gap:6px;margin:10px 0 0}.seg button{flex:1;font-size:14px;padding:9px 4px}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
@@ -203,7 +206,8 @@ a{color:var(--accent)}
 </div>
 <div id="scan" class="hidden">
   <div style="display:flex;align-items:center"><b style="flex:1">📷 Scanner un produit</b><button class="ghost" id="scanclose" style="color:#fff">✕ Fermer</button></div>
-  <div class="frame"><video id="cam" playsinline muted></video></div>
+  <div class="frame" id="scanframe"><video id="cam" playsinline muted autoplay></video><div class="box"></div></div>
+  <div class="tools" style="display:flex;gap:8px"><button id="scantorch" class="hidden" style="flex:1">🔦 Lampe</button><button id="scanagain" class="hidden" style="flex:1">📷 Relancer la caméra</button></div>
   <p id="scanmsg" class="faint" style="color:#ccc">Vise le code-barres du produit.</p>
   <div class="add"><input id="scancode" inputmode="numeric" placeholder="ou tape le code-barres"><button class="primary" id="scango">OK</button></div>
   <div id="scanres"></div>
@@ -683,43 +687,119 @@ async function addItem() {
 $("additem").onclick = addItem;
 $("item").onkeydown = (e) => { if (e.key === "Enter") addItem(); };
 // ---------------------------------------------------------------- 169 · scanner un code-barres
-let scanStream = null, scanTimer = null, scanReader = null, scanMode = "list", scanBusy = false;
+// Caméra arrière en haute définition avec mise au point continue ; lecture par le détecteur intégré du téléphone
+// (Android) s'il sait lire les EAN, sinon par ZXing sur la bande centrale de l'image (iPhone…). Un code n'est retenu
+// que si sa clé de contrôle est bonne et qu'il a été lu deux fois de suite (fini les codes mal lus).
+let scanStream = null, scanTimer = null, scanMode = "list", scanBusy = false, scanLast = "", scanHits = 0, scanStart = 0, torchOn = false;
 function stopScan() {
-  clearTimeout(scanTimer);
-  if (scanReader) { try { scanReader.reset(); } catch (e) {} scanReader = null; }
+  clearTimeout(scanTimer); scanTimer = null;
   if (scanStream) { scanStream.getTracks().forEach((t) => t.stop()); scanStream = null; }
+  torchOn = false; $("scantorch").classList.add("hidden");
 }
+document.addEventListener("visibilitychange", () => { if (document.hidden && scanStream) { stopScan(); if (!$("scan").classList.contains("hidden")) $("scanmsg").textContent = "Caméra en pause : touche « Relancer la caméra »."; $("scanagain").classList.remove("hidden"); } });
+// lecteur ZXing : la copie publiée à côté de la page (foyer-zxing.min.js), sinon celle d'unpkg.com
+let zxLoading = null;
 function loadZXing() {
-  return new Promise((ok, ko) => {
-    if (window.ZXing) return ok();
-    const sc = document.createElement("script");
-    sc.src = "https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js";
-    sc.onload = ok; sc.onerror = () => ko(new Error("lecteur indisponible"));
+  const one = (src) => new Promise((ok, ko) => {
+    const sc = document.createElement("script"); sc.src = src;
+    sc.onload = () => (window.ZXing ? ok() : ko(new Error("lecteur indisponible"))); sc.onerror = () => { sc.remove(); ko(new Error("lecteur indisponible")); };
     document.head.appendChild(sc);
   });
+  if (window.ZXing) return Promise.resolve();
+  if (!zxLoading) zxLoading = one("foyer-zxing.min.js").catch(() => one("https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js")).catch((e) => { zxLoading = null; throw e; });
+  return zxLoading;
 }
-async function openScan(mode) {
-  scanMode = mode; scanBusy = false;
-  $("scan").classList.remove("hidden"); $("scanres").innerHTML = ""; $("scancode").value = "";
-  $("scanmsg").textContent = "Vise le code-barres du produit.";
+// clé de contrôle EAN-13 / EAN-8 / UPC-A
+function eanOk(c) {
+  if (!/^\d+$/.test(c)) return false;
+  if (c.length === 12) c = "0" + c;
+  if (c.length !== 13 && c.length !== 8) return c.length === 6;  // UPC-E : pas de clé simple, accepté sur double lecture
+  const d = c.split("").map(Number), last = d.pop();
+  const sum = d.reverse().reduce((t, x, i) => t + x * (i % 2 === 0 ? 3 : 1), 0);
+  return (10 - (sum % 10)) % 10 === last;
+}
+function seen(code) {
+  code = String(code || "").replace(/\D/g, "");
+  if (!eanOk(code)) return;
+  if (code === scanLast) scanHits++; else { scanLast = code; scanHits = 1; }
+  if (scanHits >= 2) found(code.length === 12 ? "0" + code : code);
+}
+async function nativeDetector() {
+  if (!("BarcodeDetector" in window)) return null;
   try {
-    if ("BarcodeDetector" in window) {
-      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      $("cam").srcObject = scanStream; await $("cam").play();
-      const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
-      const tick = async () => {
-        if (!scanStream) return;
-        try { const r = await det.detect($("cam")); if (r.length) return found(r[0].rawValue); } catch (e) {}
-        scanTimer = setTimeout(tick, 250);
-      };
-      tick();
-    } else {
-      await loadZXing();
-      scanReader = new ZXing.BrowserMultiFormatReader();
-      scanReader.decodeFromConstraints({ video: { facingMode: "environment" } }, $("cam"), (res) => { if (res) found(res.getText()); });
-    }
-  } catch (e) { $("scanmsg").textContent = "Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous."; }
+    const f = await BarcodeDetector.getSupportedFormats();  // certains Android l'annoncent sans savoir lire les EAN
+    const want = ["ean_13", "ean_8", "upc_a", "upc_e"].filter((x) => f.includes(x));
+    return want.includes("ean_13") ? new BarcodeDetector({ formats: want }) : null;
+  } catch (e) { return null; }
 }
+async function startCamera() {
+  const v = $("cam");
+  const ask = (c) => navigator.mediaDevices.getUserMedia({ audio: false, video: c });
+  try { scanStream = await ask({ facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }); }
+  catch (e) { scanStream = await ask({ facingMode: "environment" }); }
+  v.srcObject = scanStream; v.setAttribute("playsinline", ""); v.muted = true; await v.play();
+  const track = scanStream.getVideoTracks()[0], caps = track.getCapabilities ? track.getCapabilities() : {};
+  const adv = [];
+  if ((caps.focusMode || []).includes("continuous")) adv.push({ focusMode: "continuous" });
+  if (caps.zoom && caps.zoom.max >= 1.5) adv.push({ zoom: Math.min(caps.zoom.max, Math.max(caps.zoom.min || 1, 1.5)) });  // un peu de zoom : on peut tenir le téléphone plus loin, là où il fait la mise au point
+  if (adv.length) { try { await track.applyConstraints({ advanced: adv }); } catch (e) {} }
+  $("scantorch").classList.toggle("hidden", !caps.torch);
+  return track;
+}
+$("scantorch").onclick = async () => {
+  const t = scanStream && scanStream.getVideoTracks()[0]; if (!t) return;
+  torchOn = !torchOn; try { await t.applyConstraints({ advanced: [{ torch: torchOn }] }); } catch (e) { torchOn = false; }
+  $("scantorch").textContent = torchOn ? "🔦 Éteindre" : "🔦 Lampe";
+};
+async function openScan(mode) {
+  scanMode = mode; scanBusy = false; scanLast = ""; scanHits = 0; scanStart = Date.now();
+  stopScan();
+  $("scan").classList.remove("hidden"); $("scanres").innerHTML = ""; $("scancode").value = ""; $("scanagain").classList.add("hidden");
+  $("scanmsg").textContent = "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
+  $("scantorch").textContent = "🔦 Lampe";
+  try {
+    const detP = nativeDetector();
+    detP.then((d) => { if (!d) loadZXing().catch(() => {}); });  // le lecteur se charge pendant que la caméra démarre
+    await startCamera();
+    const det = await detP;
+    let zx = null, canvas = null, ctx = null, turn = 0;
+    if (!det) {
+      $("scanmsg").textContent = "Chargement du lecteur…";
+      await loadZXing();
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E]);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      zx = new ZXing.MultiFormatReader(); zx.setHints(hints);
+      canvas = document.createElement("canvas"); ctx = canvas.getContext("2d", { willReadFrequently: true });
+      $("scanmsg").textContent = "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
+    }
+    const v = $("cam");
+    const tick = async () => {
+      if (!scanStream || scanBusy) return;
+      try {
+        if (det) { const r = await det.detect(v); r.forEach((x) => seen(x.rawValue)); }
+        else if (v.videoWidth) {
+          // bande centrale (là où est la ligne orange), puis l'image entière une fois sur trois (code tenu ailleurs)
+          const W = v.videoWidth, H = v.videoHeight, full = turn++ % 3 === 2;
+          const sw = full ? W : Math.round(W * 0.9), sh = full ? H : Math.round(H * 0.4);
+          const sx = Math.round((W - sw) / 2), sy = Math.round((H - sh) / 2), k = Math.min(1, 1280 / sw);
+          canvas.width = Math.round(sw * k); canvas.height = Math.round(sh * k);
+          ctx.drawImage(v, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+          try {
+            const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(canvas)));
+            seen(zx.decode(bmp).getText());
+          } catch (e) { /* rien dans cette image */ }
+        }
+      } catch (e) {}
+      if (scanStream && !scanBusy && Date.now() - scanStart > 8000) {
+        scanStart = Date.now(); $("scanmsg").textContent = "Pas encore lu : recule un peu le téléphone, évite les reflets" + ($("scantorch").classList.contains("hidden") ? "." : ", ou allume la lampe.");
+      }
+      scanTimer = setTimeout(tick, det ? 120 : 60);
+    };
+    tick();
+  } catch (e) { stopScan(); $("scanmsg").textContent = "Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous."; }
+}
+$("scanagain").onclick = () => openScan(scanMode);
 // 180 · rappels officiels (RappelConso) · 181 · Nutri-Score, prix au kilo, équivalent moins cher
 const RC_API = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/";
 const RC_DS = ["rappelconso-v2-gtin-trie", "rappelconso-v2-gtin-espaces"];
@@ -801,7 +881,8 @@ async function scanExtra(code, p, price) {
 }
 async function found(code) {
   if (scanBusy) return; scanBusy = true; stopScan();
-  if (navigator.vibrate) navigator.vibrate(60);
+  if (navigator.vibrate) navigator.vibrate(80);
+  $("scanframe").classList.add("ok"); setTimeout(() => $("scanframe").classList.remove("ok"), 700);
   $("scanmsg").textContent = `Code ${code} · recherche du produit…`;
   let name = "", brand = "", qty = "", price = null, p = {};
   try {
