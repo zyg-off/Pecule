@@ -1,7 +1,7 @@
 {
-  "name": "Foyer Pécule",
-  "short_name": "Foyer",
-  "description": "Courses, stock, repas, tâches et dépenses communes du foyer, avec Pécule.",
+  "name": "Pécule",
+  "short_name": "Pécule",
+  "description": "Tes comptes, opérations, budgets et objectifs, et la vie du foyer : courses, stock, repas, tâches et dépenses communes.",
   "lang": "fr",
   "start_url": "foyer.html",
   "scope": "./",
@@ -9,7 +9,17 @@
   "background_color": "#f3f1ec",
   "theme_color": "#e8701a",
   "icons": [
-    { "src": "foyer-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "foyer-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "foyer-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "foyer-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

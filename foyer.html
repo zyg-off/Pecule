@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e8701a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Foyer Pécule">
+<meta name="apple-mobile-web-app-title" content="Pécule">
 <link rel="manifest" href="foyer.webmanifest">
 <link rel="apple-touch-icon" href="foyer-icon-192.png">
-<title>Foyer Pécule</title>
+<title>Pécule</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='22' fill='%23e8a33d'/%3E%3Cpath d='M32 14c2-8 10-10 14-8-2 6-8 9-14 8z' fill='%234f9d69'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#f3f1ec;--card:#fff;--ink:#1d2733;--muted:#66717f;--faint:#9aa3ad;--line:#e6e2da;--accent:#e8701a;--gain:#1f8a5b;--loss:#c4462f;--chip:#f6efe6}
@@ -63,6 +63,22 @@ textarea{font:inherit;color:inherit;width:100%;padding:11px 12px;border:1px soli
 details summary{cursor:pointer;color:var(--accent);font-weight:600;padding:8px 0;list-style:none}
 .day{font-weight:600;margin:12px 0 2px}
 a{color:var(--accent)}
+nav button.fab{flex:0 0 64px}nav button.fab b{background:var(--accent);color:#fff;width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-size:26px;margin-top:-14px;box-shadow:0 6px 16px rgba(232,112,26,.35)}
+.seg.scroll{overflow-x:auto;scrollbar-width:none}.seg.scroll::-webkit-scrollbar{display:none}.seg.scroll button{flex:0 0 auto;padding:9px 12px}
+.hero{background:linear-gradient(135deg,var(--accent),#f0a04b);color:#fff;border:0}.hero .muted,.hero .faint{color:rgba(255,255,255,.85)}
+.hero .big{font-size:34px}.hero .pill{background:rgba(255,255,255,.22);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.kpis div{background:rgba(255,255,255,.16);border-radius:12px;padding:8px}.kpis b{display:block;font-size:16px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.amt{font-weight:600;white-space:nowrap}.amt.in{color:var(--gain)}
+.dayh{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin:14px 0 0;text-transform:uppercase;letter-spacing:.03em}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;border-radius:99px;background:var(--gain)}
+.bar.warn i{background:#e0a030}.bar.over i{background:var(--loss)}
+.cols{display:flex;align-items:flex-end;gap:4px;height:120px;margin-top:8px}.cols div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;height:100%}
+.cols i{display:block;width:45%;border-radius:4px 4px 0 0;min-height:1px}.cols span{font-size:10px;color:var(--faint)}
+.pend{font-size:12px;color:#b26a00}
+.big-in{font-size:34px;font-weight:700;text-align:center;border:0;background:none;padding:6px}
+.chips button.on{background:var(--accent);color:#fff}
+.tab0{display:flex;gap:6px;margin:4px 0 8px}.tab0 button{flex:1}.tab0 button.on{background:var(--accent);color:#fff;font-weight:600}
 .lbar{display:flex;gap:6px;margin:10px 0 2px;align-items:center}.lbar select{padding:7px 8px;font-size:14px;width:auto;flex:1;min-width:0}
 .lbar button{font-size:14px;padding:8px 10px;white-space:nowrap}
 .aisle{font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 0;display:flex;gap:6px;align-items:center}
@@ -83,11 +99,11 @@ a{color:var(--accent)}
 </style>
 </head>
 <body>
-<header><h1 id="title">Foyer</h1><small id="sync"></small><button class="ghost" id="logout" title="Se déconnecter">⎋</button></header>
+<header><h1 id="title">Pécule</h1><small id="sync"></small><button class="ghost" id="gear" title="Réglages" style="font-size:20px">⚙️</button></header>
 <main>
   <section id="login" class="card hidden">
     <h2>🔐 Connexion au foyer</h2>
-    <p class="muted">Utilise le même e-mail et le même mot de passe que dans Pécule (Foyer).</p>
+    <p class="muted">Utilise le même e-mail et le même mot de passe que dans Pécule sur ton PC.</p>
     <div id="server" class="hidden">
       <p class="faint">Adresse du serveur et clé publique : dans Pécule › Foyer › ⚙ › Sur mon téléphone (QR code).</p>
       <input id="u" placeholder="https://xxxx.supabase.co" autocomplete="off"><br><br>
@@ -99,7 +115,33 @@ a{color:var(--accent)}
     <p class="loss" id="err"></p>
   </section>
 
-  <section id="v-list" class="view hidden">
+  <section id="v-home" class="view hidden"><div id="home"></div></section>
+
+  <section id="v-tx" class="view hidden">
+    <div class="card">
+      <div class="add"><input id="txq" type="search" placeholder="🔎 Rechercher une opération…"></div>
+      <div class="chips" id="txchips"></div>
+      <div id="txlist"></div>
+    </div>
+  </section>
+
+  <section id="v-budgets" class="view hidden"><div id="budgets"></div></section>
+
+  <section id="v-settings" class="view hidden">
+    <div class="card"><h2>🔐 Mes comptes sur ce téléphone</h2><div id="vaultinfo"></div></div>
+    <div class="card" id="notifcard"><h2>🔔 Rappels et appli</h2><p class="muted" id="notiftxt"></p>
+      <button class="primary" id="notifon" style="width:100%">Activer les rappels</button>
+      <button id="installgo" class="hidden" style="width:100%;margin-top:8px">📲 Installer l'appli sur ce téléphone</button>
+      <p class="faint" id="installtxt"></p></div>
+    <div class="card"><h2>👤 Mon compte</h2><p class="muted" id="whoami"></p>
+      <button id="logout" style="width:100%">Se déconnecter de ce téléphone</button></div>
+    <p class="faint" style="text-align:center">Tes comptes personnels sont chiffrés par Pécule sur ton PC : ton serveur ne voit que du contenu illisible.</p>
+  </section>
+
+  <section id="v-foyer" class="view hidden">
+    <div class="seg scroll" id="hhnav"><button data-h="list">🛒 Courses</button><button data-h="money">⚖️ Dépenses</button><button data-h="agenda">📅 Agenda</button><button data-h="wishes">💝 Envies</button><button data-h="accounts">🏦 Comptes</button></div>
+    <div class="card hidden" id="nohh"><h2>🏡 Pas encore de foyer</h2><p class="muted">Le foyer, c'est la liste de courses, le stock, les repas, les tâches, l'agenda et les dépenses partagés avec les personnes qui vivent avec toi. Crée-le dans Pécule sur ton PC (menu Foyer), puis invite les autres.</p></div>
+  <section id="v-list" class="hview hidden">
     <div class="seg" id="subnav"><button data-s="list">🛒 Liste</button><button data-s="stock">📦 Stock</button><button data-s="meals">🍝 Repas</button></div>
     <div id="s-list">
     <div id="rc1"></div>
@@ -148,7 +190,7 @@ a{color:var(--accent)}
     </div>
   </section>
 
-  <section id="v-wishes" class="view hidden">
+  <section id="v-wishes" class="hview hidden">
     <div class="card"><h2>💝 Ma liste d'envies</h2><div id="mywishes"></div>
       <details><summary>+ Ajouter une envie</summary>
         <input id="wtitle" placeholder="Envie (ex. un livre, des écouteurs)"><br><br>
@@ -161,7 +203,7 @@ a{color:var(--accent)}
     <div id="otherwishes"></div>
   </section>
 
-  <section id="v-money" class="view hidden">
+  <section id="v-money" class="hview hidden">
     <div class="card"><h2>⚖️ Qui doit combien</h2><div id="bal"></div></div>
     <div class="card">
       <h2>➕ Dépense commune</h2>
@@ -171,26 +213,23 @@ a{color:var(--accent)}
     <div class="card"><h2>🧾 Dernières dépenses</h2><div id="exps"></div></div>
   </section>
 
-  <section id="v-agenda" class="view hidden">
+  <section id="v-agenda" class="hview hidden">
     <div class="card"><h2>🧹 Tâches du foyer</h2><div id="chores"></div></div>
-    <div class="card" id="notifcard"><h2>🔔 Rappels sur ce téléphone</h2><p class="muted" id="notiftxt"></p>
-      <button class="primary" id="notifon" style="width:100%">Activer les rappels</button>
-      <button id="installgo" class="hidden" style="width:100%;margin-top:8px">📲 Installer l'appli sur ce téléphone</button>
-      <p class="faint" id="installtxt"></p></div>
     <div class="card"><h2>📅 Agenda du foyer</h2><div id="agenda"></div></div>
   </section>
 
-  <section id="v-accounts" class="view hidden">
+  <section id="v-accounts" class="hview hidden">
     <div class="card"><h2>🏦 Comptes communs</h2><div id="joint"></div></div>
     <div class="card"><h2>💞 Ce mois-ci</h2><div id="people"></div></div>
   </section>
+  </section>
 </main>
 <nav id="nav" class="hidden">
-  <button data-v="list" class="on"><b>🛒</b>Courses</button>
-  <button data-v="money"><b>⚖️</b>Dépenses</button>
-  <button data-v="agenda"><b>📅</b>Agenda</button>
-  <button data-v="wishes"><b>💝</b>Envies</button>
-  <button data-v="accounts"><b>🏦</b>Comptes</button>
+  <button data-v="home"><b>🏠</b>Accueil</button>
+  <button data-v="tx"><b>💳</b>Opérations</button>
+  <button data-v="add" class="fab" title="Ajouter une dépense"><b>＋</b></button>
+  <button data-v="budgets"><b>📊</b>Budgets</button>
+  <button data-v="foyer"><b>🏡</b>Foyer</button>
 </nav>
 <div id="toast"></div>
 <div id="sheet" class="hidden"><div id="sheetbox"></div></div>
@@ -229,12 +268,21 @@ function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("sh
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("u")) store.set("url", h.get("u").replace(/\/$/, ""));
   if (h.get("k")) store.set("key", h.get("k"));
-  if (h.get("u") || h.get("k")) history.replaceState(null, "", location.pathname);
+  if (h.get("e")) store.set("ekey", h.get("e"));  // code secret de tes comptes (reste sur le téléphone)
+  if (h.get("u") || h.get("k") || h.get("e")) history.replaceState(null, "", location.pathname);
 })();
 
 const S = { url: store.get("url"), key: store.get("key"), session: JSON.parse(store.get("session") || "null"), hid: store.get("hid"),
   me: null, members: [], list: [], exps: [], events: null, snaps: [], stock: null, meals: null, wishes: null, claims: [],
-  view: store.get("view") || "list", sub: store.get("sub") || "list", prop: {} };
+  sub: store.get("sub") || "list", prop: {}, noHH: false, vault: null, vaultErr: "", ekey: store.get("ekey") };
+const HVIEWS = ["list", "money", "agenda", "wishes", "accounts"], VIEWS = ["home", "tx", "budgets", "foyer", "settings"];
+S.hview = store.get("hview") || (HVIEWS.includes(store.get("view")) ? store.get("view") : "list");
+S.view = VIEWS.includes(store.get("view")) ? store.get("view") : (S.ekey ? "home" : "foyer");
+function go(view, hview) {
+  S.view = view; store.set("view", view);
+  if (hview) { S.hview = hview; store.set("hview", hview); }
+  render(); window.scrollTo(0, 0);
+}
 
 async function auth(kind, body) {
   const r = await fetch(`${S.url}/auth/v1/token?grant_type=${kind}`, { method: "POST",
@@ -273,11 +321,18 @@ function load() {  // jamais deux chargements en même temps (minuteur + retour 
 
 async function doLoad() {
   if (S.session && Date.now() / 1000 > S.session.expires_at) await refreshSession();  // avant les requêtes en parallèle
+  S.me = S.session.user;
+  const vaultP = loadVault();  // tes comptes (chiffrés) en même temps que le foyer
   const hs = await api("GET", "households?select=id,name&order=created_at");
-  if (!hs.length) throw new Error("Tu ne fais partie d'aucun foyer.");
+  S.noHH = !hs.length;
+  if (S.noHH) {  // pas de foyer : seulement tes comptes
+    Object.assign(S, { hid: null, members: [], list: null, exps: [], events: null, snaps: [], stock: null, meals: null,
+      wishes: null, claims: [], chores: null, choreLog: null, prefs: null, cartBudget: 0 });
+    await vaultP; $("title").textContent = "Pécule"; finishLoad(); return;
+  }
   const h = hs.find((x) => x.id === S.hid) || hs[0];
   S.hid = h.id; store.set("hid", h.id);
-  $("title").textContent = h.name;
+  $("title").textContent = S.view === "foyer" ? h.name : "Pécule"; S.hhName = h.name;
   const q = `household_id=eq.${S.hid}`;
   const [members, list, exps] = await Promise.all([
     api("GET", `members?${q}&select=user_id,display_name,color`),
@@ -298,12 +353,16 @@ async function doLoad() {
   ]);
   S.prefs = await api("GET", `shared_prefs?${q}&select=key,value`).then((rows) => Object.fromEntries(rows.map((r) => [r.key, r.value]))).catch(() => (S.prefs && S.prefs.local ? S.prefs : null));
   S.cartBudget = await api("GET", `shared_budgets?${q}&category=eq.__panier__&select=amount`).then((r) => (r[0] ? Number(r[0].amount) : 0)).catch(() => 0);
-  S.me = S.session.user;
+  await vaultP;
+  finishLoad();
+}
+function finishLoad() {
   $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   // dernier affichage gardé sur le téléphone : la page s'ouvre tout de suite, même sans réseau
   try { store.set("cache", JSON.stringify({ t: Date.now(), title: $("title").textContent, me: S.me,
     d: { members: S.members, list: S.list, exps: S.exps.slice(0, 60), events: S.events, snaps: S.snaps, stock: S.stock,
-         meals: S.meals, wishes: S.wishes, claims: S.claims, chores: S.chores, choreLog: S.choreLog, prefs: S.prefs, cartBudget: S.cartBudget } })); } catch (e) {}
+         meals: S.meals, wishes: S.wishes, claims: S.claims, chores: S.chores, choreLog: S.choreLog, prefs: S.prefs, cartBudget: S.cartBudget,
+         noHH: S.noHH, hhName: S.hhName } })); } catch (e) {}
   render();
   if (S.stock && S.list) autoList(S.stock, true);  // déjà sous le nécessaire (modifié ailleurs ou avant l'option)
   recallCheck().catch(() => {});
@@ -311,7 +370,7 @@ async function doLoad() {
 }
 
 // 176 · rayons (mêmes règles que Pécule, app/aisles.py : copie générée)
-/*AISLES*/const AISLE = {"aisles":["Fruits et légumes","Boulangerie","Crèmerie et fromages","Boucherie et poisson","Traiteur","Épicerie salée","Épicerie sucrée","Petit-déjeuner","Boissons","Surgelés","Bébé","Hygiène et beauté","Entretien","Animaux","Maison","Autres"],"emoji":{"Fruits et légumes":"🥕","Boulangerie":"🥖","Crèmerie et fromages":"🧀","Boucherie et poisson":"🥩","Traiteur":"🥗","Épicerie salée":"🥫","Épicerie sucrée":"🍫","Petit-déjeuner":"☕","Boissons":"🧃","Surgelés":"🧊","Bébé":"🍼","Hygiène et beauté":"🧴","Entretien":"🧽","Animaux":"🐾","Maison":"🏠","Autres":"🛒"},"phrases":{"pomme de terre":"Fruits et légumes","petit pois":"Fruits et légumes","chou fleur":"Fruits et légumes","haricot vert":"Fruits et légumes","pain de mie":"Boulangerie","pain au chocolat":"Boulangerie","creme fraiche":"Crèmerie et fromages","fromage blanc":"Crèmerie et fromages","petit suisse":"Crèmerie et fromages","lait vegetal":"Boissons","lait d amande":"Boissons","jambon blanc":"Boucherie et poisson","jambon cru":"Traiteur","pate fraiche":"Traiteur","pate a tartiner":"Épicerie sucrée","sauce tomate":"Épicerie salée","pois chiche":"Épicerie salée","haricot rouge":"Épicerie salée","chocolat en poudre":"Petit-déjeuner","flocon d avoine":"Petit-déjeuner","ice tea":"Boissons","poisson pane":"Surgelés","lingette bebe":"Bébé","lait infantile":"Bébé","petit pot":"Bébé","brosse a dent":"Hygiène et beauté","gel douche":"Hygiène et beauté","papier toilette":"Hygiène et beauté","coton tige":"Hygiène et beauté","liquide vaisselle":"Entretien","lave vaisselle":"Entretien","sac poubelle":"Entretien","essuie tout":"Entretien","vinaigre blanc":"Entretien","film alimentaire":"Entretien","papier alu":"Entretien","steak hache":"Boucherie et poisson","thon en boite":"Épicerie salée","barre cereale":"Épicerie sucrée","pizza surgelee":"Surgelés","legume surgele":"Surgelés","creme dessert":"Épicerie sucrée","dessert lacte":"Crèmerie et fromages"},"single":{"fruit":"Fruits et légumes","legume":"Fruits et légumes","pomme":"Fruits et légumes","poire":"Fruits et légumes","banane":"Fruits et légumes","orange":"Fruits et légumes","citron":"Fruits et légumes","clementine":"Fruits et légumes","mandarine":"Fruits et légumes","kiwi":"Fruits et légumes","raisin":"Fruits et légumes","fraise":"Fruits et légumes","framboise":"Fruits et légumes","myrtille":"Fruits et légumes","cerise":"Fruits et légumes","peche":"Fruits et légumes","abricot":"Fruits et légumes","prune":"Fruits et légumes","melon":"Fruits et légumes","pasteque":"Fruits et légumes","ananas":"Fruits et légumes","mangue":"Fruits et légumes","avocat":"Fruits et légumes","tomate":"Fruits et légumes","salade":"Fruits et légumes","laitue":"Fruits et légumes","mache":"Fruits et légumes","roquette":"Fruits et légumes","epinard":"Fruits et légumes","carotte":"Fruits et légumes","courgette":"Fruits et légumes","aubergine":"Fruits et légumes","poivron":"Fruits et légumes","concombre":"Fruits et légumes","oignon":"Fruits et légumes","echalote":"Fruits et légumes","ail":"Fruits et légumes","de":"Fruits et légumes","terre":"Fruits et légumes","patate":"Fruits et légumes","poireau":"Fruits et légumes","chou":"Fruits et légumes","brocoli":"Fruits et légumes","fleur":"Fruits et légumes","haricot":"Fruits et légumes","vert":"Fruits et légumes","champignon":"Fruits et légumes","radis":"Fruits et légumes","betterave":"Fruits et légumes","celeri":"Fruits et légumes","fenouil":"Fruits et légumes","navet":"Fruits et légumes","potiron":"Fruits et légumes","courge":"Fruits et légumes","citrouille":"Fruits et légumes","herbe":"Fruits et légumes","persil":"Fruits et légumes","coriandre":"Fruits et légumes","basilic":"Fruits et légumes","menthe":"Fruits et légumes","ciboulette":"Fruits et légumes","gingembre":"Fruits et légumes","endive":"Fruits et légumes","artichaut":"Fruits et légumes","asperge":"Fruits et légumes","petit":"Fruits et légumes","pois":"Fruits et légumes","mais":"Fruits et légumes","doux":"Fruits et légumes","pain":"Boulangerie","baguette":"Boulangerie","brioche":"Boulangerie","croissant":"Boulangerie","au":"Boulangerie","chocolat":"Épicerie sucrée","chocolatine":"Boulangerie","viennoiserie":"Boulangerie","mie":"Boulangerie","biscotte":"Boulangerie","complet":"Boulangerie","tortilla":"Boulangerie","wrap":"Boulangerie","pita":"Boulangerie","lait":"Crèmerie et fromages","beurre":"Crèmerie et fromages","yaourt":"Crèmerie et fromages","yogourt":"Crèmerie et fromages","creme":"Crèmerie et fromages","fraiche":"Crèmerie et fromages","oeuf":"Crèmerie et fromages","fromage":"Crèmerie et fromages","emmental":"Crèmerie et fromages","comte":"Crèmerie et fromages","gruyere":"Crèmerie et fromages","mozzarella":"Crèmerie et fromages","parmesan":"Crèmerie et fromages","chevre":"Crèmerie et fromages","camembert":"Crèmerie et fromages","brie":"Crèmerie et fromages","roquefort":"Crèmerie et fromages","feta":"Crèmerie et fromages","raclette":"Crèmerie et fromages","reblochon":"Crèmerie et fromages","blanc":"Crèmerie et fromages","suisse":"Crèmerie et fromages","skyr":"Crèmerie et fromages","margarine":"Crèmerie et fromages","dessert":"Crèmerie et fromages","lacte":"Crèmerie et fromages","compote":"Crèmerie et fromages","vegetal":"Crèmerie et fromages","viande":"Boucherie et poisson","boeuf":"Boucherie et poisson","steak":"Boucherie et poisson","hache":"Boucherie et poisson","poulet":"Boucherie et poisson","dinde":"Boucherie et poisson","porc":"Boucherie et poisson","veau":"Boucherie et poisson","agneau":"Boucherie et poisson","escalope":"Boucherie et poisson","cote":"Boucherie et poisson","saucisse":"Boucherie et poisson","merguez":"Boucherie et poisson","lardon":"Boucherie et poisson","jambon":"Boucherie et poisson","poisson":"Boucherie et poisson","saumon":"Boucherie et poisson","cabillaud":"Boucherie et poisson","thon":"Épicerie salée","frais":"Boucherie et poisson","crevette":"Boucherie et poisson","moule":"Boucherie et poisson","filet":"Boucherie et poisson","roti":"Boucherie et poisson","cuisse":"Boucherie et poisson","aiguillette":"Boucherie et poisson","chipolata":"Boucherie et poisson","cru":"Traiteur","saucisson":"Traiteur","chorizo":"Traiteur","pate":"Épicerie salée","rillette":"Traiteur","surimi":"Traiteur","quiche":"Traiteur","pizza":"Traiteur","composee":"Traiteur","taboule":"Traiteur","houmous":"Traiteur","tarama":"Traiteur","gnocchi":"Traiteur","ravioli":"Traiteur","riz":"Épicerie salée","semoule":"Épicerie salée","quinoa":"Épicerie salée","lentille":"Épicerie salée","chiche":"Épicerie salée","rouge":"Épicerie salée","conserve":"Épicerie salée","sauce":"Épicerie salée","concentre":"Épicerie salée","ketchup":"Épicerie salée","mayonnaise":"Épicerie salée","moutarde":"Épicerie salée","vinaigre":"Épicerie salée","huile":"Épicerie salée","sel":"Épicerie salée","poivre":"Épicerie salée","epice":"Épicerie salée","bouillon":"Épicerie salée","cube":"Épicerie salée","soupe":"Épicerie salée","chips":"Épicerie salée","chip":"Épicerie salée","cacahuete":"Épicerie salée","apero":"Épicerie salée","olive":"Épicerie salée","cornichon":"Épicerie salée","en":"Épicerie salée","boite":"Épicerie salée","sardine":"Épicerie salée","farine":"Épicerie salée","levure":"Épicerie salée","chapelure":"Épicerie salée","puree":"Épicerie salée","nouille":"Épicerie salée","couscous":"Épicerie salée","sucre":"Épicerie sucrée","biscuit":"Épicerie sucrée","gateau":"Épicerie sucrée","bonbon":"Épicerie sucrée","confiture":"Épicerie sucrée","miel":"Épicerie sucrée","a":"Épicerie sucrée","tartiner":"Épicerie sucrée","nutella":"Épicerie sucrée","chimique":"Épicerie sucrée","vanille":"Épicerie sucrée","ble":"Épicerie sucrée","madeleine":"Épicerie sucrée","cookie":"Épicerie sucrée","barre":"Épicerie sucrée","cereale":"Épicerie sucrée","cafe":"Petit-déjeuner","the":"Petit-déjeuner","tisane":"Petit-déjeuner","poudre":"Petit-déjeuner","muesli":"Petit-déjeuner","flocon":"Petit-déjeuner","avoine":"Petit-déjeuner","capsule":"Petit-déjeuner","dosette":"Petit-déjeuner","filtre":"Petit-déjeuner","eau":"Boissons","jus":"Boissons","soda":"Boissons","coca":"Boissons","limonade":"Boissons","sirop":"Boissons","biere":"Boissons","vin":"Boissons","champagne":"Boissons","cidre":"Boissons","boisson":"Boissons","ice":"Boissons","tea":"Boissons","d":"Boissons","amande":"Boissons","surgele":"Surgelés","glace":"Surgelés","frite":"Surgelés","congele":"Surgelés","pane":"Surgelés","nugget":"Surgelés","surgelee":"Surgelés","couche":"Bébé","lingette":"Bébé","bebe":"Bébé","infantile":"Bébé","pot":"Bébé","liniment":"Bébé","dentifrice":"Hygiène et beauté","brosse":"Hygiène et beauté","dent":"Hygiène et beauté","gel":"Hygiène et beauté","douche":"Hygiène et beauté","shampoing":"Hygiène et beauté","apres":"Hygiène et beauté","savon":"Hygiène et beauté","deodorant":"Hygiène et beauté","rasoir":"Hygiène et beauté","coton":"Hygiène et beauté","tige":"Hygiène et beauté","demaquillant":"Hygiène et beauté","hydratante":"Hygiène et beauté","serviette":"Hygiène et beauté","hygienique":"Hygiène et beauté","tampon":"Hygiène et beauté","protege":"Hygiène et beauté","slip":"Hygiène et beauté","mouchoir":"Hygiène et beauté","papier":"Hygiène et beauté","toilette":"Hygiène et beauté","maquillage":"Hygiène et beauté","parfum":"Hygiène et beauté","lessive":"Entretien","adoucissant":"Entretien","liquide":"Entretien","vaisselle":"Entretien","pastille":"Entretien","lave":"Entretien","eponge":"Entretien","javel":"Entretien","nettoyant":"Entretien","sac":"Entretien","poubelle":"Entretien","essuie":"Entretien","tout":"Entretien","sopalin":"Entretien","desinfectant":"Entretien","film":"Entretien","alimentaire":"Entretien","alu":"Entretien","aluminium":"Entretien","produit":"Entretien","menager":"Entretien","croquette":"Animaux","patee":"Animaux","litiere":"Animaux","chat":"Animaux","chien":"Animaux","friandise":"Animaux","animal":"Animaux","ampoule":"Maison","pile":"Maison","bougie":"Maison","allumette":"Maison","piles":"Maison"}};/*/AISLES*/
+/*AISLES*/const AISLE = {"aisles":["Fruits et légumes","Boulangerie","Crèmerie et fromages","Boucherie et poisson","Traiteur","Épicerie salée","Épicerie sucrée","Petit-déjeuner","Boissons","Surgelés","Bébé","Hygiène et beauté","Entretien","Animaux","Maison","Autres"],"emoji":{"Fruits et légumes":"🥕","Boulangerie":"🥖","Crèmerie et fromages":"🧀","Boucherie et poisson":"🥩","Traiteur":"🥗","Épicerie salée":"🥫","Épicerie sucrée":"🍫","Petit-déjeuner":"☕","Boissons":"🧃","Surgelés":"🧊","Bébé":"🍼","Hygiène et beauté":"🧴","Entretien":"🧽","Animaux":"🐾","Maison":"🏠","Autres":"🛒"},"phrases":{"pomme de terre":"Fruits et légumes","petit poi":"Fruits et légumes","chou fleur":"Fruits et légumes","haricot vert":"Fruits et légumes","pain de mie":"Boulangerie","pain au chocolat":"Boulangerie","creme fraiche":"Crèmerie et fromages","fromage blanc":"Crèmerie et fromages","petit suisse":"Crèmerie et fromages","lait vegetal":"Boissons","lait d amande":"Boissons","mai dou":"Fruits et légumes","jambon blanc":"Boucherie et poisson","jambon cru":"Traiteur","pate fraiche":"Traiteur","pate a tartiner":"Épicerie sucrée","sauce tomate":"Épicerie salée","poi chiche":"Épicerie salée","haricot rouge":"Épicerie salée","chocolat en poudre":"Petit-déjeuner","flocon d avoine":"Petit-déjeuner","ice tea":"Boissons","poisson pane":"Surgelés","lingette bebe":"Bébé","lait infantile":"Bébé","petit pot":"Bébé","brosse a dent":"Hygiène et beauté","gel douche":"Hygiène et beauté","papier toilette":"Hygiène et beauté","coton tige":"Hygiène et beauté","liquide vaisselle":"Entretien","lave vaisselle":"Entretien","sac poubelle":"Entretien","essuie tout":"Entretien","vinaigre blanc":"Entretien","film alimentaire":"Entretien","papier alu":"Entretien","steak hache":"Boucherie et poisson","thon en boite":"Épicerie salée","barre cereale":"Épicerie sucrée","pizza surgelee":"Surgelés","legume surgele":"Surgelés","creme dessert":"Épicerie sucrée","dessert lacte":"Crèmerie et fromages"},"single":{"fruit":"Fruits et légumes","legume":"Fruits et légumes","pomme":"Fruits et légumes","poire":"Fruits et légumes","banane":"Fruits et légumes","orange":"Fruits et légumes","citron":"Fruits et légumes","clementine":"Fruits et légumes","mandarine":"Fruits et légumes","kiwi":"Fruits et légumes","raisin":"Fruits et légumes","fraise":"Fruits et légumes","framboise":"Fruits et légumes","myrtille":"Fruits et légumes","cerise":"Fruits et légumes","peche":"Fruits et légumes","abricot":"Fruits et légumes","prune":"Fruits et légumes","melon":"Fruits et légumes","pasteque":"Fruits et légumes","ananas":"Fruits et légumes","mangue":"Fruits et légumes","avocat":"Fruits et légumes","tomate":"Fruits et légumes","salade":"Fruits et légumes","laitue":"Fruits et légumes","mache":"Fruits et légumes","roquette":"Fruits et légumes","epinard":"Fruits et légumes","carotte":"Fruits et légumes","courgette":"Fruits et légumes","aubergine":"Fruits et légumes","poivron":"Fruits et légumes","concombre":"Fruits et légumes","oignon":"Fruits et légumes","echalote":"Fruits et légumes","ail":"Fruits et légumes","patate":"Fruits et légumes","poireau":"Fruits et légumes","chou":"Fruits et légumes","brocoli":"Fruits et légumes","haricot":"Fruits et légumes","champignon":"Fruits et légumes","radis":"Fruits et légumes","betterave":"Fruits et légumes","celeri":"Fruits et légumes","fenouil":"Fruits et légumes","navet":"Fruits et légumes","potiron":"Fruits et légumes","courge":"Fruits et légumes","citrouille":"Fruits et légumes","herbe":"Fruits et légumes","persil":"Fruits et légumes","coriandre":"Fruits et légumes","basilic":"Fruits et légumes","menthe":"Fruits et légumes","ciboulette":"Fruits et légumes","gingembre":"Fruits et légumes","endive":"Fruits et légumes","artichaut":"Fruits et légumes","asperge":"Fruits et légumes","pois":"Fruits et légumes","pain":"Boulangerie","baguette":"Boulangerie","brioche":"Boulangerie","croissant":"Boulangerie","chocolat":"Épicerie sucrée","chocolatine":"Boulangerie","viennoiserie":"Boulangerie","biscotte":"Boulangerie","tortilla":"Boulangerie","wrap":"Boulangerie","pita":"Boulangerie","lait":"Crèmerie et fromages","beurre":"Crèmerie et fromages","yaourt":"Crèmerie et fromages","yogourt":"Crèmerie et fromages","creme":"Crèmerie et fromages","oeuf":"Crèmerie et fromages","fromage":"Crèmerie et fromages","emmental":"Crèmerie et fromages","comte":"Crèmerie et fromages","gruyere":"Crèmerie et fromages","mozzarella":"Crèmerie et fromages","parmesan":"Crèmerie et fromages","chevre":"Crèmerie et fromages","camembert":"Crèmerie et fromages","brie":"Crèmerie et fromages","roquefort":"Crèmerie et fromages","feta":"Crèmerie et fromages","raclette":"Crèmerie et fromages","reblochon":"Crèmerie et fromages","suisse":"Crèmerie et fromages","skyr":"Crèmerie et fromages","margarine":"Crèmerie et fromages","compote":"Crèmerie et fromages","viande":"Boucherie et poisson","boeuf":"Boucherie et poisson","steak":"Boucherie et poisson","hache":"Boucherie et poisson","poulet":"Boucherie et poisson","dinde":"Boucherie et poisson","porc":"Boucherie et poisson","veau":"Boucherie et poisson","agneau":"Boucherie et poisson","escalope":"Boucherie et poisson","saucisse":"Boucherie et poisson","merguez":"Boucherie et poisson","lardon":"Boucherie et poisson","jambon":"Boucherie et poisson","poisson":"Boucherie et poisson","saumon":"Boucherie et poisson","cabillaud":"Boucherie et poisson","thon":"Épicerie salée","crevette":"Boucherie et poisson","moule":"Boucherie et poisson","roti":"Boucherie et poisson","aiguillette":"Boucherie et poisson","chipolata":"Boucherie et poisson","saucisson":"Traiteur","chorizo":"Traiteur","pate":"Épicerie salée","rillette":"Traiteur","surimi":"Traiteur","quiche":"Traiteur","pizza":"Traiteur","taboule":"Traiteur","houmous":"Traiteur","tarama":"Traiteur","gnocchi":"Traiteur","ravioli":"Traiteur","riz":"Épicerie salée","semoule":"Épicerie salée","quinoa":"Épicerie salée","lentille":"Épicerie salée","chiche":"Épicerie salée","conserve":"Épicerie salée","sauce":"Épicerie salée","concentre":"Épicerie salée","ketchup":"Épicerie salée","mayonnaise":"Épicerie salée","moutarde":"Épicerie salée","vinaigre":"Épicerie salée","huile":"Épicerie salée","sel":"Épicerie salée","poivre":"Épicerie salée","epice":"Épicerie salée","bouillon":"Épicerie salée","soupe":"Épicerie salée","chips":"Épicerie salée","chip":"Épicerie salée","cacahuete":"Épicerie salée","apero":"Épicerie salée","olive":"Épicerie salée","cornichon":"Épicerie salée","sardine":"Épicerie salée","farine":"Épicerie salée","levure":"Épicerie salée","chapelure":"Épicerie salée","puree":"Épicerie salée","nouille":"Épicerie salée","couscous":"Épicerie salée","sucre":"Épicerie sucrée","biscuit":"Épicerie sucrée","gateau":"Épicerie sucrée","bonbon":"Épicerie sucrée","confiture":"Épicerie sucrée","miel":"Épicerie sucrée","tartiner":"Épicerie sucrée","nutella":"Épicerie sucrée","vanille":"Épicerie sucrée","madeleine":"Épicerie sucrée","cookie":"Épicerie sucrée","barre":"Épicerie sucrée","cereale":"Épicerie sucrée","cafe":"Petit-déjeuner","the":"Petit-déjeuner","tisane":"Petit-déjeuner","muesli":"Petit-déjeuner","flocon":"Petit-déjeuner","avoine":"Petit-déjeuner","capsule":"Petit-déjeuner","dosette":"Petit-déjeuner","filtre":"Petit-déjeuner","eau":"Boissons","jus":"Boissons","soda":"Boissons","coca":"Boissons","limonade":"Boissons","sirop":"Boissons","biere":"Boissons","vin":"Boissons","champagne":"Boissons","cidre":"Boissons","boisson":"Boissons","amande":"Boissons","surgele":"Surgelés","glace":"Surgelés","frite":"Surgelés","congele":"Surgelés","pane":"Surgelés","nugget":"Surgelés","surgelee":"Surgelés","couche":"Bébé","lingette":"Bébé","bebe":"Bébé","infantile":"Bébé","liniment":"Bébé","dentifrice":"Hygiène et beauté","brosse":"Hygiène et beauté","dent":"Hygiène et beauté","douche":"Hygiène et beauté","shampoing":"Hygiène et beauté","savon":"Hygiène et beauté","deodorant":"Hygiène et beauté","rasoir":"Hygiène et beauté","coton":"Hygiène et beauté","demaquillant":"Hygiène et beauté","serviette":"Hygiène et beauté","hygienique":"Hygiène et beauté","tampon":"Hygiène et beauté","protege":"Hygiène et beauté","slip":"Hygiène et beauté","mouchoir":"Hygiène et beauté","papier":"Hygiène et beauté","toilette":"Hygiène et beauté","maquillage":"Hygiène et beauté","parfum":"Hygiène et beauté","lessive":"Entretien","adoucissant":"Entretien","liquide":"Entretien","vaisselle":"Entretien","pastille":"Entretien","eponge":"Entretien","javel":"Entretien","nettoyant":"Entretien","poubelle":"Entretien","essuie":"Entretien","sopalin":"Entretien","desinfectant":"Entretien","alimentaire":"Entretien","alu":"Entretien","aluminium":"Entretien","menager":"Entretien","croquette":"Animaux","patee":"Animaux","litiere":"Animaux","chat":"Animaux","chien":"Animaux","friandise":"Animaux","animal":"Animaux","ampoule":"Maison","pile":"Maison","bougie":"Maison","allumette":"Maison","piles":"Maison"}};/*/AISLES*/
 function aisleWords(l) {
   const f = String(l || "").toLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae").normalize("NFKD").replace(/[̀-ͯ]/g, "")
     .replace(/['’-]/g, " ").split(/\s+/).filter(Boolean);
@@ -479,7 +538,11 @@ function occurrences(ev, first, last) {
 
 function render() {
   document.querySelectorAll(".view").forEach((v) => v.classList.toggle("hidden", v.id !== "v-" + S.view));
+  document.querySelectorAll(".hview").forEach((v) => v.classList.toggle("hidden", S.noHH || v.id !== "v-" + S.hview));
   document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.v === S.view));
+  document.querySelectorAll("#hhnav button").forEach((b) => b.classList.toggle("on", b.dataset.h === S.hview));
+  $("hhnav").classList.toggle("hidden", S.noHH); $("nohh").classList.toggle("hidden", !S.noHH);
+  renderPerso();
   // courses
   if (S.list === null) {
     $("todo").innerHTML = '<p class="muted">La liste de courses n\'est pas encore activée sur le serveur du foyer (Pécule › Foyer › mettre à jour le serveur).</p>';
@@ -665,8 +728,8 @@ async function act(fn, ok) {
 }
 
 function showApp(on) {
-  $("login").classList.toggle("hidden", on); $("nav").classList.toggle("hidden", !on); $("logout").classList.toggle("hidden", !on);
-  if (!on) document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
+  $("login").classList.toggle("hidden", on); $("nav").classList.toggle("hidden", !on); $("gear").classList.toggle("hidden", !on);
+  if (!on) document.querySelectorAll(".view,.hview").forEach((v) => v.classList.add("hidden"));
 }
 
 $("go").onclick = async () => {
@@ -677,8 +740,10 @@ $("go").onclick = async () => {
   catch (e) { $("err").textContent = e.message; }
 };
 $("pwd").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go").click(); });
-$("logout").onclick = () => { S.session = null; store.set("session", null); store.set("cache", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
-$("nav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.view = b.dataset.v; store.set("view", S.view); render(); };
+$("logout").onclick = () => { S.session = null; S.vault = null; store.set("session", null); store.set("cache", null); store.set("vault", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
+$("nav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "add") return openAdd(); go(b.dataset.v); };
+$("hhnav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; go("foyer", b.dataset.h); };
+$("gear").onclick = () => go(S.view === "settings" ? (S.ekey ? "home" : "foyer") : "settings");
 async function addItem() {
   const t = $("item").value.trim(); if (!t) return; $("item").value = "";
   S.list.push({ id: "tmp", label: t, done: false, created_by: S.me }); render();
@@ -911,7 +976,7 @@ async function found(code) {
     act(() => postCompat("shared_list", { household_id: S.hid, label: l, price: pv ? Math.round(pv * 100) / 100 : null, code: c }, ["code"]), `🛒 ${l} ajouté à la liste`); };
   $("sc_list").onclick = () => toList(label, price, code);
   if (x.alt) $("sc_alt").onclick = () => toList((x.alt.name + (x.alt.brand && !x.alt.name.toLowerCase().includes(x.alt.brand.toLowerCase()) ? " " + x.alt.brand : "")).slice(0, 80), x.alt.price, x.alt.code);
-  $("sc_stock").onclick = () => { closeScan(); S.view = "list"; S.sub = "stock"; render();
+  $("sc_stock").onclick = () => { closeScan(); S.sub = "stock"; go("foyer", "list");
     $("stockform").open = true; $("sname").value = label; $("sqty").value = "1"; $("starget").value = "1"; frzForm(); $("sqty").focus(); };
   $("sc_again").onclick = () => openScan(scanMode);
 }
@@ -1157,6 +1222,320 @@ $("addexp").onclick = () => {
 };
 
 
+// ---------------------------------------------------------------- Pécule sur le téléphone : tes comptes personnels
+// Pécule sur ton PC envoie un instantané chiffré (AES-256-GCM) de tes comptes dans « my_vault ». Le code secret
+// arrive par le QR code (#e=…) et ne quitte jamais le téléphone. Ce que tu ajoutes ici part chiffré dans « my_inbox » ;
+// Pécule l'intègre à la synchro suivante (toutes les 2 minutes quand il est ouvert sur le PC).
+const b64d = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const b64e = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const b64ud = (s) => b64d(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4));
+let ckey = null, ckeyFor = "";
+async function vkey() {
+  if (!ckey || ckeyFor !== S.ekey) { ckey = await crypto.subtle.importKey("raw", b64ud(S.ekey), "AES-GCM", false, ["encrypt", "decrypt"]); ckeyFor = S.ekey; }
+  return ckey;
+}
+async function kidOf(k) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("pecule:" + k)));
+  return [...h].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
+async function openVault(row) {
+  let raw = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(row.iv) }, await vkey(), b64d(row.data)));
+  if (raw[0] === 0x1f && raw[1] === 0x8b) {
+    if (!("DecompressionStream" in window)) throw new Error("Mets à jour le navigateur du téléphone pour lire tes comptes.");
+    raw = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+  }
+  return JSON.parse(new TextDecoder().decode(raw));
+}
+async function sealOp(op) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await vkey(), new TextEncoder().encode(JSON.stringify(op))));
+  return { iv: b64e(iv), data: b64e(ct) };
+}
+async function loadVault() {
+  if (!S.ekey) { S.vault = null; S.vaultErr = "nokey"; return; }
+  let row;
+  try { row = (await api("GET", "my_vault?select=kid,iv,data,updated_at"))[0]; }
+  catch (e) { S.vaultErr = /my_vault/.test(e.message) || e.status === 404 ? "server" : S.vault ? "" : "net"; return; }
+  if (!row) { S.vault = null; S.vaultErr = "empty"; return; }
+  try {
+    if (row.kid && row.kid !== await kidOf(S.ekey)) { S.vault = null; S.vaultErr = "rekey"; return; }
+    S.vault = await openVault(row); S.vaultErr = "";
+    store.set("vault", JSON.stringify(row));
+    prunePending();
+  } catch (e) { S.vault = null; S.vaultErr = e.message.startsWith("Mets") ? e.message : "rekey"; }
+  flushOutbox();
+}
+async function vaultFromCache() {
+  try { const row = JSON.parse(store.get("vault") || "null"); if (row && S.ekey && !S.vault) { S.vault = await openVault(row); render(); } } catch (e) {}
+}
+
+// ---- envois du téléphone (en attente tant que Pécule sur le PC ne les a pas intégrés)
+const pending = () => { try { return JSON.parse(store.get("pending") || "[]"); } catch (e) { return []; } };
+const savePending = (p) => store.set("pending", JSON.stringify(p));
+function prunePending() {
+  const done = new Set((S.vault && S.vault.applied) || []), old = Date.now() - 30 * 864e5;
+  savePending(pending().filter((p) => !done.has(p.id) && p.at > old));
+}
+async function flushOutbox() {
+  const p = pending(); let changed = false;
+  for (const x of p.filter((y) => !y.sent)) {
+    try { const sealed = await sealOp(x.op); await api("POST", "my_inbox", { kid: await kidOf(S.ekey), ...sealed }); x.sent = true; changed = true; }
+    catch (e) { break; }  // pas de réseau : nouvel essai au prochain chargement
+  }
+  if (changed) { savePending(p); render(); }
+}
+function sendOp(op, msg) {
+  op.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+  const p = pending(); p.push({ id: op.id, op, at: Date.now(), sent: false }); savePending(p);
+  render(); toast(msg); flushOutbox();
+}
+
+// ---- données affichées = instantané + ce qui est en attente
+const V = () => S.vault;
+const catOf = (id) => (V() && V().cats.find((c) => c.id === id)) || null;
+const accOf = (id) => (V() && V().accounts.find((a) => a.id === id)) || null;
+function txAll() {
+  const v = V(); if (!v) return [];
+  const p = pending(), cats = {}, notes = {};
+  p.forEach((x) => { if (x.op.op === "cat") cats[x.op.tx] = x.op.cat; if (x.op.op === "note") notes[x.op.tx] = x.op.note; });
+  const adds = p.filter((x) => x.op.op === "add").map((x) => ({ id: "p:" + x.id, d: x.op.date, l: x.op.label, a: x.op.amount, c: x.op.cat, acc: x.op.acc, n: x.op.note, pending: true }));
+  return adds.concat(v.tx.map((t) => (t.id in cats || t.id in notes ? { ...t, c: t.id in cats ? cats[t.id] : t.c, n: t.id in notes ? notes[t.id] : t.n, pendingEdit: true } : t)))
+    .sort((a, b) => String(b.d).localeCompare(String(a.d)));
+}
+function pendingAdds() { return pending().filter((x) => x.op.op === "add").map((x) => x.op); }
+function accBal(a) { return a.bal + pendingAdds().filter((o) => o.acc === a.id).reduce((t, o) => t + o.amount, 0); }
+function monthSpent(catId) {
+  const ym = V().month.ym, extra = pendingAdds().filter((o) => String(o.date).slice(0, 7) === ym && o.amount < 0 && (catId === undefined || o.cat === catId));
+  return extra.reduce((t, o) => t - o.amount, 0);
+}
+const sign = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v)).replace("-", "");
+const dmy = (d) => { const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return x.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }); };
+const atText = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); };
+
+function vaultCard() {
+  const why = { nokey: ["🔐 Tes comptes sur le téléphone", "Dans Pécule sur ton PC, clique sur l'icône 📱 en haut, active « Mes comptes et opérations sur le téléphone », puis scanne le QR code avec ce téléphone."],
+    empty: ["⏳ Tes comptes arrivent", "Pécule sur ton PC n'a pas encore envoyé tes chiffres : ouvre-le, la synchro se fait toute seule (📱 › Synchroniser maintenant)."],
+    rekey: ["🔁 Rescanne le QR code", "Le code secret a changé sur ton PC (ou ce téléphone a un ancien code) : dans Pécule, 📱, puis scanne le nouveau QR code."],
+    server: ["🛠️ Serveur à mettre à jour", "Ton serveur ne connaît pas encore « Pécule sur le téléphone » : dans Supabase › SQL Editor, relance le script foyer.sql fourni avec Pécule."],
+    net: ["📡 Pas de connexion", "Tes comptes s'afficheront dès que le téléphone sera en ligne."] }[S.vaultErr] || ["🔐 Tes comptes", S.vaultErr];
+  return `<div class="card"><h2>${why[0]}</h2><p class="muted">${esc(why[1])}</p></div>`;
+}
+
+function renderPerso() {
+  renderHome(); renderTx(); renderBudgets(); renderSettings();
+  if (S.view !== "foyer") $("title").textContent = S.view === "settings" ? "Réglages" : S.view === "tx" ? "Opérations" : S.view === "budgets" ? "Budgets" : (V() && V().name ? `Bonjour ${V().name.split(" ")[0]}` : "Pécule");
+  else $("title").textContent = S.hhName || "Foyer";
+}
+
+// ---- 🏠 accueil
+function renderHome() {
+  const v = V(), h = [];
+  if (!v) h.push(vaultCard());
+  else {
+    const m = v.month, t = v.totals;
+    const spent = m.spent + monthSpent();
+    h.push(`<div class="card hero"><div class="faint">${esc(m.emoji || "")} ${esc(m.title || "Ce mois-ci")}</div>
+      ${m.per_day != null ? `<div class="big">${euro(m.per_day)} <span style="font-size:16px;font-weight:500">/ jour</span></div><div class="muted">à dépenser jusqu'au ${dmy(m.until)}${m.payday ? " (" + esc(m.payday) + ")" : ""}</div>` : `<div class="big">${euro(t.courant)}</div>`}
+      <div class="kpis"><div><span class="faint">Comptes courants</span><b>${euro(t.courant + pendingAdds().filter((o) => (accOf(o.acc) || {}).fam === "courant").reduce((s2, o) => s2 + o.amount, 0))}</b></div>
+      <div><span class="faint">Dépensé ce mois</span><b>${euro(spent)}</b></div>
+      <div><span class="faint">Fin du mois</span><b>${m.end_balance != null ? euro(m.end_balance) : "—"}</b></div></div></div>`);
+    const quick = [`<button data-pa="add">➕ Dépense</button>`];
+    if (v.uncat) quick.push(`<button data-pa="uncat">🏷 À classer (${v.uncat})</button>`);
+    if (!S.noHH && S.list) quick.push(`<button data-pa="list">🛒 Courses (${S.list.filter((i) => !i.done).length})</button>`, `<button data-pa="scan">📷 Scanner</button>`);
+    h.push(`<div class="chips" style="margin:4px 0 8px">${quick.join("")}</div>`);
+    // alertes
+    if ((v.alerts || []).length) h.push(`<div class="card"><h2>🔔 À regarder</h2>${v.alerts.map((a) => `<div class="row"><div class="grow">${esc(a.text)}</div></div>`).join("")}</div>`);
+    // comptes
+    const fams = { courant: "💳 Courant", epargne: "🐷 Épargne", placement: "📈 Placements" };
+    h.push(`<div class="card"><h2>🏦 Mes comptes <span class="faint" style="font-weight:400">· ${euro(t.all + pendingAdds().reduce((s2, o) => s2 + o.amount, 0))}</span></h2>${v.accounts.map((a) => `<div class="row" data-pa="acc" data-id="${a.id}">
+      <span class="dot" style="background:${esc(a.color || "var(--accent)")}"></span><div class="grow">${esc(a.name)}<div class="faint">${fams[a.fam] || ""}${a.joint ? " · commun" : ""}</div></div><b class="${accBal(a) < 0 ? "loss" : ""}">${euro(accBal(a))}</b></div>`).join("")}
+      ${t.lent || t.owed ? `<p class="faint">On te doit ${euro(t.lent)} · tu dois ${euro(t.owed)}</p>` : ""}</div>`);
+    // budgets presque atteints
+    const bud = v.budgets.map((b) => ({ ...b, sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget).slice(0, 4);
+    if (bud.length) h.push(`<div class="card"><h2>📊 Budgets du mois</h2>${bud.map(budRow).join("")}<button class="ghost" data-pa="budgets">Tous les budgets ›</button></div>`);
+    // à venir
+    const soon = (v.upcoming || []).filter((u) => u.d <= ymd(addDays(new Date(), 10))).slice(0, 8);
+    const occ = (v.occasions || []).filter((o) => o.left <= 14).slice(0, 3);
+    if (soon.length || occ.length) h.push(`<div class="card"><h2>📅 Ces prochains jours</h2>${soon.map((u) => `<div class="row"><span class="pill">${dmy(u.d)}</span><div class="grow">${esc(u.name)}</div><b class="amt ${u.a > 0 ? "in" : ""}">${sign(u.a)}</b></div>`).join("")}
+      ${occ.map((o) => `<div class="row"><span class="pill">${dmy(o.d)}</span><div class="grow">🎂 ${esc(o.name)}</div></div>`).join("")}</div>`);
+    // objectifs
+    if ((v.goals || []).length) h.push(`<div class="card"><h2>🎯 Objectifs</h2>${v.goals.slice(0, 3).map(goalRow).join("")}</div>`);
+  }
+  // le foyer en un coup d'œil
+  if (!S.noHH && S.members && S.members.length) {
+    const todo = (S.list || []).filter((i) => !i.done).length, mine = (S.chores || []).filter((c) => choreLeft(c) <= 0 && [null, S.me].includes(choreTurn(c)));
+    const net = balances()[S.me] || 0;
+    h.push(`<div class="card" data-pa="foyer"><h2>🏡 ${esc(S.hhName || "Foyer")}</h2><div class="faint">${todo} article(s) sur la liste${mine.length ? ` · à faire : ${mine.map((c) => esc(c.title)).join(", ")}` : ""}${Math.abs(net) > 0.005 ? ` · ${net > 0 ? "on te doit " + euro(net) : "tu dois " + euro(-net)}` : ""}</div></div>`);
+  }
+  if (v) h.push(`<p class="faint" style="text-align:center">Chiffres envoyés par Pécule le ${atText(v.at)}${pending().length ? ` · ${pending().length} ajout(s) en attente du PC` : ""}</p>`);
+  $("home").innerHTML = h.join("");
+}
+function budRow(b) {
+  const r = b.budget ? b.sp / b.budget : 0, cls = r > 1 ? "over" : r > 0.85 ? "warn" : "";
+  return `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="dot" style="background:${esc(b.color || "var(--accent)")}"></span><div class="grow">${esc(b.name)}</div>
+    <span class="faint">${euro(b.sp)} / ${euro(b.budget)}</span></div><div class="bar ${cls}"><i style="width:${Math.min(100, r * 100)}%"></i></div>
+    <div class="faint">${r > 1 ? `dépassé de ${euro(b.sp - b.budget)}` : `reste ${euro(b.budget - b.sp)}`}${b.avg ? ` · d'habitude ${euro(b.avg)}` : ""}</div></div>`;
+}
+function goalRow(g) {
+  const r = g.target ? g.saved / g.target : 0;
+  return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${esc(g.name)}</span><span class="faint">${euro(g.saved)} / ${euro(g.target)}</span></div>
+    <div class="bar"><i style="width:${Math.min(100, r * 100)}%;background:${esc(g.color || "var(--gain)")}"></i></div>${g.deadline ? `<div class="faint">pour le ${String(g.deadline).split("-").reverse().join("/")}</div>` : ""}</div>`;
+}
+
+// ---- 💳 opérations
+let txLimit = 80;
+function renderTx() {
+  if (S.view !== "tx") return;
+  const v = V();
+  if (!v) { $("txchips").innerHTML = ""; $("txlist").innerHTML = vaultCard(); return; }
+  const f = S.txf || (S.txf = { acc: "", uncat: false, month: "" });
+  const months = [...new Set(v.tx.map((t) => String(t.d).slice(0, 7)))].slice(0, 13);
+  $("txchips").innerHTML = `<select id="txacc" style="width:auto;flex:1"><option value="">Tous les comptes</option>${v.accounts.map((a) => `<option value="${a.id}" ${String(f.acc) === String(a.id) ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>
+    <select id="txmonth" style="width:auto;flex:1"><option value="">Tous les mois</option>${months.map((m) => `<option value="${m}" ${f.month === m ? "selected" : ""}>${new Date(m + "-01T00:00:00").toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</option>`).join("")}</select>
+    <button data-pa="uncatf" class="${f.uncat ? "on" : ""}">🏷 À classer</button>`;
+  const q = fold($("txq").value.trim());
+  let rows = txAll().filter((t) => (!f.acc || String(t.acc) === String(f.acc)) && (!f.uncat || !t.c) && (!f.month || String(t.d).startsWith(f.month))
+    && (!q || fold(t.l + " " + (t.n || "") + " " + ((catOf(t.c) || {}).name || "")).includes(q) || String(Math.abs(t.a)).replace(".", ",").includes(q.replace(".", ","))));
+  const total = rows.reduce((s2, t) => s2 + (t.p ? 0 : t.a), 0), n = rows.length;
+  rows = rows.slice(0, txLimit);
+  let html = (q || f.acc || f.uncat || f.month) ? `<p class="faint">${n} opération(s) · total ${sign(total)}</p>` : "", day = null;
+  for (const t of rows) {
+    if (t.d !== day) { day = t.d; const dt = rows.filter((x) => x.d === day && !x.p).reduce((s2, x) => s2 + x.a, 0);
+      html += `<div class="dayh"><span>${dmy(day)}</span><span>${sign(dt)}</span></div>`; }
+    const c = catOf(t.c), a = accOf(t.acc);
+    html += `<div class="row" data-pa="tx" data-id="${t.id}"><span class="dot" style="background:${esc((c && c.color) || "var(--line)")}"></span>
+      <div class="grow">${esc(t.l)}<div class="faint">${c ? esc(c.name) : '<span class="loss">à classer</span>'}${a && !f.acc ? " · " + esc(a.name) : ""}${t.n ? " · " + esc(t.n) : ""}${t.pending || t.pendingEdit ? ' <span class="pend">⏳ en attente du PC</span>' : ""}</div></div>
+      <b class="amt ${t.a > 0 ? "in" : ""}">${sign(t.a)}</b></div>`;
+  }
+  if (n > rows.length) html += `<br><button style="width:100%" data-pa="more">Voir plus (${n - rows.length})</button>`;
+  $("txlist").innerHTML = html || '<p class="muted">Aucune opération.</p>';
+  $("txacc").onchange = () => { f.acc = $("txacc").value; txLimit = 80; renderTx(); };
+  $("txmonth").onchange = () => { f.month = $("txmonth").value; txLimit = 80; renderTx(); };
+}
+$("txq").addEventListener("input", () => { txLimit = 80; renderTx(); });
+function catChips(kind, sel, attr) {
+  const cats = V().cats.filter((c) => c.kind === kind), used = {};
+  V().tx.slice(0, 400).forEach((t) => { if (t.c) used[t.c] = (used[t.c] || 0) + 1; });
+  cats.sort((a, b) => (used[b.id] || 0) - (used[a.id] || 0) || a.name.localeCompare(b.name));
+  return `<div class="chips">${cats.map((c) => `<button ${attr}="${c.id}" class="${c.id === sel ? "on" : ""}"><span class="dot" style="background:${esc(c.color || "var(--line)")}"></span> ${esc(c.name)}</button>`).join("")}</div>`;
+}
+function txSheet(id) {
+  const t = txAll().find((x) => String(x.id) === String(id)); if (!t) return;
+  const a = accOf(t.acc);
+  sheet(`<h2>${esc(t.l)}</h2><p class="muted">${dmy(t.d)} · ${a ? esc(a.name) : ""} · <b class="amt ${t.a > 0 ? "in" : ""}">${sign(t.a)}</b></p>
+    ${t.pending ? '<p class="pend">⏳ Ajoutée depuis ce téléphone : elle rejoindra tes opérations à la prochaine synchro de Pécule sur le PC.</p>' : ""}
+    ${t.p ? '<p class="faint">Virement entre tes comptes.</p>' : `<div class="faint" style="margin-top:8px">Catégorie</div>${catChips(t.a > 0 ? "income" : "expense", t.c, "data-setcat")}`}
+    ${t.pending ? "" : `<br><div class="faint">Note</div><div class="add"><input id="txnote" value="${esc(t.n || "")}" placeholder="Ajouter une note"><button class="primary" data-txnote="${t.id}">OK</button></div>`}`);
+  $("sheetbox").dataset.tx = t.id;
+}
+
+// ---- ➕ ajouter une dépense ou un revenu
+let addKind = "expense", addCat = null;
+function openAdd(pre) {
+  const v = V();
+  if (!v && S.noHH) { go("home"); return toast("Active d'abord tes comptes sur le téléphone (voir l'accueil)"); }
+  addKind = (pre && pre.kind) || "expense"; addCat = null;
+  const accs = v ? v.accounts.filter((a) => a.fam === "courant").concat(v.accounts.filter((a) => a.fam !== "courant")) : [];
+  const labels = v ? [...new Set(v.tx.filter((t) => t.a < 0).map((t) => t.l))].slice(0, 60) : [];
+  sheet(`<h2>➕ Nouvelle opération</h2>
+    <div class="tab0"><button data-kind="expense" class="on">Dépense</button><button data-kind="income">Revenu</button></div>
+    <input id="addamt" class="big-in" inputmode="decimal" placeholder="0,00 €" autocomplete="off">
+    <input id="addlab" list="addlabs" placeholder="Quoi ? (ex. boulangerie, essence)" autocomplete="off"><datalist id="addlabs">${labels.map((l) => `<option value="${esc(l)}">`).join("")}</datalist>
+    <div id="addcats"></div>
+    ${v ? `<br><div class="grid2"><select id="addacc">${accs.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select><input id="adddate" type="date" value="${ymd(new Date())}"></div>` : ""}
+    <br><input id="addnote" placeholder="Note (facultatif)">
+    ${!S.noHH && S.hid ? `<label class="faint" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="addshared" style="width:auto" ${v ? "" : "checked disabled"}> Dépense commune du foyer (payée par moi, partagée entre tous)</label>` : ""}
+    ${v ? "" : '<p class="faint">Tes comptes ne sont pas encore sur ce téléphone : la dépense est ajoutée au foyer seulement.</p>'}
+    <br><button class="primary" id="addgo" style="width:100%">Ajouter</button>`);
+  addCats();
+  setTimeout(() => $("addamt").focus(), 50);
+  $("addlab").addEventListener("change", () => {  // même libellé qu'avant → même catégorie
+    const l = fold($("addlab").value.trim()), t = v && v.tx.find((x) => fold(x.l) === l && x.c);
+    if (t && !addCat) { addCat = t.c; addCats(); }
+  });
+  $("addgo").onclick = submitAdd;
+}
+function addCats() { if (V()) $("addcats").innerHTML = `<div class="faint" style="margin-top:10px">Catégorie</div>` + catChips(addKind, addCat, "data-addcat"); }
+function submitAdd() {
+  const amt = parseFloat(($("addamt").value || "").replace(/\s/g, "").replace(",", ".").replace(/[^\d.]/g, ""));
+  if (!(amt > 0)) return toast("Indique un montant");
+  const label = $("addlab").value.trim() || (addCat && catOf(addCat) ? catOf(addCat).name : addKind === "income" ? "Revenu" : "Dépense");
+  const shared = $("addshared") && $("addshared").checked && addKind === "expense";
+  const note = $("addnote").value.trim();
+  closeSheet();
+  if (V()) sendOp({ op: "add", amount: addKind === "income" ? amt : -amt, label: label.slice(0, 120), cat: addCat, acc: Number($("addacc") ? $("addacc").value : 0) || null,
+    date: ($("adddate") && $("adddate").value) || ymd(new Date()), note: note.slice(0, 300) }, `${addKind === "income" ? "Revenu" : "Dépense"} ajouté${addKind === "income" ? "" : "e"} ✓`);
+  if (shared) {
+    const split = {}; S.members.forEach((m) => (split[m.user_id] = 1));
+    act(() => api("POST", "shared_tx", { household_id: S.hid, kind: "expense", amount: Math.round(amt * 100) / 100, label: label.slice(0, 80),
+      category: "", date: today(), paid_by: S.me, split }), V() ? null : "Dépense commune ajoutée 🧾");
+  }
+}
+
+// ---- 📊 budgets, analyses, objectifs
+function renderBudgets() {
+  if (S.view !== "budgets") return;
+  const v = V();
+  if (!v) { $("budgets").innerHTML = vaultCard(); return; }
+  const m = v.month, spent = m.spent + monthSpent(), h = [];
+  const mName = new Date(m.ym + "-01T00:00:00").toLocaleDateString("fr-FR", { month: "long" });
+  h.push(`<div class="card"><h2>🗓️ ${mName.charAt(0).toUpperCase() + mName.slice(1)}</h2><div class="grid2"><div><span class="faint">Revenus</span><div class="big gain">${euro(m.income)}</div></div>
+    <div><span class="faint">Dépenses</span><div class="big">${euro(spent)}</div></div></div>${m.left != null ? `<p class="muted">${esc(m.emoji || "")} Il reste ${euro(m.left)} dans tes budgets ce mois-ci.</p>` : ""}</div>`);
+  const bud = v.budgets.map((b) => ({ ...b, sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget);
+  h.push(`<div class="card"><h2>📊 Budgets</h2>${bud.map(budRow).join("") || '<p class="muted">Aucun budget : fixe-les dans Pécule sur ton PC.</p>'}</div>`);
+  // par catégorie
+  const cur = v.bycat[m.ym] || {}, prevYm = Object.keys(v.bycat).find((k) => k !== m.ym), prev = v.bycat[prevYm] || {};
+  const list = Object.entries(cur).map(([k, x]) => [catOf(Number(k)), x, prev[k] || 0]).filter(([c, x]) => x > 0).sort((a, b) => b[1] - a[1]);
+  const mx = Math.max(1, ...list.map((x) => x[1]));
+  if (list.length) h.push(`<div class="card"><h2>🍩 Où part l'argent ce mois-ci</h2>${list.slice(0, 12).map(([c, x, p]) => `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:center">
+    <span class="dot" style="background:${esc((c && c.color) || "var(--line)")}"></span><div class="grow">${esc(c ? c.name : "Sans catégorie")}</div><b>${euro(x)}</b></div>
+    <div class="bar"><i style="width:${(x / mx) * 100}%;background:${esc((c && c.color) || "var(--accent)")}"></i></div>${p ? `<div class="faint">mois dernier : ${euro(p)}</div>` : ""}</div>`).join("")}</div>`);
+  // 12 mois
+  const sx = v.series || [], top = Math.max(1, ...sx.map((x) => Math.max(x.inc, x.exp)));
+  if (sx.length) h.push(`<div class="card"><h2>📈 12 derniers mois</h2><div class="cols">${sx.map((x) => `<div title="${x.ym}"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;justify-content:center">
+    <i style="height:${(x.inc / top) * 100}%;background:var(--gain)"></i><i style="height:${(x.exp / top) * 100}%;background:var(--accent)"></i></div><span>${"JFMAMJJASOND"[Number(x.ym.slice(5)) - 1]}</span></div>`).join("")}</div>
+    <p class="faint"><span class="dot" style="background:var(--gain)"></span> revenus · <span class="dot" style="background:var(--accent)"></span> dépenses · abonnements et prélèvements : ${euro(v.recurring_month)} / mois</p></div>`);
+  if ((v.goals || []).length) h.push(`<div class="card"><h2>🎯 Objectifs</h2>${v.goals.map(goalRow).join("")}</div>`);
+  if ((v.loans || []).length) h.push(`<div class="card"><h2>🤝 À recevoir et à rembourser</h2>${v.loans.map((l) => `<div class="row"><div class="grow">${esc(l.person)}<div class="faint">${l.dir === "lent" ? "te doit" : "tu lui dois"}${l.due ? " · avant le " + l.due.split("-").reverse().join("/") : ""}</div></div><b class="${l.dir === "lent" ? "gain" : "loss"}">${euro(l.left)}</b></div>`).join("")}</div>`);
+  if (v.score) h.push(`<div class="card"><h2>💚 Santé financière : ${v.score.value}/100</h2><p class="muted">${esc(v.score.label || "")}</p>${(v.score.tips || []).slice(0, 3).map((t) => `<div class="row"><div class="grow faint">💡 ${esc(t)}</div></div>`).join("")}</div>`);
+  $("budgets").innerHTML = h.join("");
+}
+
+// ---- ⚙ réglages
+function renderSettings() {
+  if (S.view !== "settings") return;
+  const v = V(), p = pending();
+  $("vaultinfo").innerHTML = (v ? `<p class="muted">✓ Tes comptes sont sur ce téléphone. Dernier envoi de Pécule : ${atText(v.at)}.</p>` : vaultCard().replace('<div class="card">', "<div>"))
+    + (p.length ? `<p class="faint">⏳ ${p.length} ajout(s) en attente : Pécule les intègre à sa prochaine synchro (il doit être ouvert sur le PC).</p>` : "")
+    + (S.ekey ? `<button class="ghost" id="forgetkey">Retirer mes comptes de ce téléphone</button>` : "");
+  if ($("forgetkey")) $("forgetkey").onclick = () => { if (!confirm("Retirer tes comptes de ce téléphone ? Il faudra rescanner le QR code pour les revoir.")) return;
+    S.ekey = null; S.vault = null; S.vaultErr = "nokey"; store.set("ekey", null); store.set("vault", null); savePending([]); render(); };
+  $("whoami").textContent = (store.get("email") || "") + (S.noHH ? " · sans foyer" : S.hhName ? " · foyer : " + S.hhName : "");
+}
+
+// ---- actions de l'accueil, des opérations et des feuilles
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pa]"); if (!b) return;
+  const a = b.dataset.pa;
+  if (a === "add") return openAdd();
+  if (a === "uncat") { S.txf = { acc: "", uncat: true, month: "" }; return go("tx"); }
+  if (a === "uncatf") { S.txf.uncat = !S.txf.uncat; return renderTx(); }
+  if (a === "acc") { S.txf = { acc: b.dataset.id, uncat: false, month: "" }; return go("tx"); }
+  if (a === "list") return go("foyer", "list");
+  if (a === "foyer") return go("foyer");
+  if (a === "budgets") return go("budgets");
+  if (a === "scan") { go("foyer", "list"); return openScan("list"); }
+  if (a === "more") { txLimit += 120; return renderTx(); }
+  if (a === "tx") return txSheet(b.dataset.id);
+});
+$("sheetbox").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.kind) { addKind = b.dataset.kind; addCat = null; b.parentElement.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); addCats(); return; }
+  if (b.dataset.addcat) { addCat = Number(b.dataset.addcat); addCats(); return; }
+  if (b.dataset.setcat) { const tx = Number($("sheetbox").dataset.tx); closeSheet(); sendOp({ op: "cat", tx, cat: Number(b.dataset.setcat) }, `Classée dans ${catOf(Number(b.dataset.setcat)).name} ✓`); return; }
+  if (b.dataset.txnote) { const tx = Number(b.dataset.txnote), n = $("txnote").value.trim(); closeSheet(); sendOp({ op: "note", tx, note: n }, "Note enregistrée ✓"); }
+});
+
 // ---------------------------------------------------------------- 187 · appli installable et rappels
 let swReg = null, installEvt = null;
 if ("serviceWorker" in navigator && location.protocol === "https:") {
@@ -1203,6 +1582,9 @@ function remindPlan() {
     const day = String(c.next_date).slice(0, 10) < t ? t : String(c.next_date).slice(0, 10);
     plan.push({ key: `chore:${c.id}:${c.next_date}`, day, until: dd(day, 2), group: "🧹 Tâches du jour", text: `${c.emoji || "🧹"} ${c.title}` });
   }
+  for (const u of (S.vault && S.vault.upcoming) || []) {  // prélèvements de tes comptes : la veille
+    if (u.a < 0 && u.d >= t) plan.push({ key: `bill:${u.d}:${u.name}`, day: dd(u.d, -1), until: u.d, group: "📅 Prélèvements", text: `${u.name} : ${euro(-u.a)} le ${String(u.d).slice(8, 10)}/${String(u.d).slice(5, 7)}` });
+  }
   for (const x of S.stock || []) {
     if (x.expires && num(x.qty) > 0) plan.push({ key: `exp:${x.id}:${x.expires}`, day: dd(x.expires, -1), until: String(x.expires).slice(0, 10), group: "⏰ À consommer vite", text: `${x.label} (périme le ${String(x.expires).slice(8, 10)}/${String(x.expires).slice(5, 7)})` });
     const fi = freezerInfo(x);
@@ -1232,9 +1614,10 @@ async function dailyNotify(force) {
   showApp(true);
   try {
     const c = JSON.parse(store.get("cache") || "null");
-    if (c && c.d) { Object.assign(S, c.d); S.me = c.me || S.session.user; $("title").textContent = c.title || "Foyer";
+    if (c && c.d) { Object.assign(S, c.d); S.me = c.me || S.session.user;
       $("sync").textContent = "hors ligne"; render(); }
   } catch (e) {}
+  await vaultFromCache();
   // Sans réseau, on garde la session (et le dernier affichage) : on ne redemande la connexion que si le serveur la refuse.
   try { await load(); } catch (e) {
     toast(e.auth ? "Ta session a expiré : reconnecte-toi." : "Pas de connexion pour l'instant, nouvel essai dans un moment.");

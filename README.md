@@ -97,12 +97,12 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - 👥 **Comptes communs vraiment partagés** : la part de chacun, le suivi des versements et un rappel pour ta part
 - 📅 **Agenda du foyer** : loyer, factures, rendez-vous, avec un rappel la veille
 - 🧹 **Tâches ménagères** : à tour de rôle ou par n'importe qui, rappel le jour J, tableau du mois et échange de tour en un clic
-- 📱 **L'appli du foyer sur ton téléphone** : à installer sur l'écran d'accueil, avec les rappels. Courses (mode magasin, scan des codes-barres), stock, repas, tâches, envies, dépenses communes, agenda et soldes (QR code dans Pécule)
+- 📱 **Pécule sur ton téléphone** : une appli à installer sur l'écran d'accueil, avec les rappels. Tes comptes, opérations, budgets et objectifs (chiffrés de bout en bout), une dépense notée en deux secondes, et tout le foyer : courses (mode magasin, scan des codes-barres), stock, repas, tâches, envies, dépenses communes et agenda (bouton 📱 dans Pécule)
 - 🧾 Dépenses entre amis (week-end, coloc) sans que les autres aient l'appli
 - 👤 Plusieurs profils protégés par un code
 
 <p align="center"><img src="images/foyer.png" width="900" alt="Vue commune du foyer"></p>
-<p align="center"><img src="images/telephone.png" width="900" alt="Le foyer sur le téléphone"></p>
+<p align="center"><img src="images/telephone.png" width="900" alt="Pécule sur le téléphone"></p>
 
 **Confort**
 - 🛟 Sauvegarde automatique chaque jour, corbeille de 30 jours, Ctrl+Z pour annuler
@@ -128,13 +128,13 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 - Tes comptes et tes opérations sont enregistrés **uniquement sur ton ordinateur** (`%APPDATA%\Pecule`). Aucun compte Pécule, aucune publicité, aucune collecte.
 - La connexion bancaire passe par **ton propre accès Enable Banking** (gratuit pour tes comptes personnels).
 - Le foyer partagé utilise **ton propre serveur Supabase gratuit**. Seul ce que tu partages avec le foyer y est envoyé : dépenses communes, courses, stock, repas, agenda, tâches, envies et documents que tu envoies. Tes chiffres personnels n'y vont que si tu actives le partage.
-- La page téléphone ne contient aucune donnée : elle se connecte simplement à ton serveur du foyer.
+- La page téléphone ne contient aucune donnée : elle se connecte à ton serveur. Tes comptes personnels n'y sont envoyés que si tu actives « Pécule sur ton téléphone », **chiffrés sur ton PC** (AES-256) avec un code secret qui ne passe que par le QR code : ton serveur ne voit rien de lisible.
 
 ## ❓ Questions fréquentes
 
 **C'est vraiment gratuit ?** Oui.
 
-**Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une page web donne accès au foyer (courses, stock, repas, tâches, envies, dépenses communes, agenda) : scanne le QR code dans Pécule › Foyer › ⚙ › Sur mon téléphone. Pas de version Mac pour l'instant.
+**Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une appli web (à installer sur l'écran d'accueil) donne accès à tes comptes, opérations, budgets et objectifs, et au foyer : clique sur 📱 en haut de Pécule et scanne le QR code. Pas de version Mac pour l'instant.
 
 **Ma banque est compatible ?** La connexion directe couvre la plupart des banques françaises et européennes. Sinon, l'import de relevés CSV / OFX marche avec toutes.
 
