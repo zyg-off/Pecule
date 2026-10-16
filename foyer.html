@@ -48,7 +48,7 @@ nav button.on{color:var(--accent)}
 #scan video{width:100%;max-height:55vh;object-fit:cover;border-radius:16px;background:#000}
 #scan .frame{position:relative}#scan .frame:after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2px;background:#f08a3a;box-shadow:0 0 12px #f08a3a}
 #scan .box{position:absolute;left:5%;right:5%;top:30%;bottom:30%;border:2px solid rgba(255,255,255,.75);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.35);pointer-events:none;transition:.2s}
-#scan .frame{overflow:hidden;border-radius:16px}#scan .frame.ok .box{border-color:#41b883;box-shadow:0 0 0 999px rgba(31,138,91,.35)}
+#scan .frame{overflow:hidden;border-radius:16px}#scan.qr .box{left:22%;right:22%;top:8%;bottom:8%}#scan.qr .frame:after{display:none}#scan .frame.ok .box{border-color:#41b883;box-shadow:0 0 0 999px rgba(31,138,91,.35)}
 #scan .tools button{background:#26303b;color:#fff}
 #scanres .card{color:var(--ink)}#scan input{color:var(--ink);background:var(--card)}
 .seg{display:flex;gap:6px;margin:10px 0 0}.seg button{flex:1;font-size:14px;padding:9px 4px}
@@ -244,7 +244,7 @@ nav button.fab{flex:0 0 64px}nav button.fab b{background:var(--accent);color:#ff
   <div id="shoplist"></div>
 </div>
 <div id="scan" class="hidden">
-  <div style="display:flex;align-items:center"><b style="flex:1">📷 Scanner un produit</b><button class="ghost" id="scanclose" style="color:#fff">✕ Fermer</button></div>
+  <div style="display:flex;align-items:center"><b style="flex:1" id="scantitle">📷 Scanner un produit</b><button class="ghost" id="scanclose" style="color:#fff">✕ Fermer</button></div>
   <div class="frame" id="scanframe"><video id="cam" playsinline muted autoplay></video><div class="box"></div></div>
   <div class="tools" style="display:flex;gap:8px"><button id="scantorch" class="hidden" style="flex:1">🔦 Lampe</button><button id="scanagain" class="hidden" style="flex:1">📷 Relancer la caméra</button></div>
   <p id="scanmsg" class="faint" style="color:#ccc">Vise le code-barres du produit.</p>
@@ -784,6 +784,7 @@ function eanOk(c) {
   return (10 - (sum % 10)) % 10 === last;
 }
 function seen(code) {
+  if (scanMode === "pair") { if (/#.*\be=/.test(String(code))) pairWith(String(code)); return; }
   code = String(code || "").replace(/\D/g, "");
   if (!eanOk(code)) return;
   if (code === scanLast) scanHits++; else { scanLast = code; scanHits = 1; }
@@ -793,6 +794,7 @@ async function nativeDetector() {
   if (!("BarcodeDetector" in window)) return null;
   try {
     const f = await BarcodeDetector.getSupportedFormats();  // certains Android l'annoncent sans savoir lire les EAN
+    if (scanMode === "pair") return f.includes("qr_code") ? new BarcodeDetector({ formats: ["qr_code"] }) : null;
     const want = ["ean_13", "ean_8", "upc_a", "upc_e"].filter((x) => f.includes(x));
     return want.includes("ean_13") ? new BarcodeDetector({ formats: want }) : null;
   } catch (e) { return null; }
@@ -820,7 +822,12 @@ async function openScan(mode) {
   scanMode = mode; scanBusy = false; scanLast = ""; scanHits = 0; scanStart = Date.now();
   stopScan();
   $("scan").classList.remove("hidden"); $("scanres").innerHTML = ""; $("scancode").value = ""; $("scanagain").classList.add("hidden");
-  $("scanmsg").textContent = "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
+  const pairing = mode === "pair";
+  $("scan").classList.toggle("qr", pairing);
+  $("scantitle").textContent = pairing ? "🔐 Scanner le QR code de Pécule" : "📷 Scanner un produit";
+  $("scancode").placeholder = pairing ? "ou colle le lien copié dans Pécule" : "ou tape le code-barres";
+  $("scancode").inputMode = pairing ? "url" : "numeric";
+  $("scanmsg").textContent = pairing ? "Sur ton PC : Pécule › 📱 en haut. Vise le QR code affiché." : "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
   $("scantorch").textContent = "🔦 Lampe";
   try {
     const detP = nativeDetector();
@@ -832,11 +839,11 @@ async function openScan(mode) {
       $("scanmsg").textContent = "Chargement du lecteur…";
       await loadZXing();
       const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E]);
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, pairing ? [ZXing.BarcodeFormat.QR_CODE] : [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E]);
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       zx = new ZXing.MultiFormatReader(); zx.setHints(hints);
       canvas = document.createElement("canvas"); ctx = canvas.getContext("2d", { willReadFrequently: true });
-      $("scanmsg").textContent = "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
+      $("scanmsg").textContent = pairing ? "Sur ton PC : Pécule › 📱 en haut. Vise le QR code affiché." : "Place le code-barres dans le cadre, à 10-15 cm, bien à plat.";
     }
     const v = $("cam");
     const tick = async () => {
@@ -845,19 +852,22 @@ async function openScan(mode) {
         if (det) { const r = await det.detect(v); r.forEach((x) => seen(x.rawValue)); }
         else if (v.videoWidth) {
           // bande centrale (là où est la ligne orange), puis l'image entière une fois sur trois (code tenu ailleurs)
-          const W = v.videoWidth, H = v.videoHeight, full = turn++ % 3 === 2;
+          const W = v.videoWidth, H = v.videoHeight, n = turn++, full = pairing || n % 3 === 2;
           const sw = full ? W : Math.round(W * 0.9), sh = full ? H : Math.round(H * 0.4);
-          const sx = Math.round((W - sw) / 2), sy = Math.round((H - sh) / 2), k = Math.min(1, 1280 / sw);
+          // QR code : plusieurs tailles et deux façons de lire le noir et blanc, à tour de rôle (ZXing est capricieux)
+          const scale = pairing ? [1, 0.5, 0.75, 0.35][n % 4] : 1, glob = pairing && n % 8 >= 4;
+          const sx = Math.round((W - sw) / 2), sy = Math.round((H - sh) / 2), k = Math.min(1, 1280 / sw) * scale;
           canvas.width = Math.round(sw * k); canvas.height = Math.round(sh * k);
           ctx.drawImage(v, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
           try {
-            const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(canvas)));
+            const src = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+            const bmp = new ZXing.BinaryBitmap(glob ? new ZXing.GlobalHistogramBinarizer(src) : new ZXing.HybridBinarizer(src));
             seen(zx.decode(bmp).getText());
           } catch (e) { /* rien dans cette image */ }
         }
       } catch (e) {}
       if (scanStream && !scanBusy && Date.now() - scanStart > 8000) {
-        scanStart = Date.now(); $("scanmsg").textContent = "Pas encore lu : recule un peu le téléphone, évite les reflets" + ($("scantorch").classList.contains("hidden") ? "." : ", ou allume la lampe.");
+        scanStart = Date.now(); $("scanmsg").textContent = pairing ? "Pas encore lu : approche ou recule le téléphone pour que le QR code remplisse le cadre." : "Pas encore lu : recule un peu le téléphone, évite les reflets" + ($("scantorch").classList.contains("hidden") ? "." : ", ou allume la lampe.");
       }
       scanTimer = setTimeout(tick, det ? 120 : 60);
     };
@@ -990,7 +1000,7 @@ function closeScan() { stopScan(); $("scan").classList.add("hidden"); }
 $("scanlist").onclick = () => openScan("list");
 $("scanstock").onclick = () => openScan("stock");
 $("scanclose").onclick = closeScan;
-$("scango").onclick = () => { const c = $("scancode").value.replace(/\s/g, ""); if (/^\d{8,14}$/.test(c)) found(c); else toast("Un code-barres a 8 à 14 chiffres"); };
+$("scango").onclick = () => { if (scanMode === "pair") return pairWith($("scancode").value.trim()); const c = $("scancode").value.replace(/\s/g, ""); if (/^\d{8,14}$/.test(c)) found(c); else toast("Un code-barres a 8 à 14 chiffres"); };
 
 $("subnav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.sub = b.dataset.s; store.set("sub", S.sub); render(); };
 function addToList(items) {
@@ -1312,13 +1322,35 @@ const sign = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v)).repla
 const dmy = (d) => { const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return x.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }); };
 const atText = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); };
 
+// relier ce téléphone à tes comptes : le QR code (ou le lien copié) de Pécule contient le code secret (#e=…).
+// Utile aussi dans l'appli installée sur iPhone, qui ne partage pas la mémoire de Safari.
+async function pairWith(text) {
+  const i = text.indexOf("#"); const h = new URLSearchParams(i >= 0 ? text.slice(i + 1) : text);
+  if (!h.get("e")) return toast("Ce lien ne contient pas tes comptes : dans Pécule (📱), active « Mes comptes et opérations sur le téléphone ».");
+  closeScan();
+  const newUrl = (h.get("u") || "").replace(/\/$/, "");
+  S.ekey = h.get("e"); store.set("ekey", S.ekey); store.set("vault", null); S.vault = null;
+  if (newUrl && newUrl !== S.url) {  // autre serveur : il faut se connecter à celui-ci
+    S.url = newUrl; S.key = h.get("k") || S.key; store.set("url", S.url); store.set("key", S.key);
+    S.session = null; store.set("session", null); showApp(false); $("login").classList.remove("hidden");
+    return toast("Code reçu ✓ Connecte-toi pour voir tes comptes.");
+  }
+  if (h.get("k")) { S.key = h.get("k"); store.set("key", S.key); }
+  toast("🔐 Code reçu : chargement de tes comptes…");
+  await loadVault(); go("home");
+  if (S.vault) toast("Tes comptes sont sur ce téléphone ✓");
+}
+
 function vaultCard() {
-  const why = { nokey: ["🔐 Tes comptes sur le téléphone", "Dans Pécule sur ton PC, clique sur l'icône 📱 en haut, active « Mes comptes et opérations sur le téléphone », puis scanne le QR code avec ce téléphone."],
+  const why = { nokey: ["🔐 Relie ce téléphone à tes comptes", "Dans Pécule sur ton PC, clique sur l'icône 📱 en haut et vérifie que « Mes comptes et opérations sur le téléphone » est activé. Puis scanne le QR code affiché avec le bouton ci-dessous."],
     empty: ["⏳ Tes comptes arrivent", "Pécule sur ton PC n'a pas encore envoyé tes chiffres : ouvre-le, la synchro se fait toute seule (📱 › Synchroniser maintenant)."],
     rekey: ["🔁 Rescanne le QR code", "Le code secret a changé sur ton PC (ou ce téléphone a un ancien code) : dans Pécule, 📱, puis scanne le nouveau QR code."],
     server: ["🛠️ Serveur à mettre à jour", "Ton serveur ne connaît pas encore « Pécule sur le téléphone » : dans Supabase › SQL Editor, relance le script foyer.sql fourni avec Pécule."],
     net: ["📡 Pas de connexion", "Tes comptes s'afficheront dès que le téléphone sera en ligne."] }[S.vaultErr] || ["🔐 Tes comptes", S.vaultErr];
-  return `<div class="card"><h2>${why[0]}</h2><p class="muted">${esc(why[1])}</p></div>`;
+  const pair = ["nokey", "rekey"].includes(S.vaultErr) || !S.vaultErr;
+  return `<div class="card"><h2>${why[0]}</h2><p class="muted">${esc(why[1])}</p>${pair ? `
+    <button class="primary" data-pa="pair" style="width:100%">📷 Scanner le QR code de Pécule</button>
+    <p class="faint">C'est déjà activé sur le PC ? Scanne le code avec ce bouton, depuis cette page : sur iPhone, l'appli installée sur l'écran d'accueil ne voit pas ce que Safari a reçu en scannant avec l'appareil photo.</p>` : ""}</div>`;
 }
 
 function renderPerso() {
@@ -1507,6 +1539,7 @@ function renderSettings() {
   const v = V(), p = pending();
   $("vaultinfo").innerHTML = (v ? `<p class="muted">✓ Tes comptes sont sur ce téléphone. Dernier envoi de Pécule : ${atText(v.at)}.</p>` : vaultCard().replace('<div class="card">', "<div>"))
     + (p.length ? `<p class="faint">⏳ ${p.length} ajout(s) en attente : Pécule les intègre à sa prochaine synchro (il doit être ouvert sur le PC).</p>` : "")
+    + (v ? `<button class="ghost" data-pa="pair">📷 Rescanner le QR code de Pécule</button>` : "")
     + (S.ekey ? `<button class="ghost" id="forgetkey">Retirer mes comptes de ce téléphone</button>` : "");
   if ($("forgetkey")) $("forgetkey").onclick = () => { if (!confirm("Retirer tes comptes de ce téléphone ? Il faudra rescanner le QR code pour les revoir.")) return;
     S.ekey = null; S.vault = null; S.vaultErr = "nokey"; store.set("ekey", null); store.set("vault", null); savePending([]); render(); };
@@ -1518,6 +1551,7 @@ document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-pa]"); if (!b) return;
   const a = b.dataset.pa;
   if (a === "add") return openAdd();
+  if (a === "pair") return openScan("pair");
   if (a === "uncat") { S.txf = { acc: "", uncat: true, month: "" }; return go("tx"); }
   if (a === "uncatf") { S.txf.uncat = !S.txf.uncat; return renderTx(); }
   if (a === "acc") { S.txf = { acc: b.dataset.id, uncat: false, month: "" }; return go("tx"); }
