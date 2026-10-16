@@ -12,7 +12,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='22' fill='%23e8a33d'/%3E%3Cpath d='M32 14c2-8 10-10 14-8-2 6-8 9-14 8z' fill='%234f9d69'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#f3f1ec;--card:#fff;--ink:#1d2733;--muted:#66717f;--faint:#9aa3ad;--line:#e6e2da;--accent:#e8701a;--gain:#1f8a5b;--loss:#c4462f;--chip:#f6efe6}
-@media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b222b;--ink:#e9edf2;--muted:#a3adb9;--faint:#6f7a87;--line:#2a333e;--accent:#f08a3a;--gain:#41b883;--loss:#e5735b;--chip:#26303b}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12161c;--card:#1b222b;--ink:#e9edf2;--muted:#a3adb9;--faint:#6f7a87;--line:#2a333e;--accent:#f08a3a;--gain:#41b883;--loss:#e5735b;--chip:#26303b}}
+:root[data-theme=dark]{--bg:#12161c;--card:#1b222b;--ink:#e9edf2;--muted:#a3adb9;--faint:#6f7a87;--line:#2a333e;--accent:#f08a3a;--gain:#41b883;--loss:#e5735b;--chip:#26303b}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,"Segoe UI",Roboto,Inter,sans-serif;padding:env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom))}
 header{padding:16px 16px 6px;display:flex;align-items:center;gap:10px}
@@ -55,7 +56,11 @@ nav button.on{color:var(--accent)}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
 textarea{font:inherit;color:inherit;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-height:110px}
 .pill.warn{background:#f7e2c6;color:#8a4d0f}.pill.ok{background:#d8efe2;color:#1f6b46}
-@media (prefers-color-scheme:dark){.pill.warn{background:#4a3417;color:#f2c48b}.pill.ok{background:#1d3b2c;color:#8fd8b0}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pill.warn{background:#4a3417;color:#f2c48b}:root:not([data-theme=light]) .pill.ok{background:#1d3b2c;color:#8fd8b0}}
+:root[data-theme=dark] .pill.warn{background:#4a3417;color:#f2c48b}:root[data-theme=dark] .pill.ok{background:#1d3b2c;color:#8fd8b0}
+#pinlock{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+#pinlock .dots{display:flex;gap:12px;font-size:28px;letter-spacing:4px;min-height:36px}
+#pinlock .pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px}#pinlock .pad button{height:64px;font-size:24px;border-radius:50%}
 .qty{min-width:64px;text-align:center;font-weight:600}
 .step{width:36px;height:36px;padding:0;border-radius:10px;font-size:18px}
 .place{font-size:12px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 2px}
@@ -133,12 +138,17 @@ nav button.fab{flex:0 0 64px}nav button.fab b{background:var(--accent);color:#ff
       <button class="primary" id="notifon" style="width:100%">Activer les rappels</button>
       <button id="installgo" class="hidden" style="width:100%;margin-top:8px">📲 Installer l'appli sur ce téléphone</button>
       <p class="faint" id="installtxt"></p></div>
+    <div class="card"><h2>🔒 Code de l'appli</h2><p class="muted" id="pintxt"></p><div class="grid2" id="pinbtns"></div></div>
+    <div class="card"><h2>🌐 Langue</h2><div class="tab0" id="langseg"><button data-lang="fr">Français</button><button data-lang="en">English</button><button data-lang="pt">Português</button></div></div>
+    <div class="card"><h2>🎨 Apparence</h2><div class="tab0" id="themeseg"><button data-theme="auto">Automatique</button><button data-theme="light">Clair</button><button data-theme="dark">Sombre</button></div></div>
     <div class="card"><h2>👤 Mon compte</h2><p class="muted" id="whoami"></p>
       <button id="logout" style="width:100%">Se déconnecter de ce téléphone</button></div>
     <p class="faint" style="text-align:center">Tes comptes personnels sont chiffrés par Pécule sur ton PC : ton serveur ne voit que du contenu illisible.</p>
   </section>
 
   <section id="v-foyer" class="view hidden">
+    <div class="add" style="margin-top:10px"><input id="hhq" type="search" placeholder="🔎 Rechercher dans le foyer (dépenses, courses, repas…)"></div>
+    <div id="hhres"></div>
     <div class="seg scroll" id="hhnav"><button data-h="list">🛒 Courses</button><button data-h="money">⚖️ Dépenses</button><button data-h="agenda">📅 Agenda</button><button data-h="wishes">💝 Envies</button><button data-h="accounts">🏦 Comptes</button></div>
     <div class="card hidden" id="nohh"><h2>🏡 Pas encore de foyer</h2><p class="muted">Le foyer, c'est la liste de courses, le stock, les repas, les tâches, l'agenda et les dépenses partagés avec les personnes qui vivent avec toi. Crée-le dans Pécule sur ton PC (menu Foyer), puis invite les autres.</p></div>
   <section id="v-list" class="hview hidden">
@@ -232,6 +242,8 @@ nav button.fab{flex:0 0 64px}nav button.fab b{background:var(--accent);color:#ff
   <button data-v="foyer"><b>🏡</b>Foyer</button>
 </nav>
 <div id="toast"></div>
+<div id="pinlock" class="hidden"><div style="font-size:42px">🔒</div><b style="font-size:20px" id="pintitle">Pécule</b><p class="muted" id="pinmsg">Entre ton code</p>
+  <div class="dots" id="pindots"></div><div class="pad" id="pinpad"></div><button class="ghost" id="pinforgot">Code oublié ?</button></div>
 <div id="sheet" class="hidden"><div id="sheetbox"></div></div>
 <div id="shop" class="hidden">
   <div class="top">
@@ -258,17 +270,86 @@ const store = {
   get(k) { try { return localStorage.getItem("pecule_" + k); } catch (e) { return null; } },
   set(k, v) { try { v == null ? localStorage.removeItem("pecule_" + k) : localStorage.setItem("pecule_" + k, v); } catch (e) {} },
 };
-const euro = (v) => (Number(v) || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const euro = (v) => (Number(v) || 0).toLocaleString(LOC(), { style: "currency", currency: "EUR" });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const today = () => new Date().toISOString().slice(0, 10);
-function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), 2600); }
+function toast(t) { const e = $("toast"); e.textContent = typeof trText === "function" ? trText(t) : t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), 2600); }
+
+// ---------------------------------------------------------------- 217 · langues : français, anglais, portugais
+// Le texte français est traduit à l'affichage (dictionnaire généré par tools/phone_i18n/build.py) ; les valeurs
+// (montants, dates, noms) sont gardées. La langue vient du PC (QR code) ou des réglages.
+/*I18N*/const I18N = {"en":{"exact":{"Pécule":"Pécule","🔐 Connexion au foyer":"🔐 Sign in","Utilise le même e-mail et le même mot de passe que dans Pécule sur ton PC.":"Use the same e-mail and password as in Pécule on your PC.","Adresse du serveur et clé publique : dans Pécule › Foyer › ⚙ › Sur mon téléphone (QR code).":"Server address and public key: in Pécule › Household › ⚙ › On my phone (QR code).","Clé publique (anon)":"Public key (anon)","E-mail":"E-mail","Mot de passe":"Password","Se connecter":"Sign in","Connecte-toi":"Please sign in","Connexion refusée":"Sign-in refused","Ta session a expiré : reconnecte-toi.":"Your session has expired: sign in again.","Pas de connexion pour l'instant, nouvel essai dans un moment.":"No connection right now, trying again shortly.","Accueil":"Home","Opérations":"Transactions","Budgets":"Budgets","Foyer":"Household","Réglages":"Settings","hors ligne":"offline","Ajouter une dépense":"Add an expense","🔐 Mes comptes sur ce téléphone":"🔐 My accounts on this phone","🔔 Rappels et appli":"🔔 Reminders and app","Activer les rappels":"Turn on reminders","📲 Installer l'appli sur ce téléphone":"📲 Install the app on this phone","🔒 Code de l'appli":"🔒 App code","🎨 Apparence":"🎨 Appearance","Automatique":"Automatic","Clair":"Light","Sombre":"Dark","🌐 Langue":"🌐 Language","👤 Mon compte":"👤 My account","Se déconnecter de ce téléphone":"Sign out of this phone","Tes comptes personnels sont chiffrés par Pécule sur ton PC : ton serveur ne voit que du contenu illisible.":"Your personal accounts are encrypted by Pécule on your PC: your server only sees unreadable content.","🛒 Courses":"🛒 Shopping","⚖️ Dépenses":"⚖️ Expenses","📅 Agenda":"📅 Calendar","💝 Envies":"💝 Wishes","🏦 Comptes":"🏦 Accounts","🏡 Pas encore de foyer":"🏡 No household yet","Le foyer, c'est la liste de courses, le stock, les repas, les tâches, l'agenda et les dépenses partagés avec les personnes qui vivent avec toi. Crée-le dans Pécule sur ton PC (menu Foyer), puis invite les autres.":"The household is the shopping list, stock, meals, chores, calendar and expenses shared with the people you live with. Create it in Pécule on your PC (Household menu), then invite the others.","🔎 Rechercher dans le foyer (dépenses, courses, repas…)":"🔎 Search the household (expenses, shopping, meals…)","Rien trouvé.":"Nothing found.","dans le panier":"in the cart","sur la liste":"on the list","tâche":"chore","🛒 Liste":"🛒 List","📦 Stock":"📦 Stock","🍝 Repas":"🍝 Meals","🛒 Liste de courses":"🛒 Shopping list","Ajouter un article…":"Add an item…","Scanner un code-barres":"Scan a barcode","📋 Proposé d'après le stock et les repas :":"📋 Suggested from stock and meals:","🧭 Par rayon":"🧭 By aisle","📝 Liste simple":"📝 Simple list","Ordre habituel":"Usual order","+ Autre magasin…":"+ Another store…","Ordre des rayons":"Aisle order","↕️ Ordre des rayons":"↕️ Aisle order","Dans l'ordre où tu traverses le magasin : la liste suivra le même chemin.":"In the order you walk through the store: the list will follow the same path.","Par défaut":"Default","Enregistrer":"Save","Ordre des rayons enregistré ✓":"Aisle order saved ✓","Nom du magasin (ex. Leclerc, Carrefour Market) :":"Store name (e.g. Leclerc, Carrefour Market):","🛍️ Mode magasin":"🛍️ In-store mode","🛍️ En magasin":"🛍️ In the store","Terminer":"Done","Un oubli ? Ajoute-le ici":"Forgot something? Add it here","Tout est dans le panier ✓":"Everything is in the cart ✓","prix ?":"price?","Dans le panier":"In the cart","Vider les articles cochés":"Clear ticked items","La liste est vide.":"The list is empty.","Tout est déjà sur la liste ✓":"Everything is already on the list ✓","Liste nettoyée":"List cleared","La liste de courses n'est pas encore activée sur le serveur du foyer (Pécule › Foyer › mettre à jour le serveur).":"The shopping list isn't enabled on the household server yet (Pécule › Household › update the server).","Pas encore activé sur le serveur du foyer : dans Pécule, Foyer › ⚙ › Mettre à jour le serveur.":"Not enabled on the household server yet: in Pécule, Household › ⚙ › Update the server.","gardé sur ce téléphone (serveur du foyer à mettre à jour)":"kept on this phone (household server needs an update)","Enregistré sur ce téléphone":"Saved on this phone","📦 Stock de la maison":"📦 Home stock","Ajouter tout de suite à la liste ce qui passe sous la quantité nécessaire":"Add to the list right away anything that drops below the needed quantity","+ Ajouter un article":"+ Add an item","Article (ex. lait, pâtes, lessive)":"Item (e.g. milk, pasta, detergent)","Il y en a":"We have","Il en faut":"We need","Unité (L, kg, paquets…)":"Unit (L, kg, packs…)","Racheté chaque semaine":"Bought every week","Racheté chaque mois":"Bought every month","Juste suivre":"Just track","À consommer avant le (facultatif)":"Use by (optional)","Congelé le":"Frozen on","Ajouter au stock":"Add to stock","Ajouté au stock 📦":"Added to stock 📦","Indique l'article":"Enter the item","Placard":"Cupboard","Frigo":"Fridge","Congélateur":"Freezer","Fruits et légumes":"Fruit and veg","Salle de bain":"Bathroom","Entretien":"Cleaning","Animaux":"Pets","Autre":"Other","Sans rangement":"No place","périmé":"expired","périme aujourd'hui":"expires today","périme demain":"expires tomorrow","⏰ périme aujourd'hui":"⏰ expires today","⏰ périme demain":"⏰ expires tomorrow","❄️ À sortir du congélateur":"❄️ Take out of the freezer","⏰ À consommer vite":"⏰ Use soon","📦 Le point de la semaine":"📦 Weekly stock check","Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.":"Adjust the quantities with − and +, then confirm: the lists update.","✓ Le point est fait":"✓ Check done","Point du stock enregistré ✓":"Stock check saved ✓","🗓️ Liste de la semaine":"🗓️ Weekly list","📆 Liste du mois":"📆 Monthly list","Rien à racheter cette semaine ✓":"Nothing to buy this week ✓","Les réserves sont pleines ✓":"Supplies are full ✓","Note ce que tu as à la maison et combien il en faut : Pécule propose la liste de la semaine (le frais) et celle du mois (les réserves).":"Note what you have at home and how much you need: Pécule suggests the weekly list (fresh food) and the monthly list (supplies).","➕ Nouveau repas":"➕ New meal","Repas (ex. pâtes carbonara)":"Meal (e.g. pasta carbonara)","Ajouter le repas":"Add the meal","Repas ajouté 🍝":"Meal added 🍝","Indique le repas":"Enter the meal","Retirer ce repas ?":"Remove this meal?","🧺 Ingrédients":"🧺 Ingredients","✓ à la maison":"✓ at home","à acheter":"to buy","Matin":"Morning","Midi":"Lunch","Soir":"Dinner","Aujourd'hui":"Today","Demain":"Tomorrow","Ajoute des repas avec leurs ingrédients : ce qui manque à la maison rejoint la liste de courses.":"Add meals with their ingredients: whatever is missing at home goes on the shopping list.","Un ingrédient par ligne : Pâtes · 500 g 200 g de lardons 3 œufs":"One ingredient per line:\nPasta · 500 g\n200 g bacon\n3 eggs","⚖️ Qui doit combien":"⚖️ Who owes what","à jour":"settled","Tout le monde est à jour ✓":"Everyone is settled ✓","➕ Dépense commune":"➕ Shared expense","Montant €":"Amount €","Quoi ?":"What?","Ajouter (payé par moi, partagé entre tous)":"Add (paid by me, split between all)","Dépense ajoutée 🧾":"Expense added 🧾","Dépense commune ajoutée 🧾":"Shared expense added 🧾","Indique un montant":"Enter an amount","🧾 Dernières dépenses":"🧾 Latest expenses","Remboursement":"Repayment","Dépense":"Expense","Aucune dépense commune.":"No shared expenses.","🧹 Tâches du foyer":"🧹 Household chores","au tour de toi":"your turn","toi":"you","n'importe qui":"anyone","aujourd'hui":"today","demain":"tomorrow","Accepter":"Accept","Non":"No","Annuler":"Cancel","Demander à quelqu'un d'autre":"Ask someone else","🔁 Qui peut prendre ce tour ?":"🔁 Who can take this turn?","🏆 Ce mois-ci":"🏆 This month","Toi":"You","Rien de noté ce mois-ci pour l'instant.":"Nothing logged this month yet.","Partage équilibré ce mois-ci 👏":"Fair share this month 👏","Aucune tâche : ajoutez-les depuis Pécule (Foyer › Agenda).":"No chores: add them from Pécule (Household › Calendar).","📅 Agenda du foyer":"📅 Household calendar","tout le foyer":"whole household","Rien de prévu ces deux prochains mois.":"Nothing planned in the next two months.","L'agenda n'est pas encore activé sur le serveur du foyer.":"The calendar isn't enabled on the household server yet.","💝 Ma liste d'envies":"💝 My wish list","+ Ajouter une envie":"+ Add a wish","Envie (ex. un livre, des écouteurs)":"Wish (e.g. a book, headphones)","Prix (facultatif)":"Price (optional)","Pour qui ? (vide = moi)":"For whom? (empty = me)","Lien (facultatif)":"Link (optional)","Ajouter":"Add","Envie ajoutée 💝":"Wish added 💝","Indique l'envie":"Enter the wish","Retirer cette envie ?":"Remove this wish?","Sur ta liste, tu ne vois pas ce que les autres ont réservé : la surprise est gardée 🤫":"On your list you can't see what the others have reserved: the surprise is kept 🤫","Note ce qui te ferait plaisir : les autres pourront le réserver.":"Note what would make you happy: the others can reserve it.","C'est moi ✓":"It's me ✓","Je m'en occupe":"I'll get it","voir 🔗":"view 🔗","Réservé : les autres le verront 🎁":"Reserved: the others will see it 🎁","Réservation annulée":"Reservation cancelled","🏦 Comptes communs":"🏦 Joint accounts","Aucun compte commun partagé depuis Pécule.":"No joint account shared from Pécule.","💞 Ce mois-ci":"💞 This month","Personne ne partage ses chiffres pour l'instant.":"Nobody is sharing their figures yet.","📷 Scanner un produit":"📷 Scan a product","🔐 Scanner le QR code de Pécule":"🔐 Scan the Pécule QR code","✕ Fermer":"✕ Close","🔦 Lampe":"🔦 Torch","🔦 Éteindre":"🔦 Turn off","📷 Relancer la caméra":"📷 Restart the camera","Vise le code-barres du produit.":"Aim at the product's barcode.","ou tape le code-barres":"or type the barcode","ou colle le lien copié dans Pécule":"or paste the link copied in Pécule","Place le code-barres dans le cadre, à 10-15 cm, bien à plat.":"Put the barcode in the frame, 10-15 cm away, nice and flat.","Sur ton PC : Pécule › 📱 en haut. Vise le QR code affiché.":"On your PC: Pécule › 📱 at the top. Aim at the QR code shown.","Chargement du lecteur…":"Loading the reader…","Pas encore lu : recule un peu le téléphone, évite les reflets.":"Not read yet: move the phone back a little, avoid reflections.","Pas encore lu : recule un peu le téléphone, évite les reflets, ou allume la lampe.":"Not read yet: move the phone back a little, avoid reflections, or turn on the torch.","Pas encore lu : approche ou recule le téléphone pour que le QR code remplisse le cadre.":"Not read yet: move the phone closer or further so the QR code fills the frame.","Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous.":"Camera unavailable (allow it in the browser): type the code below.","Caméra en pause : touche « Relancer la caméra ».":"Camera paused: tap \"Restart the camera\".","Un code-barres a 8 à 14 chiffres":"A barcode has 8 to 14 digits","Produit trouvé ✓":"Product found ✓","+ Liste de courses":"+ Shopping list","+ Stock":"+ Stock","+ Liste : l'équivalent moins cher":"+ List: the cheaper equivalent","Scanner un autre produit":"Scan another product","💡 Moins cher au kg :":"💡 Cheaper per kg:","💡 Moins cher au L :":"💡 Cheaper per L:","🚨 Produit rappelé":"🚨 Product recalled","Rappel officiel en cours":"Official recall in progress","Voir la fiche RappelConso ↗":"See the RappelConso notice ↗","🚨 rappel produit":"🚨 product recall","🚨 Rappel de produit":"🚨 Product recall","Ne le consomme pas et rapporte-le au magasin. Vérifie le lot sur la fiche.":"Don't eat it and take it back to the store. Check the batch on the notice.","Voir la fiche ↗":"See the notice ↗","Pas mon lot":"Not my batch","☀️ Grand soleil":"☀️ Sunny","🌤️ Beau temps":"🌤️ Fair weather","⛅ Quelques nuages":"⛅ A few clouds","🌧️ Averses":"🌧️ Showers","⛈️ Orage":"⛈️ Storm","🌦️ Éclaircies, mais fin de mois serrée":"🌦️ Sunny spells, but a tight end of month","Ce mois-ci":"This month","/ jour":"/ day","Comptes courants":"Current accounts","Dépensé ce mois":"Spent this month","Fin du mois":"End of month","➕ Dépense":"➕ Expense","🏷 À classer":"🏷 To categorize","📷 Scanner":"📷 Scan","🔔 À regarder":"🔔 Worth a look","🏦 Mes comptes":"🏦 My accounts","💳 Courant":"💳 Current","💳 Courant · commun":"💳 Current · joint","🐷 Épargne":"🐷 Savings","🐷 Épargne · commun":"🐷 Savings · joint","📈 Placements":"📈 Investments","📊 Budgets du mois":"📊 This month's budgets","Tous les budgets ›":"All budgets ›","📅 Ces prochains jours":"📅 Coming days","🎯 Objectifs":"🎯 Goals","🔎 Rechercher une opération…":"🔎 Search transactions…","Tous les comptes":"All accounts","Tous les mois":"All months","à classer":"to categorize","⏳ en attente du PC":"⏳ waiting for the PC","Aucune opération.":"No transactions.","Catégorie":"Category","Note":"Note","Ajouter une note":"Add a note","OK":"OK","✏️ Modifier le montant, le libellé, la date":"✏️ Edit amount, label, date","Revenu":"Income","📷 Photo du ticket":"📷 Receipt photo","📷 Ajouter une photo":"📷 Add a photo","Photo du ticket":"Receipt photo","🗑 Supprimer":"🗑 Delete","Virement entre tes comptes.":"Transfer between your accounts.","⏳ Ajoutée depuis ce téléphone : elle rejoindra tes opérations à la prochaine synchro de Pécule sur le PC.":"⏳ Added from this phone: it will join your transactions at Pécule's next sync on the PC.","Supprimer cette opération ? (Elle reste 30 jours dans la corbeille de Pécule sur le PC.)":"Delete this transaction? (It stays 30 days in Pécule's bin on the PC.)","Opération supprimée":"Transaction deleted","Modification enregistrée ✓":"Change saved ✓","Photo jointe 📎":"Photo attached 📎","Photo illisible":"Unreadable photo","Note enregistrée ✓":"Note saved ✓","➕ Nouvelle opération":"➕ New transaction","0,00 €":"0.00 €","Quoi ? (ex. boulangerie, essence)":"What? (e.g. bakery, fuel)","Note (facultatif)":"Note (optional)","Dépense commune du foyer (payée par moi, partagée entre tous)":"Shared household expense (paid by me, split between all)","Tes comptes ne sont pas encore sur ce téléphone : la dépense est ajoutée au foyer seulement.":"Your accounts aren't on this phone yet: the expense is added to the household only.","Dépense ajoutée ✓":"Expense added ✓","Revenu ajouté ✓":"Income added ✓","Active d'abord tes comptes sur le téléphone (voir l'accueil)":"First turn on your accounts on the phone (see Home)","Budget enregistré ✓":"Budget saved ✓","Mettre de l'argent de côté":"Put money aside","Montant":"Amount","sans virement (déjà fait)":"no transfer (already done)","C'est mis de côté 🎯":"Set aside 🎯","Revenus":"Income","Dépenses":"Expenses","📊 Budgets":"📊 Budgets","Aucun budget : fixe-les dans Pécule sur ton PC.":"No budgets: set them in Pécule on your PC.","🍩 Où part l'argent ce mois-ci":"🍩 Where the money goes this month","Sans catégorie":"Uncategorized","revenus ·":"income ·","🤝 À recevoir et à rembourser":"🤝 To receive and to repay","te doit":"owes you","tu lui dois":"you owe","Excellent":"Excellent","Bon":"Good","Correct":"Fair","Fragile":"Fragile","À surveiller":"Needs watching","📷 Rescanner le QR code de Pécule":"📷 Scan the Pécule QR code again","📷 Scanner le QR code de Pécule":"📷 Scan the Pécule QR code","Retirer mes comptes de ce téléphone":"Remove my accounts from this phone","Retirer tes comptes de ce téléphone ? Il faudra rescanner le QR code pour les revoir.":"Remove your accounts from this phone? You'll need to scan the QR code again to see them.","🔐 Relie ce téléphone à tes comptes":"🔐 Link this phone to your accounts","Dans Pécule sur ton PC, clique sur l'icône 📱 en haut et vérifie que « Mes comptes et opérations sur le téléphone » est activé. Puis scanne le QR code affiché avec le bouton ci-dessous.":"In Pécule on your PC, click the 📱 icon at the top and check that \"My accounts and transactions on my phone\" is on. Then scan the QR code shown with the button below.","C'est déjà activé sur le PC ? Scanne le code avec ce bouton, depuis cette page : sur iPhone, l'appli installée sur l'écran d'accueil ne voit pas ce que Safari a reçu en scannant avec l'appareil photo.":"Already on, on the PC? Scan the code with this button, from this page: on iPhone, the app installed on the home screen can't see what Safari received when you scanned with the camera.","⏳ Tes comptes arrivent":"⏳ Your accounts are on their way","Pécule sur ton PC n'a pas encore envoyé tes chiffres : ouvre-le, la synchro se fait toute seule (📱 › Synchroniser maintenant).":"Pécule on your PC hasn't sent your figures yet: open it, the sync happens on its own (📱 › Sync now).","🔁 Rescanne le QR code":"🔁 Scan the QR code again","Le code secret a changé sur ton PC (ou ce téléphone a un ancien code) : dans Pécule, 📱, puis scanne le nouveau QR code.":"The secret code changed on your PC (or this phone has an old one): in Pécule, 📱, then scan the new QR code.","🛠️ Serveur à mettre à jour":"🛠️ Server needs an update","Ton serveur ne connaît pas encore « Pécule sur le téléphone » : dans Supabase › SQL Editor, relance le script foyer.sql fourni avec Pécule.":"Your server doesn't know \"Pécule on the phone\" yet: in Supabase › SQL Editor, run the foyer.sql script that comes with Pécule again.","📡 Pas de connexion":"📡 No connection","Tes comptes s'afficheront dès que le téléphone sera en ligne.":"Your accounts will show as soon as the phone is online.","🔐 Tes comptes":"🔐 Your accounts","Mets à jour le navigateur du téléphone pour lire tes comptes.":"Update the phone's browser to read your accounts.","Ce lien ne contient pas tes comptes : dans Pécule (📱), active « Mes comptes et opérations sur le téléphone ».":"This link doesn't contain your accounts: in Pécule (📱), turn on \"My accounts and transactions on my phone\".","Code reçu ✓ Connecte-toi pour voir tes comptes.":"Code received ✓ Sign in to see your accounts.","🔐 Code reçu : chargement de tes comptes…":"🔐 Code received: loading your accounts…","Tes comptes sont sur ce téléphone ✓":"Your accounts are on this phone ✓","Entre ton code":"Enter your code","Vérification…":"Checking…","Code incorrect":"Wrong code","Code oublié ?":"Forgot the code?","Retirer le code ? Pour la sécurité, tes comptes seront aussi retirés de ce téléphone : il faudra rescanner le QR code de Pécule. Le foyer reste accessible.":"Remove the code? For safety, your accounts will also be removed from this phone: you'll need to scan the Pécule QR code again. The household stays available.","Un code est demandé à l'ouverture et après 2 minutes ailleurs. Le code secret de tes comptes est chiffré avec.":"A code is asked when opening and after 2 minutes away. Your accounts' secret code is encrypted with it.","Protège l'appli avec un code de 4 à 6 chiffres : sans lui, personne ne voit tes comptes, même avec ton téléphone déverrouillé.":"Protect the app with a 4 to 6 digit code: without it, nobody sees your accounts, even with your phone unlocked.","Choisir un code":"Choose a code","🔒 Choisir un code":"🔒 Choose a code","Changer le code":"Change the code","Retirer le code":"Remove the code","🔒 Retirer le code":"🔒 Remove the code","Code actuel":"Current code","Nouveau code (4 à 6 chiffres)":"New code (4 to 6 digits)","Encore une fois":"Once more","Retirer":"Remove","Code actuel incorrect":"Current code is wrong","Code retiré":"Code removed","4 à 6 chiffres":"4 to 6 digits","Les deux codes sont différents":"The two codes are different","Code enregistré 🔒":"Code saved 🔒","Rappels activés ✓ Tâches du jour, produits à consommer, congélateur, rappels de produits et demandes d'échange. Ils arrivent même appli fermée (vérification environ 2 fois par jour).":"Reminders on ✓ Today's chores, food to use up, freezer, product recalls and swap requests. They arrive even with the app closed (checked about twice a day).","Rappels activés ✓ Tâches du jour, produits à consommer, congélateur, rappels de produits et demandes d'échange. Ils s'affichent à l'ouverture de la page.":"Reminders on ✓ Today's chores, food to use up, freezer, product recalls and swap requests. They show when you open the page.","Les notifications sont bloquées pour cette page : autorise-les dans les réglages du navigateur.":"Notifications are blocked for this page: allow them in the browser settings.","Reçois une notification pour tes tâches du jour, ce qui périme, le congélateur et les rappels de produits.":"Get a notification for today's chores, what's expiring, the freezer and product recalls.","Sur iPhone, installe d'abord l'appli (ci-dessous) : les rappels s'activent ensuite depuis l'icône.":"On iPhone, install the app first (below): reminders are then turned on from the icon.","Ce navigateur ne permet pas les notifications.":"This browser doesn't support notifications.","Appli installée sur ce téléphone ✓":"App installed on this phone ✓","Pour l'installer : bouton Partager ⬆️ › « Sur l'écran d'accueil ».":"To install it: Share button ⬆️ › \"Add to Home Screen\".","Pour l'installer : menu du navigateur › « Installer l'application » ou « Ajouter à l'écran d'accueil ».":"To install it: browser menu › \"Install app\" or \"Add to Home screen\".","Rappels activés 🔔":"Reminders on 🔔","Appli installée 📲":"App installed 📲","🧹 Tâches du jour":"🧹 Today's chores","🔁 Échange de tour":"🔁 Turn swap","📅 Prélèvements":"📅 Direct debits","❄️ Congélateur":"❄️ Freezer","📡 De retour en ligne : tes modifications sont envoyées ✓":"📡 Back online: your changes have been sent ✓","envoyé dès le retour du réseau 📡":"sent as soon as you're back online 📡","Pas de réseau pour l'instant.":"No network right now.","Caméra":"Camera","🥕 Fruits et légumes":"🥕 Fruit and veg","🥖 Boulangerie":"🥖 Bakery","🧀 Crèmerie et fromages":"🧀 Dairy and cheese","🥩 Boucherie et poisson":"🥩 Meat and fish","🥗 Traiteur":"🥗 Deli","🥫 Épicerie salée":"🥫 Savoury groceries","🍫 Épicerie sucrée":"🍫 Sweet groceries","☕ Petit-déjeuner":"☕ Breakfast","🧃 Boissons":"🧃 Drinks","🧊 Surgelés":"🧊 Frozen","🍼 Bébé":"🍼 Baby","🧴 Hygiène et beauté":"🧴 Health and beauty","🧽 Entretien":"🧽 Cleaning","🐾 Animaux":"🐾 Pets","🏠 Maison":"🏠 Home","🛒 Autres":"🛒 Other","Français":"Français","English":"English","Português":"Português"},"tpl":[["⏳ {0} ajout(s) en attente : Pécule les intègre à sa prochaine synchro (il doit être ouvert sur le PC).","⏳ {0} change(s) waiting: Pécule applies them at its next sync (it must be open on the PC)."],["{0} article(s) dans le panier · « J'ai fait les courses » dans Pécule les remet dans le stock","{0} item(s) in the cart · \"I've done the shopping\" in Pécule puts them back in stock"],["✓ Tes comptes sont sur ce téléphone. Dernier envoi de Pécule : {0}.","✓ Your accounts are on this phone. Last sent by Pécule: {0}."],["Chiffres envoyés par Pécule le {0} · {1} ajout(s) en attente du PC","Figures sent by Pécule on {0} · {1} change(s) waiting for the PC"],["{0} {1} · la personne reçoit la demande et accepte d'un clic.","{0} {1} · they get the request and accept in one tap."],["Produit inconnu (code {0}) : tape son nom dans la liste.","Unknown product (code {0}): type its name in the list."],["{0} article(s) sur la liste · à faire : {1} · on te doit {2}","{0} item(s) on the list · to do: {1} · you're owed {2}"],["Modifications envoyées ({0} refusée(s) par le serveur)","Changes sent ({0} refused by the server)"],["Liste nettoyée · {0} article(s) remis dans le stock 📦","List cleared · {0} item(s) put back in stock 📦"],["{0} article(s) sur la liste · à faire : {1} · tu dois {2}","{0} item(s) on the list · to do: {1} · you owe {2}"],["dépenses · abonnements et prélèvements : {0} / mois","expenses · subscriptions and direct debits: {0} / month"],["Par mois. Dépensé ce mois-ci : {0} · d'habitude {1}.","Per month. Spent this month: {0} · usually {1}."],["C'est noté : {0} est pour toi cette fois 🙌","Noted: {0} is yours this time 🙌"],["{0} Il reste {1} dans tes budgets ce mois-ci.","{0} {1} left in your budgets this month."],["{0} article(s) sur la liste · on te doit {1}","{0} item(s) on the list · you're owed {1}"],["{0} article(s) sur la liste · à faire : {1}","{0} item(s) on the list · to do: {1}"],["Congelé le (à manger dans les {0} mois)","Frozen on (eat within {0} months)"],["Pécule enregistre le virement vers {0}.","Pécule records the transfer to {0}."],["Ajouter les {0} manquant(s) à la liste","Add the {0} missing item(s) to the list"],["{0} article(s) sur la liste · tu dois {1}","{0} item(s) on the list · you owe {1}"],["{0} · envoyé dès le retour du réseau 📡","{0} · sent as soon as you're back online 📡"],["❄️ à manger bientôt · depuis {0} mois","❄️ eat soon · for {0} months"],["te demande de prendre son tour : {0} {1}","asks you to take their turn: {0} {1}"],["{0} article(s) à prendre · encore ≈ {1}","{0} item(s) to get · about {1} more"],["Par mois. Dépensé ce mois-ci : {0}.","Per month. Spent this month: {0}."],["partagé par {0} · dépensé ce mois {1}","shared by {0} · spent this month {1}"],["Chiffres envoyés par Pécule le {0}","Figures sent by Pécule on {0}"],["{0} prix à noter (touche le prix)","{0} price(s) to note (tap the price)"],["Code {0} · recherche du produit…","Code {0} · looking up the product…"],["🍝 Repas des {0} prochains jours","🍝 Meals for the next {0} days"],["Tu en as fait {0} de plus que {1}.","You did {0} more than {1}."],["Tout ajouter à la liste ({0})","Add all to the list ({0})"],["Trop d'essais : attends {0} s","Too many tries: wait {0} s"],["{0} en a fait {1} de plus que {2}.","{0} did {1} more than {2}."],["dépassé de {0} · d'habitude {1}","over by {0} · usually {1}"],["💚 Santé financière : {0}/100","💚 Financial health: {0}/100"],["+ Liste de la semaine ({0})","+ Weekly list ({0})"],["⚠️ dépasse le budget de {0}","⚠️ over budget by {0}"],["{0} article(s) sur la liste","{0} item(s) on the list"],["🛒 {0} est dans le panier ✓","🛒 {0} is in the cart ✓"],["à dépenser jusqu'au {0} ({1})","to spend until {0} ({1})"],["tu lui dois · avant le {0}","you owe · by {0}"],["↕️ Ordre des rayons · {0}","↕️ Aisle order · {0}"],["🛒 Ajouté à la liste : {0}","🛒 Added to the list: {0}"],["Pour équilibrer : {0} → {1} {2}","To settle up: {0} → {1} {2}"],["🚨 Rappel de produit : {0}","🚨 Product recall: {0}"],["{0} : ne le consomme pas.","{0}: don't eat it."],["On te doit {0} · tu dois {1}","You're owed {0} · you owe {1}"],["{0} opération(s) · total {1}","{0} transaction(s) · total {1}"],["{0} article(s) à prendre","{0} item(s) to get"],["🛒 {0} ajouté à la liste","🛒 {0} added to the list"],["Demande envoyée à {0} 🔁","Request sent to {0} 🔁"],["🚨 Rappel officiel : {0}","🚨 Official recall: {0}"],["à dépenser jusqu'au {0}","to spend until {0}"],["reste {0} · d'habitude {1}","{0} left · usually {1}"],["🛒 Dans le panier ({0})","🛒 In the cart ({0})"],["❄️ depuis {0} semaines","❄️ for {0} weeks"],["{0} (depuis {1} semaines)","{0} (for {1} weeks)"],["te doit · avant le {0}","owes you · by {0}"],["+ Liste du mois ({0})","+ Monthly list ({0})"],["Pour équilibrer : {0}","To settle up: {0}"],["reste des budgets {0}","budgets left {0}"],["{0} · environ {1} · {2}/kg","{0} · about {1} · {2}/kg"],["Panier estimé : {0}","Estimated basket: {0}"],["Prix de « {0} » (€)","Price of \"{0}\" (€)"],["{0} sur {1} · pour le {2}","{0} of {1} · by {2}"],["📈 {0} derniers mois","📈 Last {0} months"],["🏷 Rayon de « {0} »","🏷 Aisle for \"{0}\""],["❄️ depuis {0} mois","❄️ for {0} months"],["{0} (depuis {1} mois)","{0} (for {1} months)"],["en retard de {0} j","{0} days late"],["à {0}/kg (−{1} %, ≈ {2})","at {0}/kg (−{1}%, ≈ {2})"],["Classée dans {0} ✓","Categorized as {0} ✓"],["mois dernier : {0}","last month: {0}"],["🔎 {0} résultat(s)","🔎 {0} result(s)"],["sur {0} de budget","of a {0} budget"],["{0} (aujourd'hui)","{0} (today)"],["à {0}/L (−{1} %, ≈ {2})","at {0}/L (−{1}%, ≈ {2})"],["🏷 À classer ({0})","🏷 To categorize ({0})"],["{0} te demande : {1}","{0} asks you: {1}"],["{0} · sans foyer","{0} · no household"],["stock : {0} sur {1}","stock: {0} of {1}"],["{0} · demandé à {1}","{0} · asked {1}"],["{0} (périme le {1})","{0} (expires on {1})"],["{0} · payé par {1}","{0} · paid by {1}"],["🛒 {0} a ajouté {1}","🛒 {0} added {1}"],["{0} il en faut {1}","{0} need {1}"],["❄️ depuis {0} j","❄️ for {0} days"],["on lui doit {0}","is owed {0}"],["✓ {0} : bravo !","✓ {0}: well done!"],["🎁 Envies de {0}","🎁 {0}'s wishes"],["🧸 Envies de {0}","🧸 Wishes for {0}"],["{0} · Risque : {1}","{0} · Risk: {1}"],["🛒 Courses ({0})","🛒 Shopping ({0})"],["Voir plus ({0})","Show more ({0})"],["{0} · foyer : {1}","{0} · household: {1}"],["il en faut {0}","need {0}"],["au tour de {0}","{0}'s turn"],["{0} · environ {1}","{0} · about {1}"],["dépassé de {0}","over by {0}"],["{0} (dépassé)","{0} (past date)"],["jusqu'au {0}","until {0}"],["{0} (demain)","{0} (tomorrow)"],["Pris par {0}","Taken by {0}"],["📊 Budget {0}","📊 {0} budget"],["Bonjour {0}","Hello {0}"],["stock : {0}","stock: {0}"],["Rayon : {0}","Aisle: {0}"],["dépensé {0}","spent {0}"],["pour le {0}","by {0}"],["à jour {0}","updated {0}"],["manque {0}","need {0} more"],["dans {0} j","in {0} days"],["depuis {0}","from {0}"],["{0} : {1} le {2}","{0}: {1} on {2}"],["Erreur {0}","Error {0}"],["{0} (toi)","{0} (you)"],["reste {0}","{0} left"],["doit {0}","owes {0}"],["pour {0}","for {0}"],["{0} sur {1}","{0} of {1}"],["{0} → {1}","{0} → {1}"],["🎂 {0}","🎂 {0}"]]},"pt":{"exact":{"Pécule":"Pécule","🔐 Connexion au foyer":"🔐 Iniciar sessão","Utilise le même e-mail et le même mot de passe que dans Pécule sur ton PC.":"Usa o mesmo e-mail e a mesma palavra-passe que no Pécule do PC.","Adresse du serveur et clé publique : dans Pécule › Foyer › ⚙ › Sur mon téléphone (QR code).":"Endereço do servidor e chave pública: no Pécule › Casa › ⚙ › No meu telemóvel (código QR).","Clé publique (anon)":"Chave pública (anon)","E-mail":"E-mail","Mot de passe":"Palavra-passe","Se connecter":"Entrar","Connecte-toi":"Inicia sessão","Connexion refusée":"Ligação recusada","Ta session a expiré : reconnecte-toi.":"A tua sessão expirou: volta a entrar.","Pas de connexion pour l'instant, nouvel essai dans un moment.":"Sem ligação de momento, nova tentativa daqui a pouco.","Accueil":"Início","Opérations":"Operações","Budgets":"Orçamentos","Foyer":"Casa","Réglages":"Definições","hors ligne":"offline","Ajouter une dépense":"Adicionar uma despesa","🔐 Mes comptes sur ce téléphone":"🔐 As minhas contas neste telemóvel","🔔 Rappels et appli":"🔔 Lembretes e app","Activer les rappels":"Ativar lembretes","📲 Installer l'appli sur ce téléphone":"📲 Instalar a app neste telemóvel","🔒 Code de l'appli":"🔒 Código da app","🎨 Apparence":"🎨 Aspeto","Automatique":"Automático","Clair":"Claro","Sombre":"Escuro","🌐 Langue":"🌐 Idioma","👤 Mon compte":"👤 A minha conta","Se déconnecter de ce téléphone":"Terminar sessão neste telemóvel","Tes comptes personnels sont chiffrés par Pécule sur ton PC : ton serveur ne voit que du contenu illisible.":"As tuas contas pessoais são encriptadas pelo Pécule no PC: o teu servidor só vê conteúdo ilegível.","🛒 Courses":"🛒 Compras","⚖️ Dépenses":"⚖️ Despesas","📅 Agenda":"📅 Agenda","💝 Envies":"💝 Desejos","🏦 Comptes":"🏦 Contas","🏡 Pas encore de foyer":"🏡 Ainda sem casa","Le foyer, c'est la liste de courses, le stock, les repas, les tâches, l'agenda et les dépenses partagés avec les personnes qui vivent avec toi. Crée-le dans Pécule sur ton PC (menu Foyer), puis invite les autres.":"A casa é a lista de compras, o stock, as refeições, as tarefas, a agenda e as despesas partilhadas com quem vive contigo. Cria-a no Pécule do PC (menu Casa) e convida os outros.","🔎 Rechercher dans le foyer (dépenses, courses, repas…)":"🔎 Pesquisar na casa (despesas, compras, refeições…)","Rien trouvé.":"Nada encontrado.","dans le panier":"no carrinho","sur la liste":"na lista","tâche":"tarefa","🛒 Liste":"🛒 Lista","📦 Stock":"📦 Stock","🍝 Repas":"🍝 Refeições","🛒 Liste de courses":"🛒 Lista de compras","Ajouter un article…":"Adicionar um artigo…","Scanner un code-barres":"Ler um código de barras","📋 Proposé d'après le stock et les repas :":"📋 Sugerido pelo stock e refeições:","🧭 Par rayon":"🧭 Por corredor","📝 Liste simple":"📝 Lista simples","Ordre habituel":"Ordem habitual","+ Autre magasin…":"+ Outra loja…","Ordre des rayons":"Ordem dos corredores","↕️ Ordre des rayons":"↕️ Ordem dos corredores","Dans l'ordre où tu traverses le magasin : la liste suivra le même chemin.":"Pela ordem em que percorres a loja: a lista segue o mesmo caminho.","Par défaut":"Predefinido","Enregistrer":"Guardar","Ordre des rayons enregistré ✓":"Ordem dos corredores guardada ✓","Nom du magasin (ex. Leclerc, Carrefour Market) :":"Nome da loja (ex. Continente, Pingo Doce):","🛍️ Mode magasin":"🛍️ Modo loja","🛍️ En magasin":"🛍️ Na loja","Terminer":"Terminar","Un oubli ? Ajoute-le ici":"Esqueceste algo? Adiciona aqui","Tout est dans le panier ✓":"Está tudo no carrinho ✓","prix ?":"preço?","Dans le panier":"No carrinho","Vider les articles cochés":"Esvaziar os artigos marcados","La liste est vide.":"A lista está vazia.","Tout est déjà sur la liste ✓":"Já está tudo na lista ✓","Liste nettoyée":"Lista limpa","La liste de courses n'est pas encore activée sur le serveur du foyer (Pécule › Foyer › mettre à jour le serveur).":"A lista de compras ainda não está ativada no servidor da casa (Pécule › Casa › atualizar o servidor).","Pas encore activé sur le serveur du foyer : dans Pécule, Foyer › ⚙ › Mettre à jour le serveur.":"Ainda não ativado no servidor da casa: no Pécule, Casa › ⚙ › Atualizar o servidor.","gardé sur ce téléphone (serveur du foyer à mettre à jour)":"guardado neste telemóvel (servidor da casa por atualizar)","Enregistré sur ce téléphone":"Guardado neste telemóvel","📦 Stock de la maison":"📦 Stock da casa","Ajouter tout de suite à la liste ce qui passe sous la quantité nécessaire":"Adicionar logo à lista o que fica abaixo da quantidade necessária","+ Ajouter un article":"+ Adicionar um artigo","Article (ex. lait, pâtes, lessive)":"Artigo (ex. leite, massa, detergente)","Il y en a":"Temos","Il en faut":"Precisamos","Unité (L, kg, paquets…)":"Unidade (L, kg, pacotes…)","Racheté chaque semaine":"Comprado todas as semanas","Racheté chaque mois":"Comprado todos os meses","Juste suivre":"Só acompanhar","À consommer avant le (facultatif)":"Consumir até (opcional)","Congelé le":"Congelado a","Ajouter au stock":"Adicionar ao stock","Ajouté au stock 📦":"Adicionado ao stock 📦","Indique l'article":"Indica o artigo","Placard":"Despensa","Frigo":"Frigorífico","Congélateur":"Congelador","Fruits et légumes":"Fruta e legumes","Salle de bain":"Casa de banho","Entretien":"Limpeza","Animaux":"Animais","Autre":"Outro","Sans rangement":"Sem arrumação","périmé":"expirado","périme aujourd'hui":"expira hoje","périme demain":"expira amanhã","⏰ périme aujourd'hui":"⏰ expira hoje","⏰ périme demain":"⏰ expira amanhã","❄️ À sortir du congélateur":"❄️ Tirar do congelador","⏰ À consommer vite":"⏰ Consumir depressa","📦 Le point de la semaine":"📦 Ponto da semana","Ajuste les quantités avec − et +, puis valide : les listes se mettent à jour.":"Ajusta as quantidades com − e +, depois confirma: as listas atualizam-se.","✓ Le point est fait":"✓ Ponto feito","Point du stock enregistré ✓":"Ponto do stock guardado ✓","🗓️ Liste de la semaine":"🗓️ Lista da semana","📆 Liste du mois":"📆 Lista do mês","Rien à racheter cette semaine ✓":"Nada a comprar esta semana ✓","Les réserves sont pleines ✓":"As reservas estão cheias ✓","Note ce que tu as à la maison et combien il en faut : Pécule propose la liste de la semaine (le frais) et celle du mois (les réserves).":"Anota o que tens em casa e quanto precisas: o Pécule propõe a lista da semana (frescos) e a do mês (reservas).","➕ Nouveau repas":"➕ Nova refeição","Repas (ex. pâtes carbonara)":"Refeição (ex. massa carbonara)","Ajouter le repas":"Adicionar a refeição","Repas ajouté 🍝":"Refeição adicionada 🍝","Indique le repas":"Indica a refeição","Retirer ce repas ?":"Retirar esta refeição?","🧺 Ingrédients":"🧺 Ingredientes","✓ à la maison":"✓ em casa","à acheter":"a comprar","Matin":"Manhã","Midi":"Almoço","Soir":"Jantar","Aujourd'hui":"Hoje","Demain":"Amanhã","Ajoute des repas avec leurs ingrédients : ce qui manque à la maison rejoint la liste de courses.":"Adiciona refeições com os ingredientes: o que falta em casa vai para a lista de compras.","Un ingrédient par ligne : Pâtes · 500 g 200 g de lardons 3 œufs":"Um ingrediente por linha:\nMassa · 500 g\n200 g de bacon\n3 ovos","⚖️ Qui doit combien":"⚖️ Quem deve quanto","à jour":"em dia","Tout le monde est à jour ✓":"Estão todos em dia ✓","➕ Dépense commune":"➕ Despesa comum","Montant €":"Montante €","Quoi ?":"O quê?","Ajouter (payé par moi, partagé entre tous)":"Adicionar (pago por mim, dividido por todos)","Dépense ajoutée 🧾":"Despesa adicionada 🧾","Dépense commune ajoutée 🧾":"Despesa comum adicionada 🧾","Indique un montant":"Indica um montante","🧾 Dernières dépenses":"🧾 Últimas despesas","Remboursement":"Reembolso","Dépense":"Despesa","Aucune dépense commune.":"Nenhuma despesa comum.","🧹 Tâches du foyer":"🧹 Tarefas da casa","au tour de toi":"a tua vez","toi":"tu","n'importe qui":"qualquer um","aujourd'hui":"hoje","demain":"amanhã","Accepter":"Aceitar","Non":"Não","Annuler":"Cancelar","Demander à quelqu'un d'autre":"Pedir a outra pessoa","🔁 Qui peut prendre ce tour ?":"🔁 Quem pode fazer esta vez?","🏆 Ce mois-ci":"🏆 Este mês","Toi":"Tu","Rien de noté ce mois-ci pour l'instant.":"Nada registado este mês por enquanto.","Partage équilibré ce mois-ci 👏":"Divisão equilibrada este mês 👏","Aucune tâche : ajoutez-les depuis Pécule (Foyer › Agenda).":"Nenhuma tarefa: adiciona-as no Pécule (Casa › Agenda).","📅 Agenda du foyer":"📅 Agenda da casa","tout le foyer":"toda a casa","Rien de prévu ces deux prochains mois.":"Nada previsto nos próximos dois meses.","L'agenda n'est pas encore activé sur le serveur du foyer.":"A agenda ainda não está ativada no servidor da casa.","💝 Ma liste d'envies":"💝 A minha lista de desejos","+ Ajouter une envie":"+ Adicionar um desejo","Envie (ex. un livre, des écouteurs)":"Desejo (ex. um livro, uns auscultadores)","Prix (facultatif)":"Preço (opcional)","Pour qui ? (vide = moi)":"Para quem? (vazio = eu)","Lien (facultatif)":"Link (opcional)","Ajouter":"Adicionar","Envie ajoutée 💝":"Desejo adicionado 💝","Indique l'envie":"Indica o desejo","Retirer cette envie ?":"Retirar este desejo?","Sur ta liste, tu ne vois pas ce que les autres ont réservé : la surprise est gardée 🤫":"Na tua lista não vês o que os outros reservaram: a surpresa mantém-se 🤫","Note ce qui te ferait plaisir : les autres pourront le réserver.":"Anota o que te faria feliz: os outros podem reservá-lo.","C'est moi ✓":"Sou eu ✓","Je m'en occupe":"Eu trato disso","voir 🔗":"ver 🔗","Réservé : les autres le verront 🎁":"Reservado: os outros vão ver 🎁","Réservation annulée":"Reserva cancelada","🏦 Comptes communs":"🏦 Contas conjuntas","Aucun compte commun partagé depuis Pécule.":"Nenhuma conta conjunta partilhada pelo Pécule.","💞 Ce mois-ci":"💞 Este mês","Personne ne partage ses chiffres pour l'instant.":"Ninguém partilha os seus números por enquanto.","📷 Scanner un produit":"📷 Ler um produto","🔐 Scanner le QR code de Pécule":"🔐 Ler o código QR do Pécule","✕ Fermer":"✕ Fechar","🔦 Lampe":"🔦 Lanterna","🔦 Éteindre":"🔦 Desligar","📷 Relancer la caméra":"📷 Reiniciar a câmara","Vise le code-barres du produit.":"Aponta para o código de barras do produto.","ou tape le code-barres":"ou escreve o código de barras","ou colle le lien copié dans Pécule":"ou cola o link copiado no Pécule","Place le code-barres dans le cadre, à 10-15 cm, bien à plat.":"Põe o código de barras no quadro, a 10-15 cm, bem plano.","Sur ton PC : Pécule › 📱 en haut. Vise le QR code affiché.":"No PC: Pécule › 📱 em cima. Aponta para o código QR mostrado.","Chargement du lecteur…":"A carregar o leitor…","Pas encore lu : recule un peu le téléphone, évite les reflets.":"Ainda não lido: afasta um pouco o telemóvel, evita reflexos.","Pas encore lu : recule un peu le téléphone, évite les reflets, ou allume la lampe.":"Ainda não lido: afasta um pouco o telemóvel, evita reflexos ou acende a lanterna.","Pas encore lu : approche ou recule le téléphone pour que le QR code remplisse le cadre.":"Ainda não lido: aproxima ou afasta o telemóvel para o código QR encher o quadro.","Caméra indisponible (autorise-la dans le navigateur) : tape le code ci-dessous.":"Câmara indisponível (autoriza-a no navegador): escreve o código abaixo.","Caméra en pause : touche « Relancer la caméra ».":"Câmara em pausa: toca em «Reiniciar a câmara».","Un code-barres a 8 à 14 chiffres":"Um código de barras tem 8 a 14 dígitos","Produit trouvé ✓":"Produto encontrado ✓","+ Liste de courses":"+ Lista de compras","+ Stock":"+ Stock","+ Liste : l'équivalent moins cher":"+ Lista: o equivalente mais barato","Scanner un autre produit":"Ler outro produto","💡 Moins cher au kg :":"💡 Mais barato ao kg:","💡 Moins cher au L :":"💡 Mais barato ao L:","🚨 Produit rappelé":"🚨 Produto recolhido","Rappel officiel en cours":"Recolha oficial em curso","Voir la fiche RappelConso ↗":"Ver a ficha RappelConso ↗","🚨 rappel produit":"🚨 recolha de produto","🚨 Rappel de produit":"🚨 Recolha de produto","Ne le consomme pas et rapporte-le au magasin. Vérifie le lot sur la fiche.":"Não consumas e devolve-o à loja. Verifica o lote na ficha.","Voir la fiche ↗":"Ver a ficha ↗","Pas mon lot":"Não é o meu lote","☀️ Grand soleil":"☀️ Sol radioso","🌤️ Beau temps":"🌤️ Bom tempo","⛅ Quelques nuages":"⛅ Algumas nuvens","🌧️ Averses":"🌧️ Aguaceiros","⛈️ Orage":"⛈️ Trovoada","🌦️ Éclaircies, mais fin de mois serrée":"🌦️ Abertas, mas fim de mês apertado","Ce mois-ci":"Este mês","/ jour":"/ dia","Comptes courants":"Contas à ordem","Dépensé ce mois":"Gasto este mês","Fin du mois":"Fim do mês","➕ Dépense":"➕ Despesa","🏷 À classer":"🏷 Por classificar","📷 Scanner":"📷 Ler","🔔 À regarder":"🔔 A ver","🏦 Mes comptes":"🏦 As minhas contas","💳 Courant":"💳 À ordem","💳 Courant · commun":"💳 À ordem · conjunta","🐷 Épargne":"🐷 Poupança","🐷 Épargne · commun":"🐷 Poupança · conjunta","📈 Placements":"📈 Investimentos","📊 Budgets du mois":"📊 Orçamentos do mês","Tous les budgets ›":"Todos os orçamentos ›","📅 Ces prochains jours":"📅 Próximos dias","🎯 Objectifs":"🎯 Objetivos","🔎 Rechercher une opération…":"🔎 Pesquisar uma operação…","Tous les comptes":"Todas as contas","Tous les mois":"Todos os meses","à classer":"por classificar","⏳ en attente du PC":"⏳ à espera do PC","Aucune opération.":"Nenhuma operação.","Catégorie":"Categoria","Note":"Nota","Ajouter une note":"Adicionar uma nota","OK":"OK","✏️ Modifier le montant, le libellé, la date":"✏️ Alterar o montante, a descrição, a data","Revenu":"Receita","📷 Photo du ticket":"📷 Foto do talão","📷 Ajouter une photo":"📷 Adicionar uma foto","Photo du ticket":"Foto do talão","🗑 Supprimer":"🗑 Eliminar","Virement entre tes comptes.":"Transferência entre as tuas contas.","⏳ Ajoutée depuis ce téléphone : elle rejoindra tes opérations à la prochaine synchro de Pécule sur le PC.":"⏳ Adicionada neste telemóvel: junta-se às tuas operações na próxima sincronização do Pécule no PC.","Supprimer cette opération ? (Elle reste 30 jours dans la corbeille de Pécule sur le PC.)":"Eliminar esta operação? (Fica 30 dias no lixo do Pécule no PC.)","Opération supprimée":"Operação eliminada","Modification enregistrée ✓":"Alteração guardada ✓","Photo jointe 📎":"Foto anexada 📎","Photo illisible":"Foto ilegível","Note enregistrée ✓":"Nota guardada ✓","➕ Nouvelle opération":"➕ Nova operação","0,00 €":"0,00 €","Quoi ? (ex. boulangerie, essence)":"O quê? (ex. padaria, gasolina)","Note (facultatif)":"Nota (opcional)","Dépense commune du foyer (payée par moi, partagée entre tous)":"Despesa comum da casa (paga por mim, dividida por todos)","Tes comptes ne sont pas encore sur ce téléphone : la dépense est ajoutée au foyer seulement.":"As tuas contas ainda não estão neste telemóvel: a despesa é adicionada só à casa.","Dépense ajoutée ✓":"Despesa adicionada ✓","Revenu ajouté ✓":"Receita adicionada ✓","Active d'abord tes comptes sur le téléphone (voir l'accueil)":"Ativa primeiro as tuas contas no telemóvel (vê o Início)","Budget enregistré ✓":"Orçamento guardado ✓","Mettre de l'argent de côté":"Pôr dinheiro de lado","Montant":"Montante","sans virement (déjà fait)":"sem transferência (já feita)","C'est mis de côté 🎯":"Posto de lado 🎯","Revenus":"Receitas","Dépenses":"Despesas","📊 Budgets":"📊 Orçamentos","Aucun budget : fixe-les dans Pécule sur ton PC.":"Nenhum orçamento: define-os no Pécule do PC.","🍩 Où part l'argent ce mois-ci":"🍩 Para onde vai o dinheiro este mês","Sans catégorie":"Sem categoria","revenus ·":"receitas ·","🤝 À recevoir et à rembourser":"🤝 A receber e a pagar","te doit":"deve-te","tu lui dois":"deves-lhe","Excellent":"Excelente","Bon":"Boa","Correct":"Razoável","Fragile":"Frágil","À surveiller":"A vigiar","📷 Rescanner le QR code de Pécule":"📷 Voltar a ler o código QR do Pécule","📷 Scanner le QR code de Pécule":"📷 Ler o código QR do Pécule","Retirer mes comptes de ce téléphone":"Retirar as minhas contas deste telemóvel","Retirer tes comptes de ce téléphone ? Il faudra rescanner le QR code pour les revoir.":"Retirar as tuas contas deste telemóvel? Terás de voltar a ler o código QR para as ver.","🔐 Relie ce téléphone à tes comptes":"🔐 Liga este telemóvel às tuas contas","Dans Pécule sur ton PC, clique sur l'icône 📱 en haut et vérifie que « Mes comptes et opérations sur le téléphone » est activé. Puis scanne le QR code affiché avec le bouton ci-dessous.":"No Pécule do PC, clica no ícone 📱 em cima e verifica que «As minhas contas e operações no telemóvel» está ativado. Depois lê o código QR mostrado com o botão abaixo.","C'est déjà activé sur le PC ? Scanne le code avec ce bouton, depuis cette page : sur iPhone, l'appli installée sur l'écran d'accueil ne voit pas ce que Safari a reçu en scannant avec l'appareil photo.":"Já está ativado no PC? Lê o código com este botão, a partir desta página: no iPhone, a app instalada no ecrã principal não vê o que o Safari recebeu ao ler com a câmara.","⏳ Tes comptes arrivent":"⏳ As tuas contas estão a chegar","Pécule sur ton PC n'a pas encore envoyé tes chiffres : ouvre-le, la synchro se fait toute seule (📱 › Synchroniser maintenant).":"O Pécule do PC ainda não enviou os teus números: abre-o, a sincronização é automática (📱 › Sincronizar agora).","🔁 Rescanne le QR code":"🔁 Volta a ler o código QR","Le code secret a changé sur ton PC (ou ce téléphone a un ancien code) : dans Pécule, 📱, puis scanne le nouveau QR code.":"O código secreto mudou no PC (ou este telemóvel tem um antigo): no Pécule, 📱, e lê o novo código QR.","🛠️ Serveur à mettre à jour":"🛠️ Servidor por atualizar","Ton serveur ne connaît pas encore « Pécule sur le téléphone » : dans Supabase › SQL Editor, relance le script foyer.sql fourni avec Pécule.":"O teu servidor ainda não conhece o «Pécule no telemóvel»: no Supabase › SQL Editor, volta a correr o script foyer.sql que vem com o Pécule.","📡 Pas de connexion":"📡 Sem ligação","Tes comptes s'afficheront dès que le téléphone sera en ligne.":"As tuas contas aparecem assim que o telemóvel estiver online.","🔐 Tes comptes":"🔐 As tuas contas","Mets à jour le navigateur du téléphone pour lire tes comptes.":"Atualiza o navegador do telemóvel para ler as tuas contas.","Ce lien ne contient pas tes comptes : dans Pécule (📱), active « Mes comptes et opérations sur le téléphone ».":"Este link não contém as tuas contas: no Pécule (📱), ativa «As minhas contas e operações no telemóvel».","Code reçu ✓ Connecte-toi pour voir tes comptes.":"Código recebido ✓ Entra para ver as tuas contas.","🔐 Code reçu : chargement de tes comptes…":"🔐 Código recebido: a carregar as tuas contas…","Tes comptes sont sur ce téléphone ✓":"As tuas contas estão neste telemóvel ✓","Entre ton code":"Introduz o teu código","Vérification…":"A verificar…","Code incorrect":"Código incorreto","Code oublié ?":"Esqueceste o código?","Retirer le code ? Pour la sécurité, tes comptes seront aussi retirés de ce téléphone : il faudra rescanner le QR code de Pécule. Le foyer reste accessible.":"Retirar o código? Por segurança, as tuas contas também saem deste telemóvel: terás de voltar a ler o código QR do Pécule. A casa continua acessível.","Un code est demandé à l'ouverture et après 2 minutes ailleurs. Le code secret de tes comptes est chiffré avec.":"É pedido um código ao abrir e após 2 minutos fora. O código secreto das tuas contas é encriptado com ele.","Protège l'appli avec un code de 4 à 6 chiffres : sans lui, personne ne voit tes comptes, même avec ton téléphone déverrouillé.":"Protege a app com um código de 4 a 6 dígitos: sem ele, ninguém vê as tuas contas, mesmo com o telemóvel desbloqueado.","Choisir un code":"Escolher um código","🔒 Choisir un code":"🔒 Escolher um código","Changer le code":"Mudar o código","Retirer le code":"Retirar o código","🔒 Retirer le code":"🔒 Retirar o código","Code actuel":"Código atual","Nouveau code (4 à 6 chiffres)":"Novo código (4 a 6 dígitos)","Encore une fois":"Mais uma vez","Retirer":"Retirar","Code actuel incorrect":"Código atual incorreto","Code retiré":"Código retirado","4 à 6 chiffres":"4 a 6 dígitos","Les deux codes sont différents":"Os dois códigos são diferentes","Code enregistré 🔒":"Código guardado 🔒","Rappels activés ✓ Tâches du jour, produits à consommer, congélateur, rappels de produits et demandes d'échange. Ils arrivent même appli fermée (vérification environ 2 fois par jour).":"Lembretes ativos ✓ Tarefas do dia, produtos a consumir, congelador, recolhas de produtos e pedidos de troca. Chegam mesmo com a app fechada (verificação cerca de 2 vezes por dia).","Rappels activés ✓ Tâches du jour, produits à consommer, congélateur, rappels de produits et demandes d'échange. Ils s'affichent à l'ouverture de la page.":"Lembretes ativos ✓ Tarefas do dia, produtos a consumir, congelador, recolhas de produtos e pedidos de troca. Aparecem ao abrir a página.","Les notifications sont bloquées pour cette page : autorise-les dans les réglages du navigateur.":"As notificações estão bloqueadas para esta página: autoriza-as nas definições do navegador.","Reçois une notification pour tes tâches du jour, ce qui périme, le congélateur et les rappels de produits.":"Recebe uma notificação das tarefas do dia, do que expira, do congelador e das recolhas de produtos.","Sur iPhone, installe d'abord l'appli (ci-dessous) : les rappels s'activent ensuite depuis l'icône.":"No iPhone, instala primeiro a app (abaixo): os lembretes ativam-se depois a partir do ícone.","Ce navigateur ne permet pas les notifications.":"Este navegador não permite notificações.","Appli installée sur ce téléphone ✓":"App instalada neste telemóvel ✓","Pour l'installer : bouton Partager ⬆️ › « Sur l'écran d'accueil ».":"Para instalar: botão Partilhar ⬆️ › «Ecrã principal».","Pour l'installer : menu du navigateur › « Installer l'application » ou « Ajouter à l'écran d'accueil ».":"Para instalar: menu do navegador › «Instalar aplicação» ou «Adicionar ao ecrã principal».","Rappels activés 🔔":"Lembretes ativos 🔔","Appli installée 📲":"App instalada 📲","🧹 Tâches du jour":"🧹 Tarefas do dia","🔁 Échange de tour":"🔁 Troca de vez","📅 Prélèvements":"📅 Débitos diretos","❄️ Congélateur":"❄️ Congelador","📡 De retour en ligne : tes modifications sont envoyées ✓":"📡 De volta online: as tuas alterações foram enviadas ✓","envoyé dès le retour du réseau 📡":"enviado assim que voltar a rede 📡","Pas de réseau pour l'instant.":"Sem rede de momento.","Caméra":"Câmara","🥕 Fruits et légumes":"🥕 Fruta e legumes","🥖 Boulangerie":"🥖 Padaria","🧀 Crèmerie et fromages":"🧀 Laticínios e queijos","🥩 Boucherie et poisson":"🥩 Talho e peixaria","🥗 Traiteur":"🥗 Charcutaria e pratos prontos","🥫 Épicerie salée":"🥫 Mercearia salgada","🍫 Épicerie sucrée":"🍫 Mercearia doce","☕ Petit-déjeuner":"☕ Pequeno-almoço","🧃 Boissons":"🧃 Bebidas","🧊 Surgelés":"🧊 Congelados","🍼 Bébé":"🍼 Bebé","🧴 Hygiène et beauté":"🧴 Higiene e beleza","🧽 Entretien":"🧽 Limpeza","🐾 Animaux":"🐾 Animais","🏠 Maison":"🏠 Casa","🛒 Autres":"🛒 Outros","Français":"Français","English":"English","Português":"Português"},"tpl":[["⏳ {0} ajout(s) en attente : Pécule les intègre à sa prochaine synchro (il doit être ouvert sur le PC).","⏳ {0} alteração(ões) à espera: o Pécule integra-as na próxima sincronização (tem de estar aberto no PC)."],["{0} article(s) dans le panier · « J'ai fait les courses » dans Pécule les remet dans le stock","{0} artigo(s) no carrinho · «Fiz as compras» no Pécule devolve-os ao stock"],["✓ Tes comptes sont sur ce téléphone. Dernier envoi de Pécule : {0}.","✓ As tuas contas estão neste telemóvel. Último envio do Pécule: {0}."],["Chiffres envoyés par Pécule le {0} · {1} ajout(s) en attente du PC","Números enviados pelo Pécule a {0} · {1} alteração(ões) à espera do PC"],["{0} {1} · la personne reçoit la demande et accepte d'un clic.","{0} {1} · a pessoa recebe o pedido e aceita com um toque."],["Produit inconnu (code {0}) : tape son nom dans la liste.","Produto desconhecido (código {0}): escreve o nome na lista."],["{0} article(s) sur la liste · à faire : {1} · on te doit {2}","{0} artigo(s) na lista · por fazer: {1} · devem-te {2}"],["Modifications envoyées ({0} refusée(s) par le serveur)","Alterações enviadas ({0} recusada(s) pelo servidor)"],["Liste nettoyée · {0} article(s) remis dans le stock 📦","Lista limpa · {0} artigo(s) devolvido(s) ao stock 📦"],["{0} article(s) sur la liste · à faire : {1} · tu dois {2}","{0} artigo(s) na lista · por fazer: {1} · deves {2}"],["dépenses · abonnements et prélèvements : {0} / mois","despesas · assinaturas e débitos: {0} / mês"],["Par mois. Dépensé ce mois-ci : {0} · d'habitude {1}.","Por mês. Gasto este mês: {0} · normalmente {1}."],["C'est noté : {0} est pour toi cette fois 🙌","Combinado: {0} fica contigo desta vez 🙌"],["{0} Il reste {1} dans tes budgets ce mois-ci.","{0} Restam {1} nos teus orçamentos este mês."],["{0} article(s) sur la liste · on te doit {1}","{0} artigo(s) na lista · devem-te {1}"],["{0} article(s) sur la liste · à faire : {1}","{0} artigo(s) na lista · por fazer: {1}"],["Congelé le (à manger dans les {0} mois)","Congelado a (comer em {0} meses)"],["Pécule enregistre le virement vers {0}.","O Pécule regista a transferência para {0}."],["Ajouter les {0} manquant(s) à la liste","Adicionar os {0} em falta à lista"],["{0} article(s) sur la liste · tu dois {1}","{0} artigo(s) na lista · deves {1}"],["{0} · envoyé dès le retour du réseau 📡","{0} · enviado assim que voltar a rede 📡"],["❄️ à manger bientôt · depuis {0} mois","❄️ comer em breve · há {0} meses"],["te demande de prendre son tour : {0} {1}","pede-te para fazer a vez dele: {0} {1}"],["{0} article(s) à prendre · encore ≈ {1}","{0} artigo(s) por apanhar · mais ≈ {1}"],["Par mois. Dépensé ce mois-ci : {0}.","Por mês. Gasto este mês: {0}."],["partagé par {0} · dépensé ce mois {1}","partilhado por {0} · gasto este mês {1}"],["Chiffres envoyés par Pécule le {0}","Números enviados pelo Pécule a {0}"],["{0} prix à noter (touche le prix)","{0} preço(s) por anotar (toca no preço)"],["Code {0} · recherche du produit…","Código {0} · a procurar o produto…"],["🍝 Repas des {0} prochains jours","🍝 Refeições dos próximos {0} dias"],["Tu en as fait {0} de plus que {1}.","Fizeste mais {0} do que {1}."],["Tout ajouter à la liste ({0})","Adicionar tudo à lista ({0})"],["Trop d'essais : attends {0} s","Demasiadas tentativas: espera {0} s"],["{0} en a fait {1} de plus que {2}.","{0} fez mais {1} do que {2}."],["dépassé de {0} · d'habitude {1}","ultrapassado em {0} · normalmente {1}"],["💚 Santé financière : {0}/100","💚 Saúde financeira: {0}/100"],["+ Liste de la semaine ({0})","+ Lista da semana ({0})"],["⚠️ dépasse le budget de {0}","⚠️ ultrapassa o orçamento em {0}"],["{0} article(s) sur la liste","{0} artigo(s) na lista"],["🛒 {0} est dans le panier ✓","🛒 {0} está no carrinho ✓"],["à dépenser jusqu'au {0} ({1})","para gastar até {0} ({1})"],["tu lui dois · avant le {0}","deves-lhe · até {0}"],["↕️ Ordre des rayons · {0}","↕️ Ordem dos corredores · {0}"],["🛒 Ajouté à la liste : {0}","🛒 Adicionado à lista: {0}"],["Pour équilibrer : {0} → {1} {2}","Para acertar: {0} → {1} {2}"],["🚨 Rappel de produit : {0}","🚨 Recolha de produto: {0}"],["{0} : ne le consomme pas.","{0}: não consumas."],["On te doit {0} · tu dois {1}","Devem-te {0} · deves {1}"],["{0} opération(s) · total {1}","{0} operação(ões) · total {1}"],["{0} article(s) à prendre","{0} artigo(s) por apanhar"],["🛒 {0} ajouté à la liste","🛒 {0} adicionado à lista"],["Demande envoyée à {0} 🔁","Pedido enviado a {0} 🔁"],["🚨 Rappel officiel : {0}","🚨 Recolha oficial: {0}"],["à dépenser jusqu'au {0}","para gastar até {0}"],["reste {0} · d'habitude {1}","restam {0} · normalmente {1}"],["🛒 Dans le panier ({0})","🛒 No carrinho ({0})"],["❄️ depuis {0} semaines","❄️ há {0} semanas"],["{0} (depuis {1} semaines)","{0} (há {1} semanas)"],["te doit · avant le {0}","deve-te · até {0}"],["+ Liste du mois ({0})","+ Lista do mês ({0})"],["Pour équilibrer : {0}","Para acertar: {0}"],["reste des budgets {0}","resta dos orçamentos {0}"],["{0} · environ {1} · {2}/kg","{0} · cerca de {1} · {2}/kg"],["Panier estimé : {0}","Carrinho estimado: {0}"],["Prix de « {0} » (€)","Preço de «{0}» (€)"],["{0} sur {1} · pour le {2}","{0} de {1} · até {2}"],["📈 {0} derniers mois","📈 Últimos {0} meses"],["🏷 Rayon de « {0} »","🏷 Corredor de «{0}»"],["❄️ depuis {0} mois","❄️ há {0} meses"],["{0} (depuis {1} mois)","{0} (há {1} meses)"],["en retard de {0} j","atrasada {0} dias"],["à {0}/kg (−{1} %, ≈ {2})","a {0}/kg (−{1} %, ≈ {2})"],["Classée dans {0} ✓","Classificada em {0} ✓"],["mois dernier : {0}","mês passado: {0}"],["🔎 {0} résultat(s)","🔎 {0} resultado(s)"],["sur {0} de budget","de um orçamento de {0}"],["{0} (aujourd'hui)","{0} (hoje)"],["à {0}/L (−{1} %, ≈ {2})","a {0}/L (−{1} %, ≈ {2})"],["🏷 À classer ({0})","🏷 Por classificar ({0})"],["{0} te demande : {1}","{0} pede-te: {1}"],["{0} · sans foyer","{0} · sem casa"],["stock : {0} sur {1}","stock: {0} de {1}"],["{0} · demandé à {1}","{0} · pedido a {1}"],["{0} (périme le {1})","{0} (expira a {1})"],["{0} · payé par {1}","{0} · pago por {1}"],["🛒 {0} a ajouté {1}","🛒 {0} adicionou {1}"],["{0} il en faut {1}","{0} precisamos de {1}"],["❄️ depuis {0} j","❄️ há {0} dias"],["on lui doit {0}","deve receber {0}"],["✓ {0} : bravo !","✓ {0}: boa!"],["🎁 Envies de {0}","🎁 Desejos de {0}"],["🧸 Envies de {0}","🧸 Desejos para {0}"],["{0} · Risque : {1}","{0} · Risco: {1}"],["🛒 Courses ({0})","🛒 Compras ({0})"],["Voir plus ({0})","Ver mais ({0})"],["{0} · foyer : {1}","{0} · casa: {1}"],["il en faut {0}","precisamos de {0}"],["au tour de {0}","vez de {0}"],["{0} · environ {1}","{0} · cerca de {1}"],["dépassé de {0}","ultrapassado em {0}"],["{0} (dépassé)","{0} (passou do prazo)"],["jusqu'au {0}","até {0}"],["{0} (demain)","{0} (amanhã)"],["Pris par {0}","Escolhido por {0}"],["📊 Budget {0}","📊 Orçamento {0}"],["Bonjour {0}","Olá {0}"],["stock : {0}","stock: {0}"],["Rayon : {0}","Corredor: {0}"],["dépensé {0}","gasto {0}"],["pour le {0}","até {0}"],["à jour {0}","atualizado {0}"],["manque {0}","faltam {0}"],["dans {0} j","daqui a {0} dias"],["depuis {0}","de {0}"],["{0} : {1} le {2}","{0}: {1} a {2}"],["Erreur {0}","Erro {0}"],["{0} (toi)","{0} (tu)"],["reste {0}","restam {0}"],["doit {0}","deve {0}"],["pour {0}","para {0}"],["{0} sur {1}","{0} de {1}"],["{0} → {1}","{0} → {1}"],["🎂 {0}","🎂 {0}"]]}};/*/I18N*/
+(function () {  // langue de Pécule sur le PC, reçue par le QR code (#…&l=en), sauf si on l'a choisie ici
+  const l = new URLSearchParams(location.hash.slice(1)).get("l");
+  if (l && ["fr", "en", "pt"].includes(l) && !store.get("lang_set")) store.set("lang", l);
+})();
+let LANG = store.get("lang") || "fr", TR = null;
+const LOC = () => ({ en: "en-GB", pt: "pt-PT" }[LANG] || "fr-FR");
+function buildTR() {
+  TR = null;
+  const d = I18N[LANG]; if (LANG === "fr" || !d) return;
+  TR = { exact: d.exact, tpl: d.tpl.map(([fr, out]) => {
+    const parts = fr.split(/\{(\d+)\}/), order = []; let re = "^";
+    parts.forEach((x, i) => { if (i % 2) { order.push(Number(x)); re += "(.+?)"; } else re += x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); });
+    return [new RegExp(re + "$", "s"), out, order];
+  }) };
+}
+function trText(s) {
+  if (!TR || !s) return s;
+  const t = s.replace(/\s+/g, " ").trim(); if (!t) return s;
+  const lead = s.match(/^\s*/)[0], trail = s.match(/\s*$/)[0];
+  let r = TR.exact[t];
+  if (r === undefined) {
+    for (const [re, out, order] of TR.tpl) {
+      const m = re.exec(t);
+      if (m) { r = out.replace(/\{(\d+)\}/g, (_, n) => trText(m[1 + order.indexOf(Number(n))] || "")); break; }
+    }
+  }
+  return r === undefined ? s : lead + r + trail;
+}
+let trBusy = false;
+function trNode(root) {
+  if (!TR || !root) return;
+  trBusy = true;
+  try {
+    if (root.nodeType === 3) { const v = trText(root.nodeValue); if (v !== root.nodeValue) root.nodeValue = v; return; }
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = w.nextNode())) {
+      const p = n.parentElement; if (!p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)) continue;
+      const v = trText(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v;
+    }
+    const els = root.querySelectorAll ? [root, ...root.querySelectorAll("[placeholder],[title]")] : [];
+    for (const e of els) {
+      if (e.placeholder) { const v = trText(e.placeholder); if (v !== e.placeholder) e.placeholder = v; }
+      if (e.title) { const v = trText(e.title); if (v !== e.title) e.title = v; }
+    }
+  } finally { trBusy = false; }
+}
+buildTR();
+if (TR) {
+  document.documentElement.lang = LANG;
+  trNode(document.body);
+  new MutationObserver((muts) => {
+    if (trBusy) return;
+    for (const m of muts) {
+      if (m.type === "characterData") trNode(m.target);
+      else m.addedNodes.forEach((x) => trNode(x));
+      if (m.type === "attributes") trNode(m.target);
+    }
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["placeholder", "title"] });
+  const c0 = window.confirm.bind(window), p0 = window.prompt.bind(window);
+  window.confirm = (m) => c0(trText(m)); window.prompt = (m, d) => p0(trText(m), d);
+}
 
 // réglages transmis par Pécule dans l'adresse (#u=…&k=…)
 (function () {
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("u")) store.set("url", h.get("u").replace(/\/$/, ""));
   if (h.get("k")) store.set("key", h.get("k"));
-  if (h.get("e")) store.set("ekey", h.get("e"));  // code secret de tes comptes (reste sur le téléphone)
+  if (h.get("e")) {  // code secret de tes comptes (reste sur le téléphone ; chiffré par le code de l'appli s'il y en a un)
+    if (localStorage.getItem("pecule_pin")) sessionStorage.setItem("pecule_ekey_new", h.get("e")); else store.set("ekey", h.get("e"));
+  }
   if (h.get("u") || h.get("k") || h.get("e")) history.replaceState(null, "", location.pathname);
 })();
 
@@ -277,7 +358,7 @@ const S = { url: store.get("url"), key: store.get("key"), session: JSON.parse(st
   sub: store.get("sub") || "list", prop: {}, noHH: false, vault: null, vaultErr: "", ekey: store.get("ekey") };
 const HVIEWS = ["list", "money", "agenda", "wishes", "accounts"], VIEWS = ["home", "tx", "budgets", "foyer", "settings"];
 S.hview = store.get("hview") || (HVIEWS.includes(store.get("view")) ? store.get("view") : "list");
-S.view = VIEWS.includes(store.get("view")) ? store.get("view") : (S.ekey ? "home" : "foyer");
+S.view = VIEWS.includes(store.get("view")) ? store.get("view") : (S.ekey || store.get("pin") ? "home" : "foyer");
 function go(view, hview) {
   S.view = view; store.set("view", view);
   if (hview) { S.hview = hview; store.set("hview", hview); }
@@ -301,7 +382,31 @@ function refreshSession() {
   return refreshing;
 }
 
+// 203 · sans réseau, les modifications du foyer (cocher, ajouter, tâche faite…) attendent ici et partent au retour
+// du réseau, dans l'ordre. Les envois chiffrés de tes comptes ont leur propre file (voir « pending »).
+const hhq = () => { try { return JSON.parse(store.get("hhq") || "[]"); } catch (e) { return []; } };
 async function api(method, path, body, prefer) {
+  try { return await apiNow(method, path, body, prefer); }
+  catch (e) {
+    if (method !== "GET" && !e.status && !e.auth && !/^(my_inbox|rpc\/)/.test(path)) {
+      const q = hhq(); q.push({ method, path, body, prefer, at: Date.now() }); store.set("hhq", JSON.stringify(q));
+      S.queued = true; return null;
+    }
+    throw e;
+  }
+}
+async function flushQueue() {
+  let q = hhq(); if (!q.length) return;
+  let dropped = 0;
+  while (q.length) {
+    const x = q[0];
+    try { await apiNow(x.method, x.path, x.body, x.prefer); }
+    catch (e) { if (!e.status) break; dropped++; }  // plus de réseau : on réessaiera ; refus du serveur : abandonné
+    q = q.slice(1); store.set("hhq", JSON.stringify(q));
+  }
+  if (!q.length) toast(dropped ? `Modifications envoyées (${dropped} refusée(s) par le serveur)` : "📡 De retour en ligne : tes modifications sont envoyées ✓");
+}
+async function apiNow(method, path, body, prefer) {
   if (!S.session) throw new Error("Connecte-toi");
   if (Date.now() / 1000 > S.session.expires_at) await refreshSession();
   const go = () => fetch(`${S.url}/rest/v1/${path}`, { method, body: body ? JSON.stringify(body) : undefined,
@@ -319,45 +424,68 @@ function load() {  // jamais deux chargements en même temps (minuteur + retour 
   return loading;
 }
 
-async function doLoad() {
+// 202/216 · une seule petite question au serveur toutes les 10 s (« qu'est-ce qui a changé ? ») : seules les parties
+// modifiées sont rechargées, et le coffre de tes comptes n'est retéléchargé que si Pécule en a envoyé un nouveau.
+const PARTS = {
+  members: ["members", (q) => api("GET", `members?${q}&select=user_id,display_name,color`)],
+  list: ["list", (q) => api("GET", `shared_list?${q}&order=created_at`).catch(() => null)],
+  tx: ["exps", (q) => api("GET", `shared_tx?${q}&deleted=eq.false&order=date.desc,created_at.desc&limit=300`)],
+  events: ["events", (q) => api("GET", `shared_events?${q}&order=date`).catch(() => null)],
+  snaps: ["snaps", (q) => api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => [])],
+  chores: ["chores", (q) => api("GET", `shared_chores?${q}&order=next_date`).catch(() => null)],
+  chore_log: ["choreLog", (q) => api("GET", `shared_chore_log?${q}&done_on=gte.${ymd(addDays(new Date(), -62))}&order=done_on.desc`).catch(() => null)],
+  stock: ["stock", (q) => api("GET", `shared_stock?${q}&order=label`).catch(() => null)],
+  meals: ["meals", (q) => api("GET", `shared_meals?${q}&date=gte.${ymd(addDays(new Date(), -120))}&order=date`).catch(() => null)],
+  wishes: ["wishes", (q) => api("GET", `shared_wishes?${q}&order=created_at`).catch(() => null)],
+  claims: ["claims", (q) => api("GET", `shared_wish_claims?${q}`).catch(() => [])],
+  prefs: ["prefs", (q) => api("GET", `shared_prefs?${q}&select=key,value`).then((rows) => Object.fromEntries(rows.map((r) => [r.key, r.value]))).catch(() => (S.prefs && S.prefs.local ? S.prefs : null))],
+  budgets: ["cartBudget", (q) => api("GET", `shared_budgets?${q}&category=eq.__panier__&select=amount`).then((r) => (r[0] ? Number(r[0].amount) : 0)).catch(() => 0)],
+};
+async function doLoad(full) {
   if (S.session && Date.now() / 1000 > S.session.expires_at) await refreshSession();  // avant les requêtes en parallèle
   S.me = S.session.user;
-  const vaultP = loadVault();  // tes comptes (chiffrés) en même temps que le foyer
-  const hs = await api("GET", "households?select=id,name&order=created_at");
-  S.noHH = !hs.length;
-  if (S.noHH) {  // pas de foyer : seulement tes comptes
-    Object.assign(S, { hid: null, members: [], list: null, exps: [], events: null, snaps: [], stock: null, meals: null,
-      wishes: null, claims: [], chores: null, choreLog: null, prefs: null, cartBudget: 0 });
-    await vaultP; $("title").textContent = "Pécule"; finishLoad(); return;
+  await flushQueue();
+  if (full || !S.hhList || Date.now() - (S.hhListAt || 0) > 300000) {
+    S.hhList = await api("GET", "households?select=id,name&order=created_at"); S.hhListAt = Date.now();
   }
+  const hs = S.hhList; S.noHH = !hs.length;
   const h = hs.find((x) => x.id === S.hid) || hs[0];
-  S.hid = h.id; store.set("hid", h.id);
-  $("title").textContent = S.view === "foyer" ? h.name : "Pécule"; S.hhName = h.name;
-  const q = `household_id=eq.${S.hid}`;
-  const [members, list, exps] = await Promise.all([
-    api("GET", `members?${q}&select=user_id,display_name,color`),
-    api("GET", `shared_list?${q}&order=created_at`).catch(() => null),
-    api("GET", `shared_tx?${q}&deleted=eq.false&order=date.desc,created_at.desc&limit=300`),
-  ]);
-  S.members = members; S.list = list; S.exps = exps;
-  S.events = await api("GET", `shared_events?${q}&order=date`).catch(() => null);
-  S.snaps = await api("GET", `shared_snapshots?${q}&select=user_id,data,updated_at`).catch(() => []);
-  const since = ymd(addDays(new Date(), -120));
-  S.chores = await api("GET", `shared_chores?${q}&order=next_date`).catch(() => null);
-  S.choreLog = await api("GET", `shared_chore_log?${q}&done_on=gte.${ymd(addDays(new Date(), -62))}&order=done_on.desc`).catch(() => null);
-  [S.stock, S.meals, S.wishes, S.claims] = await Promise.all([
-    api("GET", `shared_stock?${q}&order=label`).catch(() => null),
-    api("GET", `shared_meals?${q}&date=gte.${since}&order=date`).catch(() => null),
-    api("GET", `shared_wishes?${q}&order=created_at`).catch(() => null),
-    api("GET", `shared_wish_claims?${q}`).catch(() => []),
-  ]);
-  S.prefs = await api("GET", `shared_prefs?${q}&select=key,value`).then((rows) => Object.fromEntries(rows.map((r) => [r.key, r.value]))).catch(() => (S.prefs && S.prefs.local ? S.prefs : null));
-  S.cartBudget = await api("GET", `shared_budgets?${q}&category=eq.__panier__&select=amount`).then((r) => (r[0] ? Number(r[0].amount) : 0)).catch(() => 0);
-  await vaultP;
-  finishLoad();
+  if (h) { S.hid = h.id; store.set("hid", h.id); S.hhName = h.name; } else S.hid = null;
+  let st = null;
+  try { st = await api("POST", "rpc/hh_stamp", { p_hid: S.hid }, "count=none"); } catch (e) { st = null; }  // serveur pas à jour : tout recharger
+  S.stampOK = !!st;
+  const old = (!full && S.stamps) || {};
+  let changed = !st || !S.stamps || full;
+  if (!st || st.vault !== old.vault || (S.ekey && !S.vault)) { await loadVault(!st); changed = true; }
+  else flushOutbox();
+  if (S.noHH) {  // pas de foyer : seulement tes comptes
+    Object.assign(S, { members: [], list: null, exps: [], events: null, snaps: [], stock: null, meals: null,
+      wishes: null, claims: [], chores: null, choreLog: null, prefs: null, cartBudget: 0 });
+  } else {
+    const q = `household_id=eq.${S.hid}`, prevList = S.list;
+    const todo = Object.keys(PARTS).filter((k) => !st || st[k] !== old[k] || S[PARTS[k][0]] === undefined);
+    const got = await Promise.all(todo.map((k) => PARTS[k][1](q)));
+    todo.forEach((k, i) => { S[PARTS[k][0]] = got[i]; });
+    if (todo.length) changed = true;
+    if (todo.includes("list") && Array.isArray(prevList) && Array.isArray(S.list) && S.stamps) liveNews(prevList, S.list);
+  }
+  S.stamps = st;
+  if (changed) finishLoad();
+  else $("sync").textContent = "à jour " + new Date().toLocaleTimeString(LOC(), { hour: "2-digit", minute: "2-digit" });
+}
+// 216 · ce que les autres viennent de faire sur la liste
+const myTicks = new Set();
+function liveNews(before, after) {
+  const was = Object.fromEntries(before.map((i) => [i.id, i])), out = [];
+  for (const i of after) {
+    const o = was[i.id];
+    if (!o && i.created_by && i.created_by !== S.me) out.push(`${name(i.created_by)} a ajouté ${i.label}`);
+    else if (o && !o.done && i.done && !myTicks.has(i.id)) out.push(`${i.label} est dans le panier ✓`);
+  }
+  if (out.length && out.length <= 4) toast("🛒 " + out.join(" · "));
 }
 function finishLoad() {
-  $("sync").textContent = "à jour " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  $("sync").textContent = "à jour " + new Date().toLocaleTimeString(LOC(), { hour: "2-digit", minute: "2-digit" });
   // dernier affichage gardé sur le téléphone : la page s'ouvre tout de suite, même sans réseau
   try { store.set("cache", JSON.stringify({ t: Date.now(), title: $("title").textContent, me: S.me,
     d: { members: S.members, list: S.list, exps: S.exps.slice(0, 60), events: S.events, snaps: S.snaps, stock: S.stock,
@@ -543,6 +671,7 @@ function render() {
   document.querySelectorAll("#hhnav button").forEach((b) => b.classList.toggle("on", b.dataset.h === S.hview));
   $("hhnav").classList.toggle("hidden", S.noHH); $("nohh").classList.toggle("hidden", !S.noHH);
   renderPerso();
+  if ($("hhq").value.trim()) renderHHSearch();
   // courses
   if (S.list === null) {
     $("todo").innerHTML = '<p class="muted">La liste de courses n\'est pas encore activée sur le serveur du foyer (Pécule › Foyer › mettre à jour le serveur).</p>';
@@ -587,7 +716,7 @@ function render() {
   else {
     const first = new Date(); first.setHours(0, 0, 0, 0); const last = new Date(first); last.setDate(last.getDate() + 60);
     const up = S.events.flatMap((ev) => occurrences(ev, first, last).map((d) => [d, ev])).sort((a, b) => a[0] - b[0]);
-    $("agenda").innerHTML = up.slice(0, 40).map(([d, ev]) => `<div class="row"><span class="pill">${d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}</span>
+    $("agenda").innerHTML = up.slice(0, 40).map(([d, ev]) => `<div class="row"><span class="pill">${d.toLocaleDateString(LOC(), { weekday: "short", day: "numeric", month: "short" })}</span>
       <div class="grow">${esc(ev.title)}<div class="faint">${ev.who ? "pour " + esc(name(ev.who)) : "tout le foyer"}${ev.note ? " · " + esc(ev.note) : ""}</div></div>${ev.amount ? `<b>${euro(ev.amount)}</b>` : ""}</div>`).join("") || '<p class="muted">Rien de prévu ces deux prochains mois.</p>';
   }
   // comptes communs et chiffres partagés
@@ -724,7 +853,13 @@ function renderWishes() {
 }
 
 async function act(fn, ok) {
-  try { await fn(); if (ok) toast(ok); await load(); } catch (e) { toast(e.message); }
+  S.queued = false;
+  try {
+    await fn();
+    if (S.queued) { toast((ok ? ok + " · " : "") + "envoyé dès le retour du réseau 📡"); render(); return; }
+    if (ok) toast(ok);
+    await load();
+  } catch (e) { toast(/fetch|network/i.test(e.message) ? "Pas de réseau pour l'instant." : e.message); }
 }
 
 function showApp(on) {
@@ -740,7 +875,7 @@ $("go").onclick = async () => {
   catch (e) { $("err").textContent = e.message; }
 };
 $("pwd").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go").click(); });
-$("logout").onclick = () => { S.session = null; S.vault = null; store.set("session", null); store.set("cache", null); store.set("vault", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
+$("logout").onclick = () => { S.session = null; S.vault = null; S.stamps = null; S.hhList = null; store.set("session", null); store.set("cache", null); store.set("vault", null); showApp(false); $("server").classList.toggle("hidden", !!(S.url && S.key)); };
 $("nav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "add") return openAdd(); go(b.dataset.v); };
 $("hhnav").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; go("foyer", b.dataset.h); };
 $("gear").onclick = () => go(S.view === "settings" ? (S.ekey ? "home" : "foyer") : "settings");
@@ -1122,7 +1257,7 @@ document.addEventListener("click", (e) => {
   const a = b.dataset.act;
   if (a === "tick" || a === "del") {
     const id = b.closest("[data-id]").dataset.id, it = S.list.find((x) => x.id === id); if (!it || id === "tmp") return;
-    if (a === "tick") { it.done = !it.done; render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: now() })); }
+    if (a === "tick") { it.done = !it.done; myTicks.add(id); render(); act(() => api("PATCH", `shared_list?id=eq.${id}`, { done: it.done, updated_at: now() })); }
     else { S.list = S.list.filter((x) => x.id !== id); render(); act(() => api("DELETE", `shared_list?id=eq.${id}`)); }
     return;
   }
@@ -1261,10 +1396,16 @@ async function sealOp(op) {
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await vkey(), new TextEncoder().encode(JSON.stringify(op))));
   return { iv: b64e(iv), data: b64e(ct) };
 }
-async function loadVault() {
+async function loadVault(check) {
   if (!S.ekey) { S.vault = null; S.vaultErr = "nokey"; return; }
   let row;
-  try { row = (await api("GET", "my_vault?select=kid,iv,data,updated_at"))[0]; }
+  try {
+    if (check && S.vault) {  // 202 · sans empreinte du serveur : la date d'abord, le contenu seulement s'il a changé
+      const meta = (await api("GET", "my_vault?select=kid,updated_at"))[0], cached = JSON.parse(store.get("vault") || "null");
+      if (meta && cached && meta.updated_at === cached.updated_at && meta.kid === cached.kid) { flushOutbox(); return; }
+    }
+    row = (await api("GET", "my_vault?select=kid,iv,data,updated_at"))[0];
+  }
   catch (e) { S.vaultErr = /my_vault/.test(e.message) || e.status === 404 ? "server" : S.vault ? "" : "net"; return; }
   if (!row) { S.vault = null; S.vaultErr = "empty"; return; }
   try {
@@ -1300,27 +1441,55 @@ function sendOp(op, msg) {
   render(); toast(msg); flushOutbox();
 }
 
-// ---- données affichées = instantané + ce qui est en attente
+// ---- données affichées = instantané + ce qui est en attente (ajouts, reclassements, modifications, suppressions)
 const V = () => S.vault;
 const catOf = (id) => (V() && V().cats.find((c) => c.id === id)) || null;
 const accOf = (id) => (V() && V().accounts.find((a) => a.id === id)) || null;
+// catégorie de premier niveau (les budgets comptent les sous-catégories avec leur catégorie)
+const topOf = (id) => { const c = catOf(id); return c && c.parent ? c.parent : id; };
 function txAll() {
   const v = V(); if (!v) return [];
-  const p = pending(), cats = {}, notes = {};
-  p.forEach((x) => { if (x.op.op === "cat") cats[x.op.tx] = x.op.cat; if (x.op.op === "note") notes[x.op.tx] = x.op.note; });
-  const adds = p.filter((x) => x.op.op === "add").map((x) => ({ id: "p:" + x.id, d: x.op.date, l: x.op.label, a: x.op.amount, c: x.op.cat, acc: x.op.acc, n: x.op.note, pending: true }));
-  return adds.concat(v.tx.map((t) => (t.id in cats || t.id in notes ? { ...t, c: t.id in cats ? cats[t.id] : t.c, n: t.id in notes ? notes[t.id] : t.n, pendingEdit: true } : t)))
+  const p = pending(), mod = {}, gone = new Set();
+  for (const x of p) {
+    const o = x.op;
+    if (o.op === "del") gone.add(o.tx);
+    if (o.op === "cat") (mod[o.tx] = mod[o.tx] || {}).c = o.cat;
+    if (o.op === "note") (mod[o.tx] = mod[o.tx] || {}).n = o.note;
+    if (o.op === "photo") (mod[o.tx] = mod[o.tx] || {}).att = 1;
+    if (o.op === "edit") Object.assign(mod[o.tx] = mod[o.tx] || {}, Object.fromEntries([["a", o.amount], ["l", o.label], ["d", o.date], ["acc", o.acc]].filter(([, y]) => y !== undefined && y !== null && y !== "")));
+  }
+  const adds = p.filter((x) => x.op.op === "add").map((x) => ({ id: "p:" + x.id, d: x.op.date, l: x.op.label, a: x.op.amount, c: x.op.cat, acc: x.op.acc, n: x.op.note, att: x.op.photo ? 1 : 0, pending: true }));
+  return adds.concat(v.tx.filter((t) => !gone.has(t.id)).map((t) => (mod[t.id] ? { ...t, ...mod[t.id], pendingEdit: true } : t)))
     .sort((a, b) => String(b.d).localeCompare(String(a.d)));
 }
 function pendingAdds() { return pending().filter((x) => x.op.op === "add").map((x) => x.op); }
-function accBal(a) { return a.bal + pendingAdds().filter((o) => o.acc === a.id).reduce((t, o) => t + o.amount, 0); }
-function monthSpent(catId) {
-  const ym = V().month.ym, extra = pendingAdds().filter((o) => String(o.date).slice(0, 7) === ym && o.amount < 0 && (catId === undefined || o.cat === catId));
-  return extra.reduce((t, o) => t - o.amount, 0);
+// 204/214 · écarts dus à ce qui attend le PC : par compte (soldes) et par catégorie ce mois-ci (budgets)
+let dCache = null;
+function deltas() {
+  const v = V(); if (!v) return { acc: {}, cat: {}, total: 0 };
+  const key = (store.get("pending") || "") + v.at;
+  if (dCache && dCache.key === key) return dCache.d;
+  const d = { acc: {}, cat: {}, total: 0 }, ym = v.month.ym;
+  const transfer = new Set(v.cats.filter((c) => c.kind === "transfer").map((c) => c.id));
+  const add = (t, sgn) => {
+    d.acc[t.acc] = (d.acc[t.acc] || 0) + sgn * t.a;
+    if (t.a < 0 && !t.p && !transfer.has(t.c) && String(t.d).slice(0, 7) === ym) {
+      const k = topOf(t.c) ?? 0; d.cat[k] = (d.cat[k] || 0) - sgn * t.a; d.total -= sgn * t.a;
+    }
+  };
+  const eff = txAll(), orig = v.tx;
+  if (pending().length) { eff.forEach((t) => add(t, 1)); orig.forEach((t) => add(t, -1)); }
+  for (const k of Object.keys(d.acc)) if (Math.abs(d.acc[k]) < 0.005) delete d.acc[k];
+  dCache = { key, d };
+  return d;
 }
+function accBal(a) { return a.bal + (deltas().acc[a.id] || 0); }
+function monthSpent(catId) { const d = deltas(); return catId === undefined ? d.total : (d.cat[catId] || 0); }
+function budgetOf(b) { const x = pending().filter((p) => p.op.op === "budget" && p.op.cat === b.cat).pop(); return x ? Number(x.op.amount) : b.budget; }
+function goalSaved(g) { return g.saved + pending().filter((p) => p.op.op === "goal" && p.op.goal === g.id).reduce((t, p) => t + Number(p.op.amount), 0); }
 const sign = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v)).replace("-", "");
-const dmy = (d) => { const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return x.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }); };
-const atText = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); };
+const dmy = (d) => { const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return x.toLocaleDateString(LOC(), { weekday: "short", day: "numeric", month: "short" }); };
+const atText = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString(LOC(), { day: "2-digit", month: "2-digit" }) + ({ en: " at ", pt: " às " }[LANG] || " à ") + d.toLocaleTimeString(LOC(), { hour: "2-digit", minute: "2-digit" }); };
 
 // relier ce téléphone à tes comptes : le QR code (ou le lien copié) de Pécule contient le code secret (#e=…).
 // Utile aussi dans l'appli installée sur iPhone, qui ne partage pas la mémoire de Safari.
@@ -1329,7 +1498,8 @@ async function pairWith(text) {
   if (!h.get("e")) return toast("Ce lien ne contient pas tes comptes : dans Pécule (📱), active « Mes comptes et opérations sur le téléphone ».");
   closeScan();
   const newUrl = (h.get("u") || "").replace(/\/$/, "");
-  S.ekey = h.get("e"); store.set("ekey", S.ekey); store.set("vault", null); S.vault = null;
+  S.ekey = h.get("e"); store.set("vault", null); S.vault = null;
+  if (pinData()) await rewrapKey(); else store.set("ekey", S.ekey);
   if (newUrl && newUrl !== S.url) {  // autre serveur : il faut se connecter à celui-ci
     S.url = newUrl; S.key = h.get("k") || S.key; store.set("url", S.url); store.set("key", S.key);
     S.session = null; store.set("session", null); showApp(false); $("login").classList.remove("hidden");
@@ -1368,7 +1538,7 @@ function renderHome() {
     const spent = m.spent + monthSpent();
     h.push(`<div class="card hero"><div class="faint">${esc(m.emoji || "")} ${esc(m.title || "Ce mois-ci")}</div>
       ${m.per_day != null ? `<div class="big">${euro(m.per_day)} <span style="font-size:16px;font-weight:500">/ jour</span></div><div class="muted">à dépenser jusqu'au ${dmy(m.until)}${m.payday ? " (" + esc(m.payday) + ")" : ""}</div>` : `<div class="big">${euro(t.courant)}</div>`}
-      <div class="kpis"><div><span class="faint">Comptes courants</span><b>${euro(t.courant + pendingAdds().filter((o) => (accOf(o.acc) || {}).fam === "courant").reduce((s2, o) => s2 + o.amount, 0))}</b></div>
+      <div class="kpis"><div><span class="faint">Comptes courants</span><b>${euro(t.courant + Object.entries(deltas().acc).filter(([id]) => (accOf(Number(id)) || {}).fam === "courant").reduce((s2, [, x]) => s2 + x, 0))}</b></div>
       <div><span class="faint">Dépensé ce mois</span><b>${euro(spent)}</b></div>
       <div><span class="faint">Fin du mois</span><b>${m.end_balance != null ? euro(m.end_balance) : "—"}</b></div></div></div>`);
     const quick = [`<button data-pa="add">➕ Dépense</button>`];
@@ -1379,11 +1549,11 @@ function renderHome() {
     if ((v.alerts || []).length) h.push(`<div class="card"><h2>🔔 À regarder</h2>${v.alerts.map((a) => `<div class="row"><div class="grow">${esc(a.text)}</div></div>`).join("")}</div>`);
     // comptes
     const fams = { courant: "💳 Courant", epargne: "🐷 Épargne", placement: "📈 Placements" };
-    h.push(`<div class="card"><h2>🏦 Mes comptes <span class="faint" style="font-weight:400">· ${euro(t.all + pendingAdds().reduce((s2, o) => s2 + o.amount, 0))}</span></h2>${v.accounts.map((a) => `<div class="row" data-pa="acc" data-id="${a.id}">
+    h.push(`<div class="card"><h2>🏦 Mes comptes <span class="faint" style="font-weight:400">· ${euro(t.all + Object.values(deltas().acc).reduce((s2, x) => s2 + x, 0))}</span></h2>${v.accounts.map((a) => `<div class="row" data-pa="acc" data-id="${a.id}">
       <span class="dot" style="background:${esc(a.color || "var(--accent)")}"></span><div class="grow">${esc(a.name)}<div class="faint">${fams[a.fam] || ""}${a.joint ? " · commun" : ""}</div></div><b class="${accBal(a) < 0 ? "loss" : ""}">${euro(accBal(a))}</b></div>`).join("")}
       ${t.lent || t.owed ? `<p class="faint">On te doit ${euro(t.lent)} · tu dois ${euro(t.owed)}</p>` : ""}</div>`);
     // budgets presque atteints
-    const bud = v.budgets.map((b) => ({ ...b, sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget).slice(0, 4);
+    const bud = v.budgets.map((b) => ({ ...b, budget: budgetOf(b), sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget).slice(0, 4);
     if (bud.length) h.push(`<div class="card"><h2>📊 Budgets du mois</h2>${bud.map(budRow).join("")}<button class="ghost" data-pa="budgets">Tous les budgets ›</button></div>`);
     // à venir
     const soon = (v.upcoming || []).filter((u) => u.d <= ymd(addDays(new Date(), 10))).slice(0, 8);
@@ -1404,13 +1574,13 @@ function renderHome() {
 }
 function budRow(b) {
   const r = b.budget ? b.sp / b.budget : 0, cls = r > 1 ? "over" : r > 0.85 ? "warn" : "";
-  return `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="dot" style="background:${esc(b.color || "var(--accent)")}"></span><div class="grow">${esc(b.name)}</div>
+  return `<div class="row" style="display:block" data-pa="bud" data-id="${b.cat}"><div style="display:flex;gap:8px;align-items:center"><span class="dot" style="background:${esc(b.color || "var(--accent)")}"></span><div class="grow">${esc(b.name)}</div>
     <span class="faint">${euro(b.sp)} / ${euro(b.budget)}</span></div><div class="bar ${cls}"><i style="width:${Math.min(100, r * 100)}%"></i></div>
     <div class="faint">${r > 1 ? `dépassé de ${euro(b.sp - b.budget)}` : `reste ${euro(b.budget - b.sp)}`}${b.avg ? ` · d'habitude ${euro(b.avg)}` : ""}</div></div>`;
 }
 function goalRow(g) {
-  const r = g.target ? g.saved / g.target : 0;
-  return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${esc(g.name)}</span><span class="faint">${euro(g.saved)} / ${euro(g.target)}</span></div>
+  const sv = goalSaved(g), r = g.target ? sv / g.target : 0;
+  return `<div class="row" style="display:block" data-pa="goal" data-id="${g.id}"><div style="display:flex;justify-content:space-between"><span>${esc(g.name)}</span><span class="faint">${euro(sv)} / ${euro(g.target)}</span></div>
     <div class="bar"><i style="width:${Math.min(100, r * 100)}%;background:${esc(g.color || "var(--gain)")}"></i></div>${g.deadline ? `<div class="faint">pour le ${String(g.deadline).split("-").reverse().join("/")}</div>` : ""}</div>`;
 }
 
@@ -1423,7 +1593,7 @@ function renderTx() {
   const f = S.txf || (S.txf = { acc: "", uncat: false, month: "" });
   const months = [...new Set(v.tx.map((t) => String(t.d).slice(0, 7)))].slice(0, 13);
   $("txchips").innerHTML = `<select id="txacc" style="width:auto;flex:1"><option value="">Tous les comptes</option>${v.accounts.map((a) => `<option value="${a.id}" ${String(f.acc) === String(a.id) ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>
-    <select id="txmonth" style="width:auto;flex:1"><option value="">Tous les mois</option>${months.map((m) => `<option value="${m}" ${f.month === m ? "selected" : ""}>${new Date(m + "-01T00:00:00").toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</option>`).join("")}</select>
+    <select id="txmonth" style="width:auto;flex:1"><option value="">Tous les mois</option>${months.map((m) => `<option value="${m}" ${f.month === m ? "selected" : ""}>${new Date(m + "-01T00:00:00").toLocaleDateString(LOC(), { month: "long", year: "numeric" })}</option>`).join("")}</select>
     <button data-pa="uncatf" class="${f.uncat ? "on" : ""}">🏷 À classer</button>`;
   const q = fold($("txq").value.trim());
   let rows = txAll().filter((t) => (!f.acc || String(t.acc) === String(f.acc)) && (!f.uncat || !t.c) && (!f.month || String(t.d).startsWith(f.month))
@@ -1453,16 +1623,52 @@ function catChips(kind, sel, attr) {
 }
 function txSheet(id) {
   const t = txAll().find((x) => String(x.id) === String(id)); if (!t) return;
-  const a = accOf(t.acc);
-  sheet(`<h2>${esc(t.l)}</h2><p class="muted">${dmy(t.d)} · ${a ? esc(a.name) : ""} · <b class="amt ${t.a > 0 ? "in" : ""}">${sign(t.a)}</b></p>
+  const a = accOf(t.acc), v = V();
+  sheet(`<h2>${esc(t.l)}</h2><p class="muted">${dmy(t.d)} · ${a ? esc(a.name) : ""} · <b class="amt ${t.a > 0 ? "in" : ""}">${sign(t.a)}</b>${t.att ? " · 📎" : ""}</p>
     ${t.pending ? '<p class="pend">⏳ Ajoutée depuis ce téléphone : elle rejoindra tes opérations à la prochaine synchro de Pécule sur le PC.</p>' : ""}
     ${t.p ? '<p class="faint">Virement entre tes comptes.</p>' : `<div class="faint" style="margin-top:8px">Catégorie</div>${catChips(t.a > 0 ? "income" : "expense", t.c, "data-setcat")}`}
-    ${t.pending ? "" : `<br><div class="faint">Note</div><div class="add"><input id="txnote" value="${esc(t.n || "")}" placeholder="Ajouter une note"><button class="primary" data-txnote="${t.id}">OK</button></div>`}`);
+    ${t.pending ? "" : `<br><div class="faint">Note</div><div class="add"><input id="txnote" value="${esc(t.n || "")}" placeholder="Ajouter une note"><button class="primary" data-txnote="${t.id}">OK</button></div>
+    <details style="margin-top:10px"><summary>✏️ Modifier le montant, le libellé, la date</summary>
+      <div class="grid2"><input id="edamt" inputmode="decimal" value="${String(Math.abs(t.a)).replace(".", ",")}"><select id="edsign"><option value="-1" ${t.a < 0 ? "selected" : ""}>Dépense</option><option value="1" ${t.a > 0 ? "selected" : ""}>Revenu</option></select></div><br>
+      <input id="edlab" value="${esc(t.l)}"><br><br>
+      <div class="grid2"><input id="eddate" type="date" value="${String(t.d).slice(0, 10)}"><select id="edacc">${v.accounts.map((x) => `<option value="${x.id}" ${x.id === t.acc ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div><br>
+      <button class="primary" data-txedit="${t.id}" style="width:100%">Enregistrer</button></details>
+    <div class="grid2" style="margin-top:12px"><button data-txphoto="${t.id}">📷 ${t.att ? "Ajouter une photo" : "Photo du ticket"}</button><button data-txdel="${t.id}" style="color:var(--loss)">🗑 Supprimer</button></div>`}`);
   $("sheetbox").dataset.tx = t.id;
+}
+// 214 · photo d'un ticket : réduite sur le téléphone (1600 px, JPEG) avant d'être chiffrée et envoyée
+function pickPhoto() {
+  return new Promise((ok) => {
+    const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0]; if (!f) return ok(null);
+      try {
+        const img = await createImageBitmap(f), k = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        const url = c.toDataURL("image/jpeg", 0.72); ok(url.slice(url.indexOf(",") + 1));
+      } catch (e) { toast("Photo illisible"); ok(null); }
+    };
+    inp.click();
+  });
+}
+function budSheet(cat) {
+  const b = V().budgets.find((x) => x.cat === cat) || { cat, name: (catOf(cat) || {}).name, budget: 0 };
+  sheet(`<h2>📊 Budget ${esc(b.name || "")}</h2><p class="muted">Par mois. Dépensé ce mois-ci : ${euro((b.spent || 0) + monthSpent(cat))}${b.avg ? ` · d'habitude ${euro(b.avg)}` : ""}.</p>
+    <div class="add"><input id="budamt" inputmode="decimal" value="${String(budgetOf(b)).replace(".", ",")}"><button class="primary" data-budsave="${cat}">Enregistrer</button></div>`);
+}
+function goalSheet(id) {
+  const g = V().goals.find((x) => x.id === id); if (!g) return;
+  const cur = V().accounts.filter((a) => a.fam === "courant" && a.id !== g.acc);
+  sheet(`<h2>🎯 ${esc(g.name)}</h2><p class="muted">${euro(goalSaved(g))} sur ${euro(g.target)}${g.deadline ? " · pour le " + g.deadline.split("-").reverse().join("/") : ""}</p>
+    <div class="faint">Mettre de l'argent de côté</div><input id="goalamt" inputmode="decimal" placeholder="Montant">
+    ${g.acc && cur.length ? `<br><br><select id="goalfrom">${cur.map((a) => `<option value="${a.id}">depuis ${esc(a.name)}</option>`).join("")}<option value="">sans virement (déjà fait)</option></select>
+    <p class="faint">Pécule enregistre le virement vers ${esc((accOf(g.acc) || {}).name || "le compte de l'objectif")}.</p>` : ""}
+    <br><button class="primary" data-goalsave="${id}" style="width:100%">Ajouter</button>`);
 }
 
 // ---- ➕ ajouter une dépense ou un revenu
-let addKind = "expense", addCat = null;
+let addKind = "expense", addCat = null, addPhoto = null;
 function openAdd(pre) {
   const v = V();
   if (!v && S.noHH) { go("home"); return toast("Active d'abord tes comptes sur le téléphone (voir l'accueil)"); }
@@ -1475,11 +1681,12 @@ function openAdd(pre) {
     <input id="addlab" list="addlabs" placeholder="Quoi ? (ex. boulangerie, essence)" autocomplete="off"><datalist id="addlabs">${labels.map((l) => `<option value="${esc(l)}">`).join("")}</datalist>
     <div id="addcats"></div>
     ${v ? `<br><div class="grid2"><select id="addacc">${accs.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select><input id="adddate" type="date" value="${ymd(new Date())}"></div>` : ""}
-    <br><input id="addnote" placeholder="Note (facultatif)">
+    <br><div class="add"><input id="addnote" placeholder="Note (facultatif)">${v ? '<button id="addphoto" title="Photo du ticket">📷</button>' : ""}</div>
     ${!S.noHH && S.hid ? `<label class="faint" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="addshared" style="width:auto" ${v ? "" : "checked disabled"}> Dépense commune du foyer (payée par moi, partagée entre tous)</label>` : ""}
     ${v ? "" : '<p class="faint">Tes comptes ne sont pas encore sur ce téléphone : la dépense est ajoutée au foyer seulement.</p>'}
     <br><button class="primary" id="addgo" style="width:100%">Ajouter</button>`);
-  addCats();
+  addCats(); addPhoto = null;
+  if ($("addphoto")) $("addphoto").onclick = async () => { const ph = await pickPhoto(); if (ph) { addPhoto = ph; $("addphoto").textContent = "📎 ✓"; } };
   setTimeout(() => $("addamt").focus(), 50);
   $("addlab").addEventListener("change", () => {  // même libellé qu'avant → même catégorie
     const l = fold($("addlab").value.trim()), t = v && v.tx.find((x) => fold(x.l) === l && x.c);
@@ -1496,7 +1703,7 @@ function submitAdd() {
   const note = $("addnote").value.trim();
   closeSheet();
   if (V()) sendOp({ op: "add", amount: addKind === "income" ? amt : -amt, label: label.slice(0, 120), cat: addCat, acc: Number($("addacc") ? $("addacc").value : 0) || null,
-    date: ($("adddate") && $("adddate").value) || ymd(new Date()), note: note.slice(0, 300) }, `${addKind === "income" ? "Revenu" : "Dépense"} ajouté${addKind === "income" ? "" : "e"} ✓`);
+    date: ($("adddate") && $("adddate").value) || ymd(new Date()), note: note.slice(0, 300), ...(addPhoto ? { photo: addPhoto, photo_name: `ticket-${ymd(new Date())}.jpg` } : {}) }, `${addKind === "income" ? "Revenu" : "Dépense"} ajouté${addKind === "income" ? "" : "e"} ✓`);
   if (shared) {
     const split = {}; S.members.forEach((m) => (split[m.user_id] = 1));
     act(() => api("POST", "shared_tx", { household_id: S.hid, kind: "expense", amount: Math.round(amt * 100) / 100, label: label.slice(0, 80),
@@ -1510,13 +1717,15 @@ function renderBudgets() {
   const v = V();
   if (!v) { $("budgets").innerHTML = vaultCard(); return; }
   const m = v.month, spent = m.spent + monthSpent(), h = [];
-  const mName = new Date(m.ym + "-01T00:00:00").toLocaleDateString("fr-FR", { month: "long" });
+  const mName = new Date(m.ym + "-01T00:00:00").toLocaleDateString(LOC(), { month: "long" });
   h.push(`<div class="card"><h2>🗓️ ${mName.charAt(0).toUpperCase() + mName.slice(1)}</h2><div class="grid2"><div><span class="faint">Revenus</span><div class="big gain">${euro(m.income)}</div></div>
     <div><span class="faint">Dépenses</span><div class="big">${euro(spent)}</div></div></div>${m.left != null ? `<p class="muted">${esc(m.emoji || "")} Il reste ${euro(m.left)} dans tes budgets ce mois-ci.</p>` : ""}</div>`);
-  const bud = v.budgets.map((b) => ({ ...b, sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget);
+  const bud = v.budgets.map((b) => ({ ...b, budget: budgetOf(b), sp: b.spent + monthSpent(b.cat) })).sort((a, b) => b.sp / b.budget - a.sp / a.budget);
   h.push(`<div class="card"><h2>📊 Budgets</h2>${bud.map(budRow).join("") || '<p class="muted">Aucun budget : fixe-les dans Pécule sur ton PC.</p>'}</div>`);
   // par catégorie
-  const cur = v.bycat[m.ym] || {}, prevYm = Object.keys(v.bycat).find((k) => k !== m.ym), prev = v.bycat[prevYm] || {};
+  const cur = { ...(v.bycat[m.ym] || {}) };  // 204 · avec les ajouts et reclassements faits sur le téléphone
+  for (const [k, x] of Object.entries(deltas().cat)) cur[String(k)] = (cur[String(k)] || 0) + x;
+  const prevYm = Object.keys(v.bycat).find((k) => k !== m.ym), prev = v.bycat[prevYm] || {};
   const list = Object.entries(cur).map(([k, x]) => [catOf(Number(k)), x, prev[k] || 0]).filter(([c, x]) => x > 0).sort((a, b) => b[1] - a[1]);
   const mx = Math.max(1, ...list.map((x) => x[1]));
   if (list.length) h.push(`<div class="card"><h2>🍩 Où part l'argent ce mois-ci</h2>${list.slice(0, 12).map(([c, x, p]) => `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:center">
@@ -1542,7 +1751,8 @@ function renderSettings() {
     + (v ? `<button class="ghost" data-pa="pair">📷 Rescanner le QR code de Pécule</button>` : "")
     + (S.ekey ? `<button class="ghost" id="forgetkey">Retirer mes comptes de ce téléphone</button>` : "");
   if ($("forgetkey")) $("forgetkey").onclick = () => { if (!confirm("Retirer tes comptes de ce téléphone ? Il faudra rescanner le QR code pour les revoir.")) return;
-    S.ekey = null; S.vault = null; S.vaultErr = "nokey"; store.set("ekey", null); store.set("vault", null); savePending([]); render(); };
+    S.ekey = null; S.vault = null; S.vaultErr = "nokey"; store.set("ekey", null); store.set("vault", null); savePending([]); if (pinData()) rewrapKey(); render(); };
+  pinSettings();
   $("whoami").textContent = (store.get("email") || "") + (S.noHH ? " · sans foyer" : S.hhName ? " · foyer : " + S.hhName : "");
 }
 
@@ -1561,14 +1771,180 @@ document.addEventListener("click", (e) => {
   if (a === "scan") { go("foyer", "list"); return openScan("list"); }
   if (a === "more") { txLimit += 120; return renderTx(); }
   if (a === "tx") return txSheet(b.dataset.id);
+  if (a === "bud") return budSheet(Number(b.dataset.id));
+  if (a === "goal") return goalSheet(Number(b.dataset.id));
 });
 $("sheetbox").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.kind) { addKind = b.dataset.kind; addCat = null; b.parentElement.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); addCats(); return; }
   if (b.dataset.addcat) { addCat = Number(b.dataset.addcat); addCats(); return; }
   if (b.dataset.setcat) { const tx = Number($("sheetbox").dataset.tx); closeSheet(); sendOp({ op: "cat", tx, cat: Number(b.dataset.setcat) }, `Classée dans ${catOf(Number(b.dataset.setcat)).name} ✓`); return; }
+  const num2 = (id) => parseFloat(($(id).value || "").replace(/\s/g, "").replace(",", ".").replace(/[^\d.]/g, ""));
+  if (b.dataset.txedit) {
+    const tx = Number(b.dataset.txedit), amt = num2("edamt");
+    if (!(amt > 0)) return toast("Indique un montant");
+    closeSheet(); sendOp({ op: "edit", tx, amount: Number($("edsign").value) * amt, label: $("edlab").value.trim().slice(0, 120), date: $("eddate").value, acc: Number($("edacc").value) }, "Modification enregistrée ✓");
+    return;
+  }
+  if (b.dataset.txdel) {
+    if (!confirm("Supprimer cette opération ? (Elle reste 30 jours dans la corbeille de Pécule sur le PC.)")) return;
+    closeSheet(); sendOp({ op: "del", tx: Number(b.dataset.txdel) }, "Opération supprimée"); return;
+  }
+  if (b.dataset.txphoto) {
+    const tx = Number(b.dataset.txphoto);
+    pickPhoto().then((ph) => { if (ph) { closeSheet(); sendOp({ op: "photo", tx, name: `ticket-${ymd(new Date())}.jpg`, data: ph }, "Photo jointe 📎"); } });
+    return;
+  }
+  if (b.dataset.budsave) {
+    const amt = num2("budamt"); if (!(amt >= 0)) return toast("Indique un montant");
+    closeSheet(); sendOp({ op: "budget", cat: Number(b.dataset.budsave), amount: Math.round(amt * 100) / 100 }, "Budget enregistré ✓"); return;
+  }
+  if (b.dataset.goalsave) {
+    const amt = num2("goalamt"); if (!(amt > 0)) return toast("Indique un montant");
+    const from = $("goalfrom") ? Number($("goalfrom").value) || null : null;
+    closeSheet(); sendOp({ op: "goal", goal: Number(b.dataset.goalsave), amount: Math.round(amt * 100) / 100, from }, "C'est mis de côté 🎯"); return;
+  }
   if (b.dataset.txnote) { const tx = Number(b.dataset.txnote), n = $("txnote").value.trim(); closeSheet(); sendOp({ op: "note", tx, note: n }, "Note enregistrée ✓"); }
 });
+
+// ---------------------------------------------------------------- 215 · code de l'appli · 219 · thème · 218 · recherche
+// Le code protège l'ouverture de l'appli ET le code secret de tes comptes : celui-ci est gardé chiffré avec une clé
+// tirée de ton code (PBKDF2, 210 000 tours). Sans le code, le téléphone ne peut pas lire tes comptes.
+let pinKeyMem = null;
+async function pinKey(pin, salt) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 210000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+const pinData = () => { try { return JSON.parse(store.get("pin") || "null"); } catch (e) { return null; } };
+async function wrapKey(key, salt) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(S.ekey || "")));
+  store.set("pin", JSON.stringify({ v: 1, salt: b64e(salt), iv: b64e(iv), data: b64e(ct) }));
+  store.set("ekey", null);
+}
+async function setPin(pin) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  pinKeyMem = await pinKey(pin, salt); await wrapKey(pinKeyMem, salt);
+}
+async function rewrapKey() {  // le code secret a changé (nouveau QR code) : on le garde chiffré avec le même code
+  const P = pinData(); if (!P || !pinKeyMem) { store.set("ekey", S.ekey); return; }
+  await wrapKey(pinKeyMem, b64d(P.salt));
+}
+async function tryPin(pin) {
+  const P = pinData(); if (!P) return true;
+  try {
+    const key = await pinKey(pin, b64d(P.salt));
+    const raw = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(P.iv) }, key, b64d(P.data));
+    pinKeyMem = key; S.ekey = new TextDecoder().decode(raw) || null; return true;
+  } catch (e) { return false; }
+}
+let pinFails = 0, pinWait = 0;
+function askPin() {
+  return new Promise((done) => {
+    let typed = "";
+    const el = $("pinlock"); el.classList.remove("hidden");
+    $("pinmsg").textContent = "Entre ton code";
+    const dots = () => { $("pindots").textContent = "●".repeat(typed.length) + "○".repeat(Math.max(0, 4 - typed.length)); };
+    $("pinpad").innerHTML = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "OK"].map((k) => `<button data-k="${k}" ${k === "OK" ? 'class="primary"' : ""}>${k}</button>`).join("");
+    dots();
+    $("pinpad").onclick = async (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const k = b.dataset.k;
+      if (k === "⌫") typed = typed.slice(0, -1);
+      else if (k !== "OK" && typed.length < 6) typed += k;
+      dots();
+      if (k === "OK" || typed.length === 6) {
+        if (Date.now() < pinWait) { $("pinmsg").textContent = `Trop d'essais : attends ${Math.ceil((pinWait - Date.now()) / 1000)} s`; return; }
+        if (typed.length < 4) return;
+        $("pinmsg").textContent = "Vérification…";
+        if (await tryPin(typed)) {
+          pinFails = 0; el.classList.add("hidden");
+          const nk = sessionStorage.getItem("pecule_ekey_new");  // QR code scanné pendant que l'appli était verrouillée
+          if (nk) { S.ekey = nk; sessionStorage.removeItem("pecule_ekey_new"); await rewrapKey(); }
+          done(true);
+        } else {
+          typed = ""; dots(); pinFails++;
+          if (pinFails >= 5) { pinWait = Date.now() + 30000; pinFails = 0; }
+          $("pinmsg").textContent = "Code incorrect";
+          if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+        }
+      }
+    };
+    $("pinforgot").onclick = () => {
+      if (!confirm("Retirer le code ? Pour la sécurité, tes comptes seront aussi retirés de ce téléphone : il faudra rescanner le QR code de Pécule. Le foyer reste accessible.")) return;
+      store.set("pin", null); store.set("ekey", null); store.set("vault", null); S.ekey = null; S.vault = null; pinKeyMem = null;
+      el.classList.add("hidden"); done(false);
+    };
+  });
+}
+let hiddenAt = 0;
+document.addEventListener("visibilitychange", async () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (pinData() && hiddenAt && Date.now() - hiddenAt > 120000 && $("pinlock").classList.contains("hidden")) {  // 2 min ailleurs : on reverrouille
+    S.ekey = null; S.vault = null; pinKeyMem = null; render();
+    await askPin(); await vaultFromCache(); render();
+  }
+});
+function pinSettings() {
+  const has = !!pinData();
+  $("pintxt").textContent = has ? "Un code est demandé à l'ouverture et après 2 minutes ailleurs. Le code secret de tes comptes est chiffré avec." : "Protège l'appli avec un code de 4 à 6 chiffres : sans lui, personne ne voit tes comptes, même avec ton téléphone déverrouillé.";
+  $("pinbtns").innerHTML = has ? `<button data-pin="change">Changer le code</button><button data-pin="off">Retirer le code</button>` : `<button class="primary" data-pin="set" style="grid-column:1/3">Choisir un code</button>`;
+}
+$("pinbtns").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const mode = b.dataset.pin;
+  sheet(`<h2>🔒 ${mode === "off" ? "Retirer le code" : "Choisir un code"}</h2>
+    ${mode !== "set" ? '<input id="pin0" type="password" inputmode="numeric" maxlength="6" placeholder="Code actuel"><br><br>' : ""}
+    ${mode !== "off" ? '<input id="pin1" type="password" inputmode="numeric" maxlength="6" placeholder="Nouveau code (4 à 6 chiffres)"><br><br><input id="pin2" type="password" inputmode="numeric" maxlength="6" placeholder="Encore une fois"><br><br>' : ""}
+    <button class="primary" id="pinok" style="width:100%">${mode === "off" ? "Retirer" : "Enregistrer"}</button>`);
+  $("pinok").onclick = async () => {
+    if (mode !== "set" && !(await tryPin($("pin0").value))) return toast("Code actuel incorrect");
+    if (mode === "off") { store.set("pin", null); store.set("ekey", S.ekey); pinKeyMem = null; closeSheet(); render(); return toast("Code retiré"); }
+    const a = $("pin1").value, c = $("pin2").value;
+    if (!/^\d{4,6}$/.test(a)) return toast("4 à 6 chiffres");
+    if (a !== c) return toast("Les deux codes sont différents");
+    await setPin(a); closeSheet(); render(); toast("Code enregistré 🔒");
+  };
+});
+// 219 · thème clair, sombre ou automatique
+function applyTheme() {
+  const t = store.get("theme") || "auto";
+  if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+  document.querySelectorAll("#themeseg button").forEach((b) => b.classList.toggle("on", b.dataset.theme === t));
+}
+$("themeseg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; store.set("theme", b.dataset.theme); applyTheme();
+document.querySelectorAll("#langseg button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
+$("langseg").onclick = (e) => { const b = e.target.closest("button"); if (!b || b.dataset.lang === LANG) return;
+  store.set("lang", b.dataset.lang); store.set("lang_set", "1"); location.reload(); }; };
+applyTheme();
+// 218 · recherche dans tout le foyer (et dans l'historique des dépenses communes sur le serveur)
+let hhqTimer = null, hhqServer = [];
+$("hhq").addEventListener("input", () => {
+  renderHHSearch(); clearTimeout(hhqTimer);
+  const q = $("hhq").value.trim();
+  if (q.length >= 3 && S.hid) hhqTimer = setTimeout(async () => {
+    try { hhqServer = await api("GET", `shared_tx?household_id=eq.${S.hid}&deleted=eq.false&label=ilike.*${encodeURIComponent(q.replace(/[*,()]/g, " "))}*&order=date.desc&limit=40`) || []; } catch (e) { hhqServer = []; }
+    renderHHSearch();
+  }, 400);
+});
+function renderHHSearch() {
+  const q = fold($("hhq").value.trim());
+  const on = q.length >= 2 && !S.noHH;
+  $("hhres").innerHTML = ""; $("hhnav").classList.toggle("hidden", on || S.noHH);
+  document.querySelectorAll(".hview").forEach((v) => v.classList.toggle("hidden", on || S.noHH || v.id !== "v-" + S.hview));
+  if (!on) return;
+  const has = (x) => fold(x).includes(q), res = [];
+  const seenTx = new Set();
+  for (const e of (S.exps || []).concat(hhqServer)) if (!seenTx.has(e.id) && has((e.label || "") + " " + (e.category || ""))) { seenTx.add(e.id); res.push(["⚖️", e.label || "Dépense", `${String(e.date).split("-").reverse().join("/")} · payé par ${name(e.paid_by)}`, euro(e.amount), "money"]); }
+  for (const i of S.list || []) if (has(i.label)) res.push(["🛒", i.label, i.done ? "dans le panier" : "sur la liste", i.qty || "", "list"]);
+  for (const x of S.stock || []) if (has(x.label)) res.push(["📦", x.label, `stock : ${fmtQty(x.qty, x.unit)}`, "", "list"]);
+  for (const m of S.meals || []) if (has(m.title + " " + (m.ingredients || ""))) res.push(["🍝", m.title, dmy(m.date), "", "list"]);
+  for (const w of S.wishes || []) if (has(w.title + " " + (w.note || ""))) res.push(["💝", w.title, name(w.owner), w.price != null ? euro(w.price) : "", "wishes"]);
+  for (const ev of S.events || []) if (has(ev.title + " " + (ev.note || ""))) res.push(["📅", ev.title, String(ev.date).split("-").reverse().join("/"), ev.amount ? euro(ev.amount) : "", "agenda"]);
+  for (const c of S.chores || []) if (has(c.title)) res.push(["🧹", c.title, "tâche", "", "agenda"]);
+  $("hhres").innerHTML = `<div class="card"><h2>🔎 ${res.length} résultat(s)</h2>${res.slice(0, 60).map(([ic, t, sub, r, v]) => `<div class="row" data-hgo="${v}"><b style="font-size:18px">${ic}</b><div class="grow">${esc(t)}<div class="faint">${esc(sub)}</div></div><span class="faint">${esc(r)}</span></div>`).join("") || '<p class="muted">Rien trouvé.</p>'}</div>`;
+}
+$("hhres").addEventListener("click", (e) => { const r = e.target.closest("[data-hgo]"); if (!r) return; $("hhq").value = ""; go("foyer", r.dataset.hgo); renderHHSearch(); });
 
 // ---------------------------------------------------------------- 187 · appli installable et rappels
 let swReg = null, installEvt = null;
@@ -1600,6 +1976,7 @@ $("notifon").onclick = async () => {
 $("installgo").onclick = async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; notifUi(); };
 function notify(title, body) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
+  title = trText(title); body = String(body).split("\n").map(trText).join("\n");
   const o = { body, icon: "foyer-icon-192.png", tag: title };
   try { if (swReg) swReg.showNotification(title, o); else new Notification(title, o); } catch (e) {}
 }
@@ -1627,8 +2004,8 @@ function remindPlan() {
   return plan;
 }
 async function dailyNotify(force) {
-  if (!S.chores && !S.stock) return;
-  const plan = remindPlan();
+  if (!S.chores && !S.stock && !S.vault) return;
+  const plan = remindPlan().map((x) => ({ ...x, group: trText(x.group), text: trText(x.text) }));
   await idbPut("plan", plan);
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   if (swReg && swReg.active) { swReg.active.postMessage("remind"); return; }
@@ -1642,6 +2019,7 @@ async function dailyNotify(force) {
 
 (async function start() {
   notifUi();
+  if (pinData()) await askPin();  // 215 · le code avant tout affichage
   $("server").classList.toggle("hidden", !!(S.url && S.key));
   if (store.get("email")) $("email").value = store.get("email");
   if (!S.session || !S.url) { showApp(false); $("login").classList.remove("hidden"); if (store.get("email")) $("pwd").focus(); return; }
@@ -1657,7 +2035,8 @@ async function dailyNotify(force) {
     toast(e.auth ? "Ta session a expiré : reconnecte-toi." : "Pas de connexion pour l'instant, nouvel essai dans un moment.");
     if (e.auth) { S.session = null; store.set("session", null); showApp(false); $("login").classList.remove("hidden"); $("pwd").focus(); }
   }
-  setInterval(() => { if (!document.hidden && S.session) load().catch(() => {}); }, 20000);
+  let tick = 0;  // toutes les 10 s avec l'empreinte du serveur, sinon toutes les 20 s (chargement complet)
+  setInterval(() => { tick++; if (!document.hidden && S.session && (S.stampOK || tick % 2 === 0)) load().catch(() => {}); }, 10000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && S.session) load().catch(() => {}); });
 })();
 </script>
