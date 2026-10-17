@@ -8,7 +8,7 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 
 <p align="center">
   <a href="https://github.com/zyg-off/pecule/releases/latest/download/Pecule-Setup.exe"><b>⬇️ Télécharger Pécule pour Windows</b></a>
-  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.2.1
+  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.2.2
 </p>
 
 <p align="center"><img src="images/accueil.png" width="900" alt="Accueil de Pécule"></p>
