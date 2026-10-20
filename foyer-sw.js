@@ -2,7 +2,7 @@
 // congélateur) s'affichent en notification, y compris appli fermée quand le téléphone le permet (Chrome Android,
 // appli installée). Aucune donnée n'est envoyée : le rappel se calcule à partir du planning que la page a laissé
 // sur le téléphone.
-const CACHE = "pecule-v6";
+const CACHE = "pecule-v7";
 const SHELL = ["foyer.html", "foyer.webmanifest", "foyer-icon-192.png", "foyer-zxing.min.js"];
 
 // chaque fichier séparément : un fichier absent ne doit pas empêcher de garder les autres
