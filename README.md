@@ -4,11 +4,11 @@
 
 <h1 align="center">Pécule</h1>
 <p align="center"><b>Tes finances, simplement.</b><br>
-Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en français, et tes données restent sur ton PC.</p>
+Comptes, budgets, épargne, courses et vie à plusieurs — gratuit (avec une option Pro), en français, et tes données restent sur ton PC.</p>
 
 <p align="center">
   <a href="https://github.com/zyg-off/pecule/releases/latest/download/Pecule-Setup.exe"><b>⬇️ Télécharger Pécule pour Windows</b></a>
-  &nbsp;·&nbsp; Windows 10 et 11 · gratuit · version 1.2.2
+  &nbsp;·&nbsp; Windows 10 et 11 · gratuit, option Pro · version 1.3.0
 </p>
 
 <p align="center"><img src="images/accueil.png" width="900" alt="Accueil de Pécule"></p>
@@ -112,6 +112,17 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 
 <p align="center"><img src="images/neon.png" width="900" alt="Thème Néon"></p>
 
+## ⭐ Pécule Pro
+
+Tout Pécule est gratuit, sauf quatre fonctions réunies dans **Pécule Pro** — **2,99 € par mois** ou **24 € par an**, avec **14 jours d'essai** :
+
+- 🏦 la **synchro automatique avec ta banque** (l'import de relevés reste gratuit) ;
+- 📱 tes **comptes, opérations et budgets sur ton téléphone** (le foyer, les courses et l'agenda restent gratuits) ;
+- 👥 **plusieurs profils** sur le même PC ;
+- 🔐 le **chiffrement** de tes données par mot de passe.
+
+Tes données restent toujours accessibles, abonné ou non. Abonnement : [mensuel](https://buy.polar.sh/polar_cl_RZquC1pevH3ghLIsdmeln4F2vFGXhXGW9ek2N1QzRuH) · [annuel](https://buy.polar.sh/polar_cl_2uup4r4aYjmyYCtpMZtRg3ZRee5egw7a20tgV4BQhJu) — résiliable à tout moment.
+
 ## 📥 Installer
 
 1. **[Télécharge Pecule-Setup.exe](https://github.com/zyg-off/pecule/releases/latest/download/Pecule-Setup.exe)** et ouvre-le.
@@ -132,9 +143,9 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 
 ## ❓ Questions fréquentes
 
-**C'est vraiment gratuit ?** Oui.
+**C'est vraiment gratuit ?** Oui : budgets, analyses, foyer, courses, documents… tout est gratuit. Seules la synchro bancaire, les comptes sur le téléphone, les profils multiples et le chiffrement sont dans Pécule Pro (14 jours d'essai).
 
-**Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une appli web (à installer sur l'écran d'accueil) donne accès à tes comptes, opérations, budgets et objectifs, et au foyer : clique sur 📱 en haut de Pécule et scanne le QR code. Pas de version Mac pour l'instant.
+**Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une appli web (à installer sur l'écran d'accueil) donne accès au foyer et, avec Pécule Pro, à tes comptes, opérations, budgets et objectifs : clique sur 📱 en haut de Pécule et scanne le QR code. Pas de version Mac pour l'instant.
 
 **Ma banque est compatible ?** La connexion directe couvre la plupart des banques françaises et européennes. Sinon, l'import de relevés CSV / OFX marche avec toutes.
 
@@ -144,5 +155,5 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit, en françai
 
 ---
 
-<sub>Pécule est un logiciel gratuit, dont le code n'est pas public. © 2026 · Licence d'utilisation incluse dans l'installateur.
+<sub>Pécule est un logiciel gratuit avec une option payante (Pécule Pro), dont le code n'est pas public. © 2026 · Licence d'utilisation incluse dans l'installateur.
 Il s'appuie sur des logiciels libres (Python, Qt / PySide6…) listés dans « Composants utilisés ». Pécule ne fournit pas de conseil financier.</sub>
