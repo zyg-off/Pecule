@@ -114,7 +114,7 @@ Comptes, budgets, épargne, courses et vie à plusieurs — gratuit (avec une op
 
 ## ⭐ Pécule Pro
 
-Tout Pécule est gratuit, sauf quatre fonctions réunies dans **Pécule Pro** — **2,99 € par mois** ou **24 € par an**, avec **14 jours d'essai** :
+Tout Pécule est gratuit, sauf quatre fonctions réunies dans **Pécule Pro** — **2,99 € par mois** ou **24 € par an**, sans engagement :
 
 - 🏦 la **synchro automatique avec ta banque** (l'import de relevés reste gratuit) ;
 - 📱 tes **comptes, opérations et budgets sur ton téléphone** (le foyer, les courses et l'agenda restent gratuits) ;
@@ -143,7 +143,7 @@ Tes données restent toujours accessibles, abonné ou non. Abonnement : [mensuel
 
 ## ❓ Questions fréquentes
 
-**C'est vraiment gratuit ?** Oui : budgets, analyses, foyer, courses, documents… tout est gratuit. Seules la synchro bancaire, les comptes sur le téléphone, les profils multiples et le chiffrement sont dans Pécule Pro (14 jours d'essai).
+**C'est vraiment gratuit ?** Oui : budgets, analyses, foyer, courses, documents… tout est gratuit. Seules la synchro bancaire, les comptes sur le téléphone, les profils multiples et le chiffrement sont dans Pécule Pro.
 
 **Ça marche sur Mac ou sur téléphone ?** L'application est pour Windows 10 et 11. Sur téléphone, une appli web (à installer sur l'écran d'accueil) donne accès au foyer et, avec Pécule Pro, à tes comptes, opérations, budgets et objectifs : clique sur 📱 en haut de Pécule et scanne le QR code. Pas de version Mac pour l'instant.
 
