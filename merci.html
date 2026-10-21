@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merci · Pécule Pro</title>
+<link rel="icon" href="foyer-icon-192.png">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2733;--muted:#66717f;--faint:#9aa3ad;--line:#e6e2da;--accent:#e8701a;--chip:#f6efe6}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b222b;--ink:#e9edf2;--muted:#a3adb9;--faint:#6f7a87;--line:#2a333e;--accent:#f08a3a;--chip:#26303b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 -apple-system,"Segoe UI",Roboto,Inter,sans-serif;padding:32px 16px}
+main{max-width:560px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;margin-bottom:16px}
+.logo{width:64px;height:64px;border-radius:16px;display:block;margin:0 auto 12px}
+h1{font-size:26px;text-align:center;margin:0 0 6px}
+.sub{text-align:center;color:var(--muted);margin:0 0 4px}
+ol{padding-left:0;list-style:none;margin:0;counter-reset:s}
+li{counter-increment:s;display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px}
+b{font-weight:650}
+.path{background:var(--chip);border-radius:8px;padding:1px 7px;white-space:nowrap}
+.faint{color:var(--faint);font-size:14px;text-align:center}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <img class="logo" src="foyer-icon-192.png" alt="">
+    <h1 data-t="title">Merci, et bienvenue dans Pécule Pro ⭐</h1>
+    <p class="sub" data-t="sub">Ton paiement est bien passé.</p>
+  </div>
+  <div class="card">
+    <ol>
+      <li><div data-t="s1"><b>Ouvre l'e-mail de Polar</b> que tu viens de recevoir : ta <b>clé Pécule Pro</b> est dedans. (Pas reçu ? Regarde dans les courriers indésirables.)</div></li>
+      <li><div data-t="s2">Dans <b>Pécule sur ton PC</b>, va dans <span class="path">Réglages › ⭐ Pécule Pro</span> et clique sur <b>« J'ai une clé »</b>.</div></li>
+      <li><div data-t="s3"><b>Colle la clé</b>, puis <b>Activer</b>. C'est tout : la synchro avec ta banque, tes comptes sur le téléphone, les profils et le chiffrement sont à toi.</div></li>
+    </ol>
+  </div>
+  <p class="faint" data-t="foot">Pour gérer ou résilier ton abonnement, ou retrouver ta clé : le lien est dans l'e-mail de Polar, et dans Pécule › Réglages › Pécule Pro.</p>
+  <p class="faint" id="ref"></p>
+</main>
+<script>
+// textes en anglais et en portugais selon la langue du navigateur
+const T = {
+  en: { title: "Thank you, and welcome to Pécule Pro ⭐", sub: "Your payment went through.",
+    s1: "<b>Open the e-mail from Polar</b> you just received: your <b>Pécule Pro key</b> is inside. (Nothing? Check your spam folder.)",
+    s2: "In <b>Pécule on your PC</b>, go to <span class=\"path\">Settings › ⭐ Pécule Pro</span> and click <b>“I have a key”</b>.",
+    s3: "<b>Paste the key</b>, then <b>Activate</b>. That's it: bank sync, your accounts on your phone, profiles and encryption are yours.",
+    foot: "To manage or cancel your subscription, or find your key again: the link is in Polar's e-mail, and in Pécule › Settings › Pécule Pro.", ref: "Order reference" },
+  pt: { title: "Obrigado, e bem-vindo ao Pécule Pro ⭐", sub: "O teu pagamento foi efetuado.",
+    s1: "<b>Abre o e-mail da Polar</b> que acabaste de receber: a tua <b>chave Pécule Pro</b> está lá. (Não chegou? Vê na pasta de spam.)",
+    s2: "No <b>Pécule do teu PC</b>, vai a <span class=\"path\">Definições › ⭐ Pécule Pro</span> e clica em <b>«Tenho uma chave»</b>.",
+    s3: "<b>Cola a chave</b> e depois <b>Ativar</b>. Pronto: a sincronização com o banco, as contas no telemóvel, os perfis e a encriptação são teus.",
+    foot: "Para gerir ou cancelar a subscrição, ou reencontrar a chave: o link está no e-mail da Polar, e no Pécule › Definições › Pécule Pro.", ref: "Referência da encomenda" },
+};
+const lang = (navigator.language || "fr").slice(0, 2), t = T[lang];
+if (t) { document.documentElement.lang = lang; document.querySelectorAll("[data-t]").forEach((e) => { if (t[e.dataset.t]) e.innerHTML = t[e.dataset.t]; }); document.title = t.title.replace(" ⭐", "") + " · Pécule Pro"; }
+const id = new URLSearchParams(location.search).get("checkout_id");
+if (id && !id.includes("{")) document.getElementById("ref").textContent = (t ? t.ref + ": " : "Référence de la commande : ") + id.slice(0, 40);
+</script>
+</body>
+</html>
